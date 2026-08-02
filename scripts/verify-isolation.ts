@@ -45,17 +45,17 @@ async function main() {
   const [pathologistA] = await db
     .select()
     .from(users)
-    .where(eq(users.email, "pathologist@xpath.report"))
+    .where(eq(users.email, "dev-pathologist-a@xpath.report"))
     .limit(1);
   const [pathologistB] = await db
     .select()
     .from(users)
-    .where(eq(users.email, "pathologist2@xpath.report"))
+    .where(eq(users.email, "dev-pathologist-b@xpath.report"))
     .limit(1);
   const [administrator] = await db
     .select()
     .from(users)
-    .where(eq(users.email, "administrator@xpath.report"))
+    .where(eq(users.email, "dev-administrator@xpath.report"))
     .limit(1);
 
   if (!pathologistA || !pathologistB || !administrator) {

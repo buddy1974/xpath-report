@@ -27,32 +27,53 @@ export const authConfig = {
         token.role = (user as any).role;
         token.totpEnabled = (user as any).totpEnabled;
         token.totpVerified = false; // set true by /api/auth/verify-totp
+        token.mustCompleteSetup = (user as any).mustCompleteSetup;
       }
-      // Set via unstable_update({ totpVerified: true }) from
-      // /api/auth/verify-totp after a correct TOTP code.
-      if (trigger === "update" && (session as any)?.totpVerified) {
-        token.totpVerified = true;
-      }
+      // Set via unstable_update(...) from /api/auth/verify-totp (login
+      // 2FA) or the claim wizard (first-time profile + TOTP enrollment).
+      const s = session as any;
+      if (trigger === "update" && s?.totpVerified) token.totpVerified = true;
+      if (trigger === "update" && s?.mustCompleteSetup === false) token.mustCompleteSetup = false;
+      // Claim wizard Step 1 replaces the placeholder email/name with the
+      // real ones (src/app/(auth)/claim-account/actions.ts:completeProfile).
+      // Without this, the JWT keeps caching the old values for the rest of
+      // the session — DB is correct immediately, but anything reading
+      // session.user.email/name (e.g. the dashboard header) shows stale
+      // data until the next full login. Caught by an actual browser
+      // walkthrough of the claim wizard, not the earlier scripted tests.
+      if (trigger === "update" && s?.user?.email) token.email = s.user.email;
+      if (trigger === "update" && s?.user?.name) token.name = s.user.name;
       return token;
     },
     async session({ session, token }) {
       (session.user as any).id = token.sub;
+      if (token.email) session.user.email = token.email as string;
+      if (token.name) session.user.name = token.name as string;
       (session as any).tenantId = token.tenantId;
       (session as any).role = token.role;
       (session as any).totpVerified = token.totpVerified ?? false;
+      (session as any).mustCompleteSetup = token.mustCompleteSetup ?? false;
       return session;
     },
     authorized({ auth, request }) {
       const isAuthed = !!auth?.user;
+      const mustCompleteSetup = (auth as any)?.mustCompleteSetup === true;
       const totpOk = (auth as any)?.totpVerified === true;
       const { pathname } = request.nextUrl;
 
       const onAuthPages =
-        pathname.startsWith("/sign-in") || pathname.startsWith("/verify");
+        pathname.startsWith("/sign-in") ||
+        pathname.startsWith("/verify") ||
+        pathname.startsWith("/claim-account");
 
       if (!isAuthed && !onAuthPages) return false;
-      if (isAuthed && !totpOk && pathname.startsWith("/dashboard")) {
-        return Response.redirect(new URL("/verify", request.nextUrl));
+
+      if (isAuthed && pathname.startsWith("/dashboard")) {
+        // Never-claimed accounts (placeholder login, no profile/TOTP yet)
+        // go through the claim wizard first — it ends with the account in
+        // the same state /verify would otherwise require.
+        if (mustCompleteSetup) return Response.redirect(new URL("/claim-account", request.nextUrl));
+        if (!totpOk) return Response.redirect(new URL("/verify", request.nextUrl));
       }
       return true;
     },

@@ -16,7 +16,8 @@ type AuditAction =
   | "create_case"
   | "system"
   | "totp_failed"
-  | "totp_locked";
+  | "totp_locked"
+  | "account_claimed";
 
 export async function writeAudit(params: {
   tenantId: string;

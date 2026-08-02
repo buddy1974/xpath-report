@@ -21,6 +21,7 @@ import {
   boolean,
   integer,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /* ------------------------------------------------------------------ */
@@ -52,6 +53,7 @@ export const auditActionEnum = pgEnum("audit_action", [
   "system",
   "totp_failed", // wrong 2FA code (rate-limiting trail — security-checklist.md)
   "totp_locked", // 2FA lockout triggered after MAX_FAILED_TOTP_ATTEMPTS
+  "account_claimed", // first-login claim wizard completed (profile + TOTP enrollment)
 ]);
 
 /* ------------------------------------------------------------------ */
@@ -90,6 +92,17 @@ export const users = pgTable(
     // anything across invocations.
     totpFailedAttempts: integer("totp_failed_attempts").default(0).notNull(),
     totpLockedUntil: timestamp("totp_locked_until", { withTimezone: true }),
+    // First-login claim wizard (team provisioning). Accounts are created
+    // with a placeholder email + a strong random session password and
+    // must complete this before /dashboard is reachable — enforced in
+    // authConfig.callbacks.authorized, same pattern as totpVerified.
+    mustCompleteSetup: boolean("must_complete_setup").default(true).notNull(),
+    // Set when claim-wizard Step 1 (profile) is submitted — lets the
+    // wizard resume at Step 2 (TOTP enrollment) rather than re-asking for
+    // profile info if the session is abandoned partway.
+    profileCompletedAt: timestamp("profile_completed_at", { withTimezone: true }),
+    department: text("department"),
+    phone: text("phone"),
     isActive: boolean("is_active").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -98,8 +111,10 @@ export const users = pgTable(
   (t) => ({
     tenantIdx: index("users_tenant_idx").on(t.tenantId),
     // email unique *within* a tenant, not globally — a person could exist
-    // under two labs once the platform is multi-tenant in the wild.
-    emailTenantIdx: index("users_email_tenant_idx").on(t.tenantId, t.email),
+    // under two labs once the platform is multi-tenant in the wild. A real
+    // (not just advisory) constraint, so a claim-wizard email change can't
+    // silently collide with an existing account in the same tenant.
+    emailTenantIdx: uniqueIndex("users_email_tenant_idx").on(t.tenantId, t.email),
   }),
 );
 

@@ -20,22 +20,16 @@
  * (1) is the one actually enforced/verified here; (2) is a browser-level
  * backstop, not something this code controls.
  *
- * Rate limiting (security-checklist.md — required on /api/auth/*): after
- * MAX_FAILED_TOTP_ATTEMPTS wrong codes, the account is locked for
- * TOTP_LOCKOUT_MINUTES. Counters live on the `users` row (Neon), not in
- * memory — this app runs as stateless serverless functions, so an
- * in-process counter would not limit anything across invocations. Every
- * failed attempt and every lockout is written to audit_log.
+ * Rate limiting + code verification itself live in lib/totp.ts, shared
+ * with the claim wizard's enrollment-confirmation step.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { authenticator } from "otplib";
 import { eq } from "drizzle-orm";
 import { auth, unstable_update } from "@/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { decrypt } from "@/lib/crypto";
 import { writeAudit } from "@/lib/audit";
-import { MAX_FAILED_TOTP_ATTEMPTS, TOTP_LOCKOUT_MINUTES } from "@/lib/totp-policy";
+import { verifyTotpCode } from "@/lib/totp";
 
 function isSameOrigin(req: NextRequest): boolean {
   const origin = req.headers.get("origin");
@@ -65,57 +59,18 @@ export async function POST(req: NextRequest) {
   const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   const user = rows[0];
 
-  if (!user?.totpEnabled || !user.totpSecretEncrypted) {
+  if (!user?.totpEnabled) {
     return NextResponse.redirect(new URL("/verify?error=not_enrolled", req.url));
   }
 
-  if (user.totpLockedUntil && user.totpLockedUntil.getTime() > Date.now()) {
-    return NextResponse.redirect(new URL("/verify?error=locked", req.url));
+  const result = await verifyTotpCode(user, code);
+
+  if (!result.ok) {
+    return NextResponse.redirect(new URL(`/verify?error=${result.reason === "locked" ? "locked" : "invalid"}`, req.url));
   }
-
-  const secret = decrypt(user.totpSecretEncrypted);
-  const valid = /^\d{6}$/.test(code) && authenticator.verify({ token: code, secret });
-
-  if (!valid) {
-    const attempts = user.totpFailedAttempts + 1;
-
-    if (attempts >= MAX_FAILED_TOTP_ATTEMPTS) {
-      const lockedUntil = new Date(Date.now() + TOTP_LOCKOUT_MINUTES * 60_000);
-      await db
-        .update(users)
-        .set({ totpFailedAttempts: 0, totpLockedUntil: lockedUntil })
-        .where(eq(users.id, user.id));
-      await writeAudit({
-        tenantId: user.tenantId,
-        actorId: user.id,
-        action: "totp_locked",
-        detail: { failedAttempts: attempts, lockedUntil: lockedUntil.toISOString() },
-      });
-      return NextResponse.redirect(new URL("/verify?error=locked", req.url));
-    }
-
-    await db.update(users).set({ totpFailedAttempts: attempts }).where(eq(users.id, user.id));
-    await writeAudit({
-      tenantId: user.tenantId,
-      actorId: user.id,
-      action: "totp_failed",
-      detail: { attempt: attempts },
-    });
-    return NextResponse.redirect(new URL("/verify?error=invalid", req.url));
-  }
-
-  await db
-    .update(users)
-    .set({ totpFailedAttempts: 0, totpLockedUntil: null })
-    .where(eq(users.id, user.id));
 
   await unstable_update({ totpVerified: true } as any);
-  await writeAudit({
-    tenantId: user.tenantId,
-    actorId: user.id,
-    action: "sign_in",
-    detail: { via: "totp" },
-  });
+  await writeAudit({ tenantId: user.tenantId, actorId: user.id, action: "sign_in", detail: { via: "totp" } });
 
   return NextResponse.redirect(new URL("/dashboard", req.url));
 }

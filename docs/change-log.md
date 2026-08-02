@@ -2,6 +2,51 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-02 — M1 closed for real (live URL); team provisioning (Cowork addendum §1)
+- **M1 fully closed:** verified independently (not on the relayed claim
+  alone) that the Vercel project is real — `get_project`/`get_deployment`
+  by direct ID confirmed READY, commit c547e92, aliased to
+  xpath-report.vercel.app / www.xpath.report / xpath.report
+  (`list_projects` had a list/index lag — R-013 resolved). Ran the full
+  login+TOTP HTTP flow against the actual live URL: 8/8 checks pass,
+  audit_log rows confirmed written for real. Flagged (not blocking):
+  GitHub repo is public, not private (R-015); AUTH_SECRET is still
+  low-entropy.
+- **Team provisioning built** (Cowork execution-order §1, confirmed
+  directly by Marcel): `mustCompleteSetup` schema gate (same pattern as
+  `totpVerified`), `scripts/provision-team.ts` (8 real accounts —
+  3 pathologists, Dr. Ivo, 4 technicians — each with a strong random
+  session password, printed to console once, never written to a file),
+  a 2-step claim wizard (`src/app/(auth)/claim-account/`: profile +
+  password replacement, then TOTP enrollment with a real QR code via the
+  new `qrcode` dependency), and Cloudflare Turnstile wiring on `/sign-in`
+  (inactive until keys are set — SIGNAL open). Extracted the TOTP
+  verify+lockout logic shared between login and enrollment into
+  `src/lib/totp.ts`. Added a real unique constraint on `(tenant_id,
+  email)` — previously just an index — which caught a genuine collision
+  between M1's dev-test seed emails and the real provisioning emails;
+  renamed the dev fixtures (`dev-pathologist-a/b@...` etc.) rather than
+  deviate from the spec's real account emails.
+- **Two real bugs found and fixed via an actual browser walkthrough of
+  the claim wizard** (not just scripted HTTP tests): (1) the sign-in page
+  had always been missing the CSRF token NextAuth's own callback endpoint
+  requires — real users would have hit `?error=MissingCSRF`; M1's earlier
+  "verified" claim only worked because the test script manually injected
+  a token no real page provided (R-016). Fixed by switching to a Server
+  Action calling `signIn()` directly (DL-016). (2) the dashboard header
+  showed the stale placeholder email after claim-wizard Step 1 changed
+  it — DB was correct, JWT cache wasn't refreshed (DL-017), fixed via
+  `unstable_update`.
+- Walked the full flow end to end locally against real Neon: placeholder
+  login → blocked from `/dashboard` → Step 1 → Step 2 (real QR, real TOTP
+  code) → dashboard → log out → log back in with the new real
+  email/password → straight to `/verify` (not the wizard again) → correct
+  email displayed. `account_claimed` audit entry confirmed written.
+  Swept the working tree for all 8 generated session passwords — none
+  found anywhere (DL-018).
+- `npx tsc --noEmit` and `npm run build` pass. Committed locally, not
+  pushed yet.
+
 ## 2026-08-02 — M1 live-verified + pushed; M3 template engine + Breast templates
 - **M1 closed out (partially):** ran `db:generate`/`db:migrate`/`db:seed`
   against real Neon, confirmed G1/G2 isolation and the full login+TOTP HTTP

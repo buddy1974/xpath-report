@@ -76,3 +76,34 @@ Format: DL-nnn · decision · rationale.
   vocabulary, free-text slots, and repeatable-block markers from the
   versioned data, with inputs disabled — no value binding. Binding
   transcript/dictation output to these fields is M5 (auto-fill), not M3.
+- **DL-016 — Sign-in form switched from posting directly to
+  `/api/auth/callback/credentials` to a Server Action calling `signIn`
+  from `@/auth`.** A real browser walkthrough of the claim wizard (not
+  the earlier scripted HTTP tests, which manually fetched and injected a
+  CSRF token the real page never provided) surfaced `?error=MissingCSRF`
+  on the actual, unmodified sign-in page — it had never included the
+  `csrfToken` field Auth.js's own callback endpoint requires. Calling
+  `signIn()` in-process from a Server Action sidesteps that HTTP
+  round-trip and its CSRF-cookie requirement entirely; Next.js's own
+  built-in Origin-header check for Server Actions covers CSRF instead
+  (same protection the claim wizard's own actions already rely on — see
+  DL-011's note on custom Route Handlers needing it manually, which
+  Server Actions don't). This means the M1 "login works" verification
+  from the previous session was true of the API, not of the actual page a
+  human uses — logged as a process lesson, not just a code fix.
+- **DL-017 — Claim wizard Step 1 explicitly refreshes the JWT's cached
+  email/name via `unstable_update`.** Also caught by the same browser
+  walkthrough: after replacing the placeholder email in the DB, the
+  dashboard header kept showing the old placeholder — the JWT token
+  caches `email`/`name` at login and nothing was refreshing them
+  mid-session. Fixed in `auth.config.ts`'s `jwt` callback (handles
+  `session.user.email`/`name` on `trigger === "update"`, same pattern as
+  `totpVerified`/`mustCompleteSetup`) plus a call to `unstable_update` at
+  the end of `completeProfile`. The underlying DB write was always
+  correct; only the session's cached copy was stale.
+- **DL-018 — Session passwords for provisioned accounts are generated
+  with `crypto.randomBytes(18).toString("base64url")` (~144 bits) and
+  printed to console once, never written to any file.** Matches the
+  existing `openssl rand -base64 32`-style bar for secrets in this repo;
+  swept the working tree for all 8 generated passwords after provisioning
+  to confirm none landed in a tracked (or even untracked) file.

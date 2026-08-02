@@ -17,13 +17,17 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { authConfig } from "@/auth.config";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({
-      credentials: { email: {}, password: {} },
+      credentials: { email: {}, password: {}, "cf-turnstile-response": {} },
       async authorize(creds) {
+        const turnstileOk = await verifyTurnstile(creds?.["cf-turnstile-response"] as string | undefined);
+        if (!turnstileOk) return null;
+
         const email = String(creds?.email ?? "").toLowerCase();
         const password = String(creds?.password ?? "");
         if (!email || !password) return null;
@@ -43,10 +47,11 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.displayName,
-          // carried into the JWT for tenant scoping + 2FA gating
+          // carried into the JWT for tenant scoping + 2FA/setup gating
           tenantId: user.tenantId,
           role: user.role,
           totpEnabled: user.totpEnabled,
+          mustCompleteSetup: user.mustCompleteSetup,
         } as any;
       },
     }),

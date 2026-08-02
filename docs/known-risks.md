@@ -67,16 +67,39 @@ Format: R-nnn · risk · current mitigation / status.
   true` on each affected option (`src/lib/templates/data/breast-biomarker.ts`)
   makes them greppable; must be resolved before `approval.status` moves
   past `"draft"` for this template.
-- **R-013 — Vercel project not visible to the Vercel MCP connector.**
-  `list_projects` on the only team found (`buddy1974's projects`,
-  `team_EAyech9xnsZIk9ajje9eCKp4`) returns zero projects; no
-  `.vercel/project.json` in the repo. M1's "login+TOTP on the live URL"
-  DoD item is blocked on this — open, needs Marcel to confirm which
-  account/team the project is actually under, or finish the GitHub-connect
-  step.
+- **R-013 — RESOLVED.** Vercel project was real; `list_projects` had a
+  list/index lag on this account. `get_project`/`get_deployment` by
+  direct ID confirmed it (`prj_GB7I7tg5rwrBuuSN8kEQptzdo1cL`, commit
+  c547e92, READY, aliased to xpath-report.vercel.app / www.xpath.report /
+  xpath.report). Login+TOTP verified live against that URL.
 - **R-014 — CUP template (M5) has no CAP source and an unconfirmed-clone
   antibody (PAX8) in its panel.** Per the M3/M5 work order: build from the
   header's generic-fallback-protocol pattern + the CUP IHC panel in
   `XPATH_handover.md` §13 (CK7, CK20, CDX2, TTF-1, GATA3, PAX8*, CD45).
   Tag PAX8 as unconfirmed rather than blocking (Header §9/§25 — open
   items, do not block Phase-1 planning).
+- **R-015 — GitHub repo (`buddy1974/xpath-report`) is public, not
+  private.** `docs/release-checklist.md`'s own pre-deploy checklist calls
+  for a private repo. No secrets are in it (swept — `.env.example` is
+  placeholder-only, `.env.local` never committed), but the full source,
+  including the security implementation (CSRF checks, lockout logic,
+  claim-wizard flow), is publicly visible. Flagged during M1 live
+  verification, not yet actioned — Marcel's call whether/when to flip it
+  private.
+- **R-016 — Scripted API-level verification can mask real browser-level
+  bugs.** M1's original "login works" claim was based on a script that
+  manually fetched and injected a CSRF token — the real, unmodified
+  sign-in page had never included that token and would have failed for
+  every actual user (`?error=MissingCSRF`). Caught only once an actual
+  browser walkthrough of the claim wizard was done (Cowork addendum §1e).
+  Fixed (DL-016). Lesson: any future "verified" claim for a user-facing
+  flow should include at least one real-browser pass, not only scripted
+  HTTP checks — scripted checks are still valuable for the auth/audit
+  plumbing underneath, just not sufficient on their own for pages a human
+  actually loads and submits.
+- **R-017 — `qrcode` package (or a transitive dependency) triggers a
+  Node `Buffer()` deprecation warning during claim-wizard Step 2
+  render.** Harmless today (functional, QR renders correctly) but
+  `Buffer()`'s legacy constructor could be removed in a future Node
+  major version. Low priority; re-check if `qrcode` ships an update or if
+  Node's deprecation timeline firms up.
