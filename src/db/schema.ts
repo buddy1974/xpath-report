@@ -168,13 +168,21 @@ export const privateWorkspaceItems = pgTable(
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    kind: text("kind").notNull(), // note | draft | reference_file | tip | dictation
+    kind: text("kind").notNull(), // note | draft | reference_file | tip | dictation | report_draft
     title: text("title"),
     body: text("body"),
     fileRef: text("file_ref"), // R2 object key, if a file
     // Dictation language (M4 — EN/FR), passed through to Whisper's
     // `language` param for accuracy. Null for non-dictation kinds.
     language: text("language"),
+    // M5 — kind "report_draft" only: { templateId, dictationId, fieldValues:
+    // {path: value}, aiFieldPaths: [path] (still AI-sourced, not yet
+    // human-edited — Header G1/G8: AI content always visibly marked),
+    // quotes: {path: quote} (grounding text, for the pathologist to verify
+    // against the transcript), reflexSuggestions: [...] }. Structured
+    // values live here, not on `body` — `body` stays the raw transcript
+    // text on the linked dictation item.
+    data: jsonb("data"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

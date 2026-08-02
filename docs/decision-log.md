@@ -148,3 +148,40 @@ Format: DL-nnn · decision · rationale.
   *within* the audio itself before transcription isn't solved (would
   require transcribing first) — logged as an open, procedurally
   mitigated risk (R-021), not silently treated as solved.
+- **DL-023 — Structuring engine validates every AI-returned field
+  against two things before trusting it: (1) the path/option key must be
+  real (rejects invented fields), (2) a verbatim quote from the
+  transcript must ground it (rejects ungrounded values).**
+  (`src/lib/structuring.ts:validateAndGround`) This is the concrete
+  mechanism behind Header G8 ("never fabricate") for M5 — not a policy
+  statement, an actual runtime check. What it does NOT catch: the model
+  can quote real transcript text while still miscategorizing it (e.g.
+  "ninety percent" correctly quoted but bucketed into the wrong adjacent
+  range option) — logged as R-023, mitigated by every AI field showing
+  its grounding quote so the pathologist (who must review before
+  sign-out, M6) catches the mismatch, not by trying to perfect numeric-
+  range parsing.
+- **DL-024 — `flattenTemplate` gives "Specify X: ___" companion
+  text/number inputs their own addressable path
+  (`{fieldPath}.{optionKey}.text`), separate from the option-selection
+  path itself.** Found via real testing, not designed in from the start:
+  the first version only let the structuring engine record *that* a
+  "specify" option was chosen, not *what* the specified value was — e.g.
+  "ER positive, 90%" would auto-fill "positive" but silently drop the
+  actual 90%. Since nearly every quantitative field in these CAP
+  templates (percentages, mm measurements) uses this exact
+  select-then-specify pattern, this was a real, not theoretical, data-
+  fidelity gap.
+- **DL-025 — Template suggestion (M5) is a deterministic keyword-overlap
+  score, not another paid AI call.** With only a few Phase-1 templates
+  and the pathologist always confirming explicitly (Header §5: "auto-
+  suggest, human confirms, never blind-route"), ranking quality here is
+  a convenience, not a safety boundary — a free heuristic is enough.
+  Revisit only if the shortlist quality becomes a real problem once more
+  templates exist.
+- **DL-026 — Report drafts (`kind: "report_draft"`) store structured
+  field values in a new `jsonb` `data` column, not by extending `body`.**
+  Keeps the raw transcript (on the linked dictation item's `body`)
+  separate from the structured interpretation of it (`fieldValues`,
+  `aiFieldPaths`, `quotes`, `reflexSuggestions` on the draft item) —
+  both stay private-workspace data, not audited, until M6 sign-out.

@@ -1,0 +1,1 @@
+ALTER TABLE "private_workspace_items" ADD COLUMN "data" jsonb;

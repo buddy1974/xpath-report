@@ -148,3 +148,38 @@ Format: R-nnn · risk · current mitigation / status.
   roadmap's own explicit call-out. Logged as an open item rather than
   skipped silently — do not treat Whisper's accuracy on synthesized
   test speech (R-019's verification) as a substitute for this.
+- **R-023 — Structuring engine can correctly quote real transcript text
+  while still miscategorizing it into the wrong option.** Found via real
+  testing (M5): given "ninety percent of cells," the model returned a
+  genuine, verbatim, transcript-grounded quote — but selected the
+  "91-100%" bucket instead of the correct "81-90%" one. `validateAndGround`
+  (DL-023) checks that quotes are real and that paths/option keys exist;
+  it does not check that a selected numeric range actually contains the
+  quoted number. Mitigated by design, not by additional parsing: every
+  AI-suggested field renders its grounding quote directly next to the
+  selected value (`src/components/template-view.tsx`), specifically so
+  the pathologist's mandatory review (Header G1, M6 sign-out) catches
+  exactly this kind of near-miss. Not fixed technically — flagged.
+- **R-024 — Repeatable blocks (e.g. Breast Invasive Resection's Tumor
+  Characteristics, up to 5x) are auto-filled as a single instance
+  only.** `flattenTemplate` doesn't attempt to split a dictation across
+  multiple repeats of the same block — deciding which sentence belongs
+  to which of several tumor foci is a real design question (would need
+  either explicit dictation structure like "first focus... second
+  focus..." or a separate per-repeat LLM pass), deferred past M5's
+  minimum scope (single confirmed template, values marked AI, reflex
+  fires). A dictation describing multiple tumor foci will only get the
+  first one auto-filled; the rest need manual entry once M6's edit UI
+  exists.
+- **R-025 — Anthropic structuring path (`AI_STRUCTURING_PROVIDER=anthropic`)
+  reaches and authenticates against the API correctly, but is blocked by
+  an empty account credit balance — not yet verified end to end.**
+  Tested directly: the request is well-formed and the key authenticates
+  (confirmed by the response being a 400 billing error — "Your credit
+  balance is too low" — not a 401 auth error or a malformed-request
+  error). `AI_STRUCTURING_PROVIDER=openai` (the `.env.local` default) is
+  fully verified with real calls; the Anthropic code path
+  (`src/lib/structuring.ts:callAnthropic`) is believed correct on the
+  same basis (identical downstream validation/grounding, same JSON
+  contract requested of the model) but needs Anthropic account credit
+  before a real round-trip can confirm it.

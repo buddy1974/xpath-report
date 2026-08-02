@@ -2,6 +2,44 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — M5 core engine built and verified (structure & auto-fill)
+- Built the transcript→template structuring engine: `lib/templates/flatten.ts`
+  (addressable field paths), `lib/structuring.ts` (OpenAI/Anthropic per
+  `AI_STRUCTURING_PROVIDER`, every value validated against real field
+  paths/options AND grounded with a verbatim transcript quote before
+  being trusted — DL-023), `lib/reflex.ts` (HER2 IHC 2+ → Dual-ISH
+  reflex, advisory only), `lib/templates/suggest.ts` (deterministic
+  template shortlist, human always confirms). `/dashboard/structure/[dictationId]`
+  ties it together: suggest → confirm → auto-fill → review with AI
+  badges + grounding quotes + reflex banner.
+- Extracted the M3 template renderer into `src/components/template-view.tsx`
+  so M3's blank view and M5's filled view share one implementation.
+- Verified with a real transcript and a real OpenAI call (not
+  mocked): correctly filled ER/PgR/HER2/Ki-67 fields with real grounding
+  quotes, correctly fired the HER2 reflex suggestion.
+- Found and fixed a real data-fidelity gap via that test: "Specify
+  percentage: ___" options had no separate addressable path for the
+  actual number, only for which option was picked — "ER positive, 90%"
+  was silently dropping the 90 (DL-024, fixed in `flatten.ts` +
+  `template-view.tsx`).
+- Found and logged (not fixed) a subtler gap: the model can correctly
+  quote real transcript text while still bucketing it into the wrong
+  adjacent numeric range ("ninety percent" correctly quoted, but
+  "91-100%" picked instead of "81-90%"). Grounding-quote validation
+  catches fabrication, not semantic miscategorization — mitigated by
+  showing every AI field's quote for the pathologist's mandatory review,
+  not by more parsing (R-023).
+- Tested the Anthropic structuring path directly: it authenticates
+  correctly (confirmed — the response is a 400 billing error, not a 401
+  auth error) but the account has no credit balance, so a real
+  round-trip is unverified (R-025).
+- `npx tsc --noEmit` and `npm run build` pass throughout.
+
+Building straight through M5→M7 per Marcel's explicit go-ahead — no
+per-milestone stop, except two gates the project's own docs already
+call for: M6's PDF worker vendor pick, and M7's Cloudflare DNS cutover
+(both flagged in `docs/PROGRESS.md`, not re-litigated here).
+
 ## 2026-08-02 — M4 built (voice capture + transcription); blocked on R2 permission
 - Verified `OPENAI_API_KEY` with a real Whisper call before building on
   it (synthesized pathology speech via Windows TTS, near-perfect

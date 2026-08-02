@@ -1,82 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getTemplate } from "@/lib/templates";
-import type { TemplateField, TemplateSection } from "@/lib/templates";
-import { TierBadge } from "./tier-badge";
+import { SectionView } from "@/components/template-view";
 
 // Static structural render for M3 (Header §5: "renders as a structured
-// form; version recorded; approval gate present"). No value binding yet
-// — dictation/auto-fill wiring is M5. Inputs are disabled on purpose.
-
-function FieldView({ field }: { field: TemplateField }) {
-  return (
-    <div className="border-l-2 border-neutral-200 pl-4 py-2">
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-medium text-sm">{field.label}</span>
-        <TierBadge tier={field.tier} />
-        {field.noteRef && <span className="text-xs text-neutral-400">{field.noteRef}</span>}
-        {field.repeatable && (
-          <span className="text-xs text-neutral-400">repeatable, up to {field.repeatable.max}x</span>
-        )}
-      </div>
-
-      {field.options && (
-        <div className="mt-1 space-y-1">
-          {field.options.map((opt) => (
-            <div key={opt.key} className="text-sm text-neutral-700 flex items-center gap-2">
-              <input type={field.type === "multi-select" ? "checkbox" : "radio"} disabled className="accent-petrol" />
-              <span>{opt.label}</span>
-              {opt.requiresText && (
-                <input
-                  disabled
-                  placeholder={opt.textLabel ?? "specify"}
-                  className="text-xs border-b border-dashed border-neutral-300 bg-transparent w-32"
-                />
-              )}
-              {opt.textUnit && <span className="text-xs text-neutral-400">{opt.textUnit}</span>}
-            </div>
-          ))}
-          {field.cannotBeDetermined && (
-            <div className="text-sm text-neutral-500 flex items-center gap-2">
-              <input type="radio" disabled />
-              <span>Cannot be determined (explain)</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {(field.type === "text" || field.type === "number") && !field.options && (
-        <input
-          disabled
-          type={field.type === "number" ? "number" : "text"}
-          className="mt-1 text-sm border border-neutral-300 rounded px-2 py-1 w-64 bg-neutral-50"
-          placeholder={field.unit ? `value (${field.unit})` : "value"}
-        />
-      )}
-
-      {field.children && field.children.length > 0 && (
-        <div className="mt-2 space-y-1">
-          {field.children.map((child) => (
-            <FieldView key={child.key} field={child} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SectionView({ section }: { section: TemplateSection }) {
-  return (
-    <section className="mb-8">
-      <h2 className="text-lg font-semibold uppercase tracking-wide text-petrol">{section.title}</h2>
-      <div className="mt-3 space-y-3">
-        {section.fields.map((f) => (
-          <FieldView key={f.key} field={f} />
-        ))}
-      </div>
-    </section>
-  );
-}
+// form; version recorded; approval gate present"). No value binding
+// here — this is the blank-template view; auto-filled values render at
+// /dashboard/structure/[dictationId] (M5).
 
 export default async function TemplateDetailPage({ params }: { params: Promise<{ templateId: string }> }) {
   const session = await auth();
