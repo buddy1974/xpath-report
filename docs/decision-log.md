@@ -23,3 +23,36 @@ Format: DL-nnn · decision · rationale.
   templates, not 10 agents.
 - **DL-008 — Auth: TOTP authenticator, not SMS.** Free, works with no mobile
   signal in the lab, nothing to intercept.
+- **DL-009 — Second-factor state lives in the JWT, upgraded via
+  `unstable_update`.** `/api/auth/verify-totp` verifies the authenticator
+  code, then calls NextAuth's `unstable_update({ totpVerified: true })` to
+  upgrade the session token in place, rather than persisting a "verified"
+  flag in Postgres. Keeps 2FA state ephemeral per-session (re-verify on a
+  fresh login) and avoids a write path that isn't the audit log. Tracked as
+  a risk in `docs/known-risks.md` (R-009) because the API is explicitly
+  `unstable_`.
+- **DL-010 — `trustHost: true` in `auth.config.ts`.** M1 deploys to a
+  Vercel *preview* URL that changes per deploy; Auth.js otherwise requires
+  the request host to match `AUTH_URL` exactly. Revisit at M7 once
+  `xpath.report` is the fixed production host.
+- **DL-011 — CSRF and rate-limit state for `/api/auth/verify-totp` are
+  both explicit application code, not framework defaults.** NextAuth's
+  CSRF token only protects its own `/api/auth/callback/*` handlers; a
+  same-origin `Origin`-vs-`Host` check was added by hand
+  (`src/app/api/auth/verify-totp/route.ts`). Lockout counters
+  (`users.totpFailedAttempts`, `totpLockedUntil`) are stored in Postgres
+  rather than in memory because the app runs as stateless serverless
+  functions — an in-process counter would reset or fail to share state
+  across invocations and would not actually limit anything.
+- **DL-012 — G2a added to PROJECT_HEADER.md (v1.0 → v1.1, 2026-08-02):
+  no notification/alert/digest/reporting layer of any kind into a
+  pathologist's activity, for anyone but the pathologist.** Broader than
+  "no Telegram" — the test is whether a piece of infrastructure *could*
+  be used to surface pathologist activity to the owner, not whether the
+  current feature does. Repo docs synced to match: removed stale
+  Telegram/"notifications" references from `docs/architecture.md`,
+  `docs/workflow-map.md`, and `README.md` (all previously listed it as
+  deferred to "Session 02+" rather than permanently excluded).
+  `.env.example` and `PROJECT_HEADER.md` were already current — no
+  Telegram placeholders present. This entry exists so the exclusion is
+  traceable in repo history, not just in the header.

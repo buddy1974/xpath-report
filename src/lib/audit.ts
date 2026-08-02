@@ -14,7 +14,9 @@ type AuditAction =
   | "amend_report"
   | "view_clinical_record"
   | "create_case"
-  | "system";
+  | "system"
+  | "totp_failed"
+  | "totp_locked";
 
 export async function writeAudit(params: {
   tenantId: string;

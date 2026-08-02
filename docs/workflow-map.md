@@ -34,5 +34,12 @@ amendment (new version, never overwrite) + audit_log entry
 
 ## Out of scope until named sessions unlock them (Header G4)
 Templates · voice/dictation/transcription · OCR · reflex/ancillary engine ·
-IHC/antibody logic · PDF generation · LIS (Olivya) integration ·
-notifications (Telegram).
+IHC/antibody logic · PDF generation · LIS (Olivya) integration.
+
+## Permanently out of scope (Header G2a — not a deferral, do not revisit)
+No notification, alert, digest, or reporting layer of any kind into a
+pathologist's activity, for the owner or anyone but the pathologist
+themself. Telegram was struck for this reason on 2026-08-02 and does not
+return under any other name — the exclusion is the *class* of
+infrastructure (anything that could surface what a pathologist is doing,
+drafted, or signed), not one vendor.

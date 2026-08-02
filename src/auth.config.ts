@@ -15,18 +15,28 @@ import type { NextAuthConfig } from "next-auth";
 export const authConfig = {
   session: { strategy: "jwt" },
   pages: { signIn: "/sign-in" },
+  // Vercel preview URLs differ per deploy — trust the request host instead
+  // of requiring AUTH_URL to match exactly (production still pins the host
+  // via Vercel env once xpath.report is wired at M7).
+  trustHost: true,
   providers: [], // populated in auth.ts (Node runtime only)
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.tenantId = (user as any).tenantId;
         token.role = (user as any).role;
         token.totpEnabled = (user as any).totpEnabled;
         token.totpVerified = false; // set true by /api/auth/verify-totp
       }
+      // Set via unstable_update({ totpVerified: true }) from
+      // /api/auth/verify-totp after a correct TOTP code.
+      if (trigger === "update" && (session as any)?.totpVerified) {
+        token.totpVerified = true;
+      }
       return token;
     },
     async session({ session, token }) {
+      (session.user as any).id = token.sub;
       (session as any).tenantId = token.tenantId;
       (session as any).role = token.role;
       (session as any).totpVerified = token.totpVerified ?? false;

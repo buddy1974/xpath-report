@@ -3,9 +3,17 @@
 ## Stack
 Next.js (App Router) · TypeScript · Tailwind — Vercel (GitHub CI/CD).
 Postgres on Neon · Drizzle ORM. Auth.js + TOTP 2FA (authenticator app, no SMS).
-Cloudflare R2 (audio/scans/PDFs). OpenAI (Whisper + structuring, swappable,
-pseudonymised input) — Session 02+. Telegram bot notifications. Cloudflare
-DNS/WAF. PDF generation off-Vercel (dedicated worker).
+Cloudflare R2 (audio/scans/PDFs). OpenAI (Whisper transcription, required —
+Anthropic has no speech-to-text API) + structuring swappable OpenAI/Anthropic,
+pseudonymised input either way — Session 02+. Cloudflare DNS/WAF. PDF
+generation off-Vercel (dedicated worker).
+
+**No notification/alert/digest/reporting layer of any kind into pathologist
+activity, for the owner or anyone but the pathologist themself (Header G2a).**
+This is an infrastructure-level exclusion, not a feature deferral — it rules
+out the *class* of service (bots, admin dashboards, digests), not just a
+particular vendor. Telegram was struck for this reason and must not
+reappear under any other name.
 
 ## The two data domains (Header G2) — the core architectural decision
 1. **Private workspace** (`private_workspace_items`) — per-user, owner-only.

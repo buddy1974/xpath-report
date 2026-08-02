@@ -1,4 +1,19 @@
-export default function VerifyPage() {
+import { TOTP_LOCKOUT_MINUTES } from "@/lib/totp-policy";
+
+const ERRORS: Record<string, string> = {
+  invalid: "That code didn't match. Try the next code from your app.",
+  not_enrolled: "This account has no authenticator enrolled yet.",
+  locked: `Too many incorrect codes. Try again in ${TOTP_LOCKOUT_MINUTES} minutes.`,
+};
+
+export default async function VerifyPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string }>;
+}) {
+  const params = await searchParams;
+  const error = params?.error ? ERRORS[params.error] : undefined;
+
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-sm text-center space-y-5">
@@ -11,6 +26,11 @@ export default function VerifyPage() {
             Enter the 6-digit code from your authenticator app.
           </p>
         </div>
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+            {error}
+          </p>
+        )}
         <form action="/api/auth/verify-totp" method="post" className="space-y-4">
           <input
             name="code"

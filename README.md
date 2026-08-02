@@ -17,7 +17,9 @@ Structured pathology reporting platform. **Foundation (Execution Session 01).**
 - Seed: tenant BettaHealth + one user per role.
 
 **Not in Session 01** (Header G4): templates, voice/AI, OCR, reflex engine,
-report generation, notifications. Those are Session 02+.
+report generation. Those are Session 02+. **Not ever:** any notification,
+alert, digest, or reporting layer into pathologist activity — permanently
+excluded by Header G2a, not deferred.
 
 ## Verified
 `schema · access · audit · crypto · db` typecheck clean (core guardrail modules).

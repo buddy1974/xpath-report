@@ -1,5 +1,5 @@
 # X-PATH — PROJECT HEADER & GUARDRAILS
-**Version 1.0 · The governing document. Everything built for X-PATH obeys this. If a request conflicts with this header, stop and flag it.**
+**Version 1.1 · The governing document. Everything built for X-PATH obeys this. If a request conflicts with this header, stop and flag it.**
 
 ---
 
@@ -34,6 +34,8 @@ Two distinct data domains, never blurred:
 - **Private workspace** (drafts, personal notes, learning files, saved references, tips, working thoughts): genuinely private to each pathologist. Encrypted per-user. **Not browsed by anyone — not other pathologists, not the lab owner.** This protects the pathologist's psychological safety and privacy.
 - **Released clinical record** (a signed, validated patient report): a legal medical document. It enters the lab/patient **system of record with a full audit trail.** It is not personal property and cannot escape the record.
 > "The owner does not surveil pathologists' private work" is TRUE. "Signed patient reports vanish from the medical record" is FALSE and forbidden. Design must deliver both.
+
+**G2a — No notification/reporting layer of any kind into a pathologist's work.** No admin dashboard, no bot, no digest, no alert — nothing that surfaces what a pathologist is doing, has drafted, or has signed to anyone but that pathologist. This extends G2 to infrastructure choices, not just data access: a service that *could* be used to notify the owner about pathologist activity is itself out of scope, not just its misuse. (This is why Telegram was struck — see §8.)
 
 **G3 — Template content: logic only, never copied.**
 We build a template **engine**; template *content* comes from: (a) originals supplied by the client, (b) ICCR (free), or (c) authored in-house. We use the **structural logic** of standards like CAP — never reproduce, scrape, or embed their copyrighted text. Every clinical template is **locally verified/validated and director-approved before clinical use** (same for stain SOPs).
@@ -79,6 +81,7 @@ The system reasons only over what is described or entered. It must never invent 
 - ✗ No diagnosing or interpreting patient images/specimens. No "benign/malignant" calls. (G1)
 - ✗ No reproducing, scraping, or embedding CAP/WHO/AJCC copyrighted content. Logic only. (G3)
 - ✗ No owner access into pathologists' private workspaces. (G2)
+- ✗ No notification, alert, digest, or reporting layer of any kind into pathologist activity — for the owner or anyone but the pathologist themself. (G2a)
 - ✗ No signed patient report existing outside the audited clinical record. (G2)
 - ✗ No expanding Phase 1 to all templates or all ten agents. (G4)
 - ✗ No zero-knowledge claims that the AI-assist model contradicts. (G5)
@@ -94,14 +97,16 @@ Before anything is accepted: security validation · access-isolation check · au
 ---
 
 ## 8. Reference tech stack (default, confirmed)
-Next.js (App Router) · TypeScript · Tailwind — on **Vercel** (GitHub CI/CD). Postgres on **Neon** · Drizzle ORM. Auth.js + TOTP 2FA (authenticator app, no SMS). Object storage: **Cloudflare R2** (audio, scans, PDFs). AI: **OpenAI** (Whisper transcription + structuring), provider kept swappable, pseudonymized input. Notifications: **Telegram bot** (free). Domain/DNS/WAF: **Cloudflare**. PDF generation off-Vercel (dedicated worker) to avoid serverless limits.
+Next.js (App Router) · TypeScript · Tailwind — on **Vercel** (GitHub CI/CD). Postgres on **Neon** · Drizzle ORM. Auth.js + TOTP 2FA (authenticator app, no SMS). Object storage: **Cloudflare R2** (audio, scans, PDFs). AI: **OpenAI** (Whisper transcription, required — Anthropic has no speech-to-text API) + structuring **swappable between OpenAI and Anthropic**, pseudonymized input either way. Domain/DNS/WAF: **Cloudflare**. PDF generation off-Vercel (dedicated worker) to avoid serverless limits.
+
+**No Telegram. No notification/alert/reporting layer of any kind — see G2a.** This was struck for good on 2026-08-02, not deferred. Do not reintroduce it in any future work order, `.env` file, or stack list, even marked "blank" or "later."
 
 ---
 
 ## 9. Locked vs. Open
-**Locked:** name/domain (X-PATH / xpath.report) · advisory frame (G1) · private-vs-clinical principle (G2) · logic-only templates (G3) · Phase-1 scope discipline (G4) · morphology+IHC scope, molecular separate (G6) · multi-tenant foundation · the 38-antibody register + HER2 IHC→Dual-ISH in-house workflow · reflex engine as differentiator · EN/FR + regional.
+**Locked:** name/domain (X-PATH / xpath.report) · advisory frame (G1) · private-vs-clinical principle (G2) · no notification/reporting layer into pathologist activity (G2a) · logic-only templates (G3) · Phase-1 scope discipline (G4) · morphology+IHC scope, molecular separate (G6) · multi-tenant foundation · the 38-antibody register + HER2 IHC→Dual-ISH in-house workflow · reflex engine as differentiator · EN/FR + regional · AI structuring swappable OpenAI/Anthropic (transcription stays OpenAI-only).
 
-**Open (to confirm, do not block Phase-1 planning):** PD-L1 clone (SP263 / SP142) & scoring context · TTF-1 clone · whether the LIS is Olivya, Roche navify, both, or neither, and its API · data-hosting jurisdiction (given Dubai holding / Cameroon operation) · commercial model & code-ownership on handover.
+**Open (to confirm, do not block Phase-1 planning):** PD-L1 clone (SP263 / SP142) & scoring context · TTF-1 clone (and other "(confirm)" clones — PAX8, BCL-6, SMA, Myogenin) · whether the LIS is Olivya, Roche navify, both, or neither, and its API · data-hosting jurisdiction (given Dubai holding / Cameroon operation) · commercial model & code-ownership on handover.
 
 ---
 

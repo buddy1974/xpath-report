@@ -12,6 +12,15 @@ Run before any deploy, and re-check anything touched by the current session.
       no DB client in the Edge bundle (verify: `npm run build`, check the
       Middleware bundle size/trace for `bcryptjs`).
 - [ ] `/dashboard/**` unreachable without a TOTP-verified session.
+- [x] **CSRF — custom cookie-authenticated POST routes.** NextAuth's
+      built-in CSRF token only covers its own `/api/auth/callback/*`
+      handlers, not routes we write. `/api/auth/verify-totp` adds an
+      explicit same-origin check (`Origin` header must match `Host`, fail
+      closed if `Origin` is missing) — see the comment in
+      `src/app/api/auth/verify-totp/route.ts`. Backstop: the session
+      cookie is SameSite=Lax (Auth.js default, unmodified). Any future
+      custom mutating route under `/api/**` needs the same same-origin
+      check — it is not automatic.
 
 ## Access isolation (Header G1/G2 — the core guardrail)
 - [ ] Every clinical/workspace query passes through `lib/access.ts`
@@ -34,8 +43,17 @@ Run before any deploy, and re-check anything touched by the current session.
 
 ## Application hardening (apply as each surface is introduced)
 - [ ] Input validation with Zod on every server action / API route.
-- [ ] Rate limiting on `/api/auth/*` (not yet built — flag before Session 02
-      ships a login-adjacent endpoint).
+- [x] Rate limiting on `/api/auth/verify-totp` — DB-backed lockout
+      (`users.totpFailedAttempts` / `totpLockedUntil`), not in-memory (the
+      app runs as stateless serverless functions, so a per-instance counter
+      would not actually limit anything). Locks the account for
+      `TOTP_LOCKOUT_MINUTES` after `MAX_FAILED_TOTP_ATTEMPTS` wrong codes
+      (`src/lib/totp-policy.ts`, currently 5 / 15 min). Every failed
+      attempt and every lockout writes an `audit_log` row
+      (`totp_failed` / `totp_locked`).
+  - [ ] **Still open:** `/api/auth/callback/credentials` (the password
+        step, handled internally by NextAuth) has no rate limiting yet.
+        Tracked as `docs/known-risks.md` R-011 — not covered by this pass.
 - [ ] File uploads (R2, once introduced) scoped per-tenant, signed URLs only.
 - [ ] Standard security headers (CSP, HSTS, X-Frame-Options) set at the
       Vercel/Cloudflare edge before first public deploy.

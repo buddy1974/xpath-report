@@ -19,6 +19,7 @@ import {
   pgEnum,
   jsonb,
   boolean,
+  integer,
   index,
 } from "drizzle-orm/pg-core";
 
@@ -49,6 +50,8 @@ export const auditActionEnum = pgEnum("audit_action", [
   "view_clinical_record",
   "create_case",
   "system",
+  "totp_failed", // wrong 2FA code (rate-limiting trail — security-checklist.md)
+  "totp_locked", // 2FA lockout triggered after MAX_FAILED_TOTP_ATTEMPTS
 ]);
 
 /* ------------------------------------------------------------------ */
@@ -81,6 +84,12 @@ export const users = pgTable(
     // Never store the raw secret. Authenticator-app 2FA only (no SMS).
     totpSecretEncrypted: text("totp_secret_encrypted"),
     totpEnabled: boolean("totp_enabled").default(false).notNull(),
+    // Rate limiting for /api/auth/verify-totp (security-checklist.md).
+    // DB-backed, not in-memory: the app runs as stateless serverless
+    // functions, so a per-instance counter would not actually limit
+    // anything across invocations.
+    totpFailedAttempts: integer("totp_failed_attempts").default(0).notNull(),
+    totpLockedUntil: timestamp("totp_locked_until", { withTimezone: true }),
     isActive: boolean("is_active").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()

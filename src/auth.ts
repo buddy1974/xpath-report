@@ -18,7 +18,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { authConfig } from "@/auth.config";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({

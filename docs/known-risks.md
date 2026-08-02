@@ -35,6 +35,28 @@ Format: R-nnn · risk · current mitigation / status.
   CLI), not shipped to the production runtime, and the advisory concerns a
   local dev server accepting cross-origin requests — not applicable to a CLI
   invocation. Accepted risk for Phase 1; re-check on each `drizzle-kit` bump.
-- **R-008 — No rate limiting on auth endpoints yet.** Session 01 has no
-  public-facing login endpoint deployed; this must be added before any
-  non-local deploy. Tracked in `docs/security-checklist.md`.
+- **R-008 — No rate limiting on auth endpoints yet.** *Partially resolved
+  in M1:* `/api/auth/verify-totp` now has DB-backed lockout (5 wrong codes
+  → 15 min lock, audited) — see `docs/security-checklist.md`. **Still
+  open:** the password step (`/api/auth/callback/credentials`, handled
+  internally by NextAuth) has no throttling. Superseded/tracked further as
+  R-011.
+- **R-009 — `/api/auth/verify-totp` depends on NextAuth's `unstable_update`
+  API (DL-009).** It is explicitly unstable in `next-auth@5.0.0-beta.32`
+  and could change signature on a future beta bump. Mitigation: exact
+  version pinned (R-006); re-verify this route on every `next-auth` bump.
+- **R-010 — Local dev machine has a stray `package-lock.json` one
+  directory above the repo** (`ai-software-dev/package-lock.json`), which
+  makes `next build` infer the wrong workspace root locally (cosmetic
+  warning only — build still succeeds). Not present in Vercel's build
+  context since Vercel only checks out this repo. No action needed unless
+  it starts affecting local builds.
+- **R-011 — Password sign-in (`/api/auth/callback/credentials`) has no
+  rate limiting.** It's handled internally by NextAuth's own route
+  handler, not code we own, so the DB-backed lockout added for
+  `/api/auth/verify-totp` (R-008) doesn't cover it — a wrapper/proxy in
+  front of the credentials callback would be needed. An attacker who
+  doesn't yet have a session cookie can still brute-force passwords
+  (though they'd still need the TOTP code afterward). Mitigation: address
+  before any public (non-demo) deploy — flag again at M7 hardening if not
+  done sooner.

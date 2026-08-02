@@ -2,6 +2,31 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-02 — M1 build (login + TOTP) + header sync (v1.0 → v1.1, G2a)
+- Built out M1: NextAuth route handler, `/api/auth/verify-totp` (TOTP check
+  + session upgrade via `unstable_update`), root `/` redirect, dashboard
+  wired to the real session. Seed script now creates 2 pathologists (for
+  the isolation check) + technician/manager/administrator, each enrolled
+  with a real TOTP secret. Added `scripts/verify-isolation.ts`, which
+  exercises `lib/access.ts` against real seeded rows to prove a second
+  pathologist and an administrator are both denied a private workspace
+  item. `npx tsc --noEmit` and `npm run build` pass; `npm audit` clean.
+- Added explicit CSRF protection (same-origin `Origin`-vs-`Host` check —
+  NextAuth's built-in CSRF token does not cover custom routes) and
+  DB-backed rate limiting/lockout (5 failed codes → 15 min, audited) to
+  `/api/auth/verify-totp`, per `docs/security-checklist.md`'s existing
+  "rate limiting on /api/auth/*" requirement. Password sign-in
+  (`/api/auth/callback/credentials`) still has no rate limiting — left
+  open, tracked as R-011, not silently folded into "done."
+- **Header sync:** `PROJECT_HEADER.md` moved to v1.1, adding **G2a — no
+  notification/alert/digest/reporting layer of any kind into a
+  pathologist's activity**, broader than "no Telegram." Removed stale
+  Telegram/"notifications (Session 02+)" references from
+  `docs/architecture.md`, `docs/workflow-map.md`, and `README.md` — all
+  three previously implied it was a deferred feature rather than a
+  permanent exclusion. `.env.example` and `PROJECT_HEADER.md` were already
+  current on disk (no action needed there). See DL-012.
+
 ## 2026-08-02 — Session 01 foundation + Cowork inspection pass
 - Built the walking-skeleton foundation: multi-tenant schema, the two G2 data
   domains (`private_workspace_items` / `clinical_records`), append-only
