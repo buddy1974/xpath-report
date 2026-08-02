@@ -16,6 +16,8 @@
     "provision:team": "tsx scripts/provision-team.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1101.0",
+    "@aws-sdk/s3-request-presigner": "3.1101.0",
     "@neondatabase/serverless": "0.10.4",
     "bcryptjs": "2.4.3",
     "drizzle-orm": "0.45.2",

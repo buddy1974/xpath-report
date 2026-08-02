@@ -114,3 +114,40 @@ Format: R-nnn · risk · current mitigation / status.
   confirmed. Second entry (after R-016) for the same underlying lesson:
   scripted API checks aren't sufficient on their own for user-facing
   flows a real browser drives.
+- **R-019 — OPEN, blocks M4 end-to-end testing.** The R2 API token in
+  `.env.local` (`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`) has read-only
+  permission on the `xpath-storage` bucket. Isolated precisely:
+  `HeadBucket`/`ListObjectsV2` succeed; `PutObject` fails with
+  `AccessDenied` (403) identically via a presigned URL *and* a direct SDK
+  call — ruling out a bug in `src/lib/r2.ts`'s presigning or a URL/
+  endpoint format issue (the endpoint and account ID match, the bucket is
+  reachable). Needs Marcel: in the Cloudflare dashboard, R2 → Manage API
+  Tokens → give this token (or a new one) Object Read & Write permission
+  on `xpath-storage`, then update `.env.local` and Vercel if a new token
+  was issued. `OPENAI_API_KEY`/Whisper transcription is independently
+  confirmed working (real synthesized-speech test, see `docs/PROGRESS.md`
+  M4 prerequisite check) — only the R2 write leg is blocked.
+- **R-020 — Audio retention policy not implemented.** Dictation audio in
+  R2 has no auto-delete after validation (privacy + cost concern flagged
+  in the original roadmap gap list, "In M4"). Building actual scheduled
+  deletion needs a cron/job mechanism not yet built (`CRON_SECRET` exists
+  in `.env.example` but no cron endpoint exists yet). Logged rather than
+  built silently — this is a real architecture decision (what triggers
+  deletion, what retention window) that should be confirmed, not assumed.
+- **R-021 — Verbal PII in dictation audio is not redacted before
+  transcription.** Header §5's "pseudonymize before any external AI
+  call" is satisfied for everything X-PATH controls — only raw audio
+  bytes go to Whisper, no structured identifying fields are attached
+  (`src/lib/transcription.ts`). But if a pathologist speaks a patient's
+  name or other identifier out loud, Whisper transcribes it verbatim;
+  redacting audio before transcription isn't technically solved here
+  (would require transcribing first, which defeats the purpose).
+  Mitigated procedurally for now — pathologists asked not to speak
+  identifiers, and the transcript is reviewed by the pathologist before
+  any downstream use. Not solved technically; flagged rather than
+  silently accepted.
+- **R-022 — Week-one FR/accent accuracy benchmark not done.** Dr. Ivo's
+  real voice (EN + FR) isn't available yet to benchmark against, per the
+  roadmap's own explicit call-out. Logged as an open item rather than
+  skipped silently — do not treat Whisper's accuracy on synthesized
+  test speech (R-019's verification) as a substitute for this.

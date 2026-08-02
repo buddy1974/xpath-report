@@ -168,10 +168,13 @@ export const privateWorkspaceItems = pgTable(
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    kind: text("kind").notNull(), // note | draft | reference_file | tip
+    kind: text("kind").notNull(), // note | draft | reference_file | tip | dictation
     title: text("title"),
     body: text("body"),
     fileRef: text("file_ref"), // R2 object key, if a file
+    // Dictation language (M4 — EN/FR), passed through to Whisper's
+    // `language` param for accuracy. Null for non-dictation kinds.
+    language: text("language"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

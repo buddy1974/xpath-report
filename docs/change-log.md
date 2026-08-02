@@ -2,6 +2,39 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-02 — M4 built (voice capture + transcription); blocked on R2 permission
+- Verified `OPENAI_API_KEY` with a real Whisper call before building on
+  it (synthesized pathology speech via Windows TTS, near-perfect
+  transcript) — not just checking the env var exists.
+- Built the M4 vertical slice: `src/lib/r2.ts` (S3-compatible client,
+  presigned uploads, server-side download), `src/lib/transcription.ts`
+  (Whisper wrapper — only raw audio sent, no identifying fields,
+  DL-022), a `language` column added to `private_workspace_items`
+  (DL-020 — dictations reuse the existing private-workspace table rather
+  than a new one; never audited, matches Header G2), and
+  `/dashboard/dictate` (record → direct-to-R2 presigned upload →
+  transcribe → editable, AI-marked transcript → save).
+- `npm install @aws-sdk/client-s3` pulled in a critical transitive
+  vulnerability (`fast-xml-parser` regex/entity-expansion issues) —
+  caught via `npm audit` before committing, fixed with `npm audit fix`
+  (non-breaking), re-verified clean; pinned both new deps to exact
+  versions per repo convention.
+- End-to-end pipeline test (presign → upload → download → transcribe)
+  failed at the upload step: 403 Access Denied. Isolated precisely, not
+  a code bug — `HeadBucket`/`ListObjectsV2` succeed with the same
+  credentials, `PutObject` fails identically via presigned URL and
+  direct SDK call. The R2 API token has read-only permission on
+  `xpath-storage`. Reported to Marcel with the exact fix needed
+  (Cloudflare dashboard → R2 → token permissions) rather than guessing
+  or building a workaround (R-019).
+- Logged, not silently skipped: audio retention/auto-delete policy
+  (R-020 — needs a cron mechanism not yet built), verbal PII spoken in
+  dictation audio isn't redacted before transcription (R-021 —
+  procedural mitigation only, not solved technically), week-one FR/
+  accent benchmark still needs Dr. Ivo's real voice (R-022).
+- `npx tsc --noEmit` and `npm run build` pass. Committed locally, not
+  pushed (blocked mid-milestone on the R2 SIGNAL).
+
 ## 2026-08-02 — AUTH_URL redirect bug found live, fixed, re-verified
 - Pushed `496fba2` to `main`; Vercel auto-deployed it (`dpl_FbZv7aYoSbTcnDjMw5DfQwFKthdc`,
   confirmed READY).

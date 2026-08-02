@@ -125,3 +125,26 @@ Format: DL-nnn · decision · rationale.
   Re-verified via full browser walkthrough after the env var was removed:
   login+TOTP succeeds end to end, host never changes, audit_log entry
   confirmed written.
+- **DL-020 — Dictations reuse `private_workspace_items` (`kind:
+  "dictation"`) rather than a new table.** The existing schema already
+  has exactly what's needed: `fileRef` for the R2 audio key, `body` for
+  the transcript, owner/tenant scoping. A dictation is private-workspace
+  data until reviewed and saved (Header G2) — it's not part of the
+  audited clinical record until sign-out (M6, not yet built), so no
+  `audit_log` entry is written for capture/transcribe/save actions,
+  matching G2's "owner does not surveil pathologists' private work."
+  Added one column (`language`, for the Whisper `language` param).
+- **DL-021 — Audio uploads go direct browser-to-R2 via a short-lived
+  (5 min) presigned PUT URL, not through a serverless function.**
+  Matches `docs/architecture.md`'s existing note (avoids Vercel's
+  request-body size/time limits on longer dictations). Transcription
+  then happens server-side: download from R2, forward to Whisper — never
+  routes the raw audio blob through a client-controlled proxy.
+- **DL-022 — Pseudonymization for M4 means "no structured identifying
+  fields in the OpenAI request," not "redacted audio."** Header §5
+  requires pseudonymizing before any external AI call. Only raw audio
+  bytes are sent to Whisper (`src/lib/transcription.ts`) — no patient
+  name/MRN/DOB or any other field is attached. Redacting spoken PII
+  *within* the audio itself before transcription isn't solved (would
+  require transcribing first) — logged as an open, procedurally
+  mitigated risk (R-021), not silently treated as solved.

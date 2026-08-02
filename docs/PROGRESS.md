@@ -1,11 +1,11 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓░░░░░░ ~44% (you are here → M1 fully closed live; starting M4 prerequisites)
+Overall: ▓▓▓▓▓░░░░░ ~48% (you are here → M4 built, blocked on R2 write permission)
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
 [ ] M2 Private workspace         0%
 [>] M3 Template engine           70%   ← in progress
-[>] M4 Voice + transcription     0%   ← starting
+[>] M4 Voice + transcription    60%   ← current, blocked on R2 write permission
 [ ] M5 Structure & auto-fill     0%
 [ ] M6 Review · validate · assign 0%
 [ ] M7 Hardening + demo          0%
@@ -14,11 +14,18 @@ Team provisioning (Cowork execution-order §1 — parallel workstream, not a
 numbered milestone): built and verified end-to-end, both locally and live.
 
 WAITING ON MARCEL:
+🔔 R2 API token has read-only permission on `xpath-storage` — `PutObject`
+   fails (403) via presigned URL *and* direct SDK call, while
+   `HeadBucket`/`ListObjectsV2` succeed with the same credentials. Not a
+   code bug (isolated precisely — see R-019). Needs: Cloudflare dashboard
+   → R2 → Manage API Tokens → give the token Object Read & Write on
+   `xpath-storage` (or issue a new token and update `.env.local` +
+   Vercel). This blocks end-to-end M4 testing (upload → transcribe →
+   save) — the code is written and believed correct, just unverified
+   past the upload step.
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
    until these are set.
-🔔 The 8 provisioned session passwords were handed off already (Marcel
-   confirmed moved/saved) — nothing further needed there.
 
 LAST UPDATE: 2026-08-02 —
 
@@ -59,8 +66,35 @@ user-facing flows, not just HTTP scripts against the API surface
 `npx tsc --noEmit` and `npm run build` pass throughout. Pushed to `main`
 (`496fba2`) and deployed — confirmed live and correct.
 
-**Next: M4 (voice + transcription).** `OPENAI_API_KEY` and R2 credentials
-are already present in `.env.local` (from earlier in this session) —
-first step is confirming they're also set in Vercel and doing a real
-test call to Whisper before building on top of them, per the execution
-order's own instruction not to just check the env var exists.
+**M4 — voice capture + transcription. Built, blocked on external R2
+permission.**
+- Verified `OPENAI_API_KEY` with a real test call before building on
+  top of it (per the execution order's own instruction) — synthesized
+  speech via Windows TTS ("Invasive ductal carcinoma, Nottingham grade
+  two, margins clear.") transcribed near-perfectly through Whisper.
+- Built: `src/lib/r2.ts` (presigned upload + server-side download),
+  `src/lib/transcription.ts` (Whisper wrapper, pseudonymization = raw
+  audio only, no identifying fields — DL-022), `mustCompleteSetup`-style
+  dictation flow reusing `private_workspace_items` (`kind: "dictation"`,
+  new `language` column — DL-020), a 3-state recorder UI
+  (`/dashboard/dictate`: record → upload direct to R2 via presigned URL
+  → transcribe → editable transcript, marked AI-generated per Header
+  G1/G8 → save to private workspace, never audited per G2).
+- Installing `@aws-sdk/client-s3` pulled in a **critical** transitive
+  vulnerability (`fast-xml-parser`) — caught before it shipped, resolved
+  via `npm audit fix` (non-breaking), re-verified clean.
+- **Blocked:** R2 write permission (R-019, SIGNAL above). Isolated
+  precisely — `HeadBucket`/`ListObjectsV2` succeed, `PutObject` fails
+  (403) identically via presigned URL and direct SDK call, ruling out a
+  bug in the presigning code or an endpoint/format mismatch. Whisper leg
+  independently confirmed working; only the R2 write leg is unverified
+  past this point.
+- Logged rather than silently built: audio retention/auto-delete policy
+  (R-020, needs a cron mechanism not yet built), verbal-PII-in-audio
+  residual risk (R-021, procedural mitigation only), week-one FR/accent
+  benchmark still needs Dr. Ivo's real voice (R-022, not substitutable
+  with synthesized test speech).
+
+`npx tsc --noEmit` and `npm run build` pass. Committed locally, not
+pushed (mid-milestone, blocked on the R2 SIGNAL — will finish
+verification and push once that's resolved).
