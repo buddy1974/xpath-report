@@ -56,3 +56,23 @@ Format: DL-nnn · decision · rationale.
   `.env.example` and `PROJECT_HEADER.md` were already current — no
   Telegram placeholders present. This entry exists so the exclusion is
   traceable in repo history, not just in the header.
+- **DL-013 — Template engine tiers follow CAP's own convention
+  (core/conditional/non-core), not a new scheme.** Unmarked field = core;
+  "(required only if applicable)" = conditional; "+" prefix in the CAP
+  source = non-core. Reusing their tiering means the derived data stays
+  legible against the source protocol during director review, without
+  inventing an X-PATH-specific taxonomy.
+- **DL-014 — "Standardized comment" checklist options are represented as
+  `needsInHouseAuthoring: true`, not populated with CAP's paragraph
+  text.** Several CAP protocols (e.g. Breast Biomarker's ER low-positive
+  comment, HER2 ISH Group 2/3/4 comments) include full authored-paragraph
+  checklist options, not just a label or controlled-vocabulary term —
+  copying those verbatim would cross Header G3. Each is stored with a
+  short, in-house-written label standing in for the real text, which must
+  be authored in-house or licensed as part of the director-approval step
+  before clinical use (Header §7 quality gate: copyright check).
+- **DL-015 — M3 template rendering is a static, non-interactive
+  structural render for this milestone.** Renders tiers, controlled
+  vocabulary, free-text slots, and repeatable-block markers from the
+  versioned data, with inputs disabled — no value binding. Binding
+  transcript/dictation output to these fields is M5 (auto-fill), not M3.

@@ -60,3 +60,23 @@ Format: R-nnn · risk · current mitigation / status.
   (though they'd still need the TOTP code afterward). Mitigation: address
   before any public (non-demo) deploy — flag again at M7 hardening if not
   done sooner.
+- **R-012 — Breast Biomarker template has several "standardized comment"
+  fields with placeholder labels, not real text (DL-014).** These render
+  in the M3 structural view but are not clinically usable until authored
+  in-house / licensed and approved by Dr. Ivo. Mitigation: `needsInHouseAuthoring:
+  true` on each affected option (`src/lib/templates/data/breast-biomarker.ts`)
+  makes them greppable; must be resolved before `approval.status` moves
+  past `"draft"` for this template.
+- **R-013 — Vercel project not visible to the Vercel MCP connector.**
+  `list_projects` on the only team found (`buddy1974's projects`,
+  `team_EAyech9xnsZIk9ajje9eCKp4`) returns zero projects; no
+  `.vercel/project.json` in the repo. M1's "login+TOTP on the live URL"
+  DoD item is blocked on this — open, needs Marcel to confirm which
+  account/team the project is actually under, or finish the GitHub-connect
+  step.
+- **R-014 — CUP template (M5) has no CAP source and an unconfirmed-clone
+  antibody (PAX8) in its panel.** Per the M3/M5 work order: build from the
+  header's generic-fallback-protocol pattern + the CUP IHC panel in
+  `XPATH_handover.md` §13 (CK7, CK20, CDX2, TTF-1, GATA3, PAX8*, CD45).
+  Tag PAX8 as unconfirmed rather than blocking (Header §9/§25 — open
+  items, do not block Phase-1 planning).

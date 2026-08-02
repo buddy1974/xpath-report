@@ -1,5 +1,6 @@
-// Role-aware shell. In Session 01 this renders an empty, role-scoped landing.
-// No clinical features yet (Header G4).
+// Role-aware shell. No clinical AI/voice/reflex features yet (Header G4) —
+// M3 adds the template engine + Phase-1 template data only.
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 
@@ -55,9 +56,15 @@ export default async function DashboardPage() {
       <div className="p-8">
         <h1 className="text-2xl font-semibold">{view.title}</h1>
         <p className="text-neutral-600 mt-1">{view.blurb}</p>
-        <div className="mt-6 rounded-lg border border-dashed border-neutral-300 p-10 text-center text-neutral-400">
-          Foundation ready. Clinical features arrive in Session 02.
-        </div>
+        <Link
+          href="/dashboard/templates"
+          className="mt-6 block rounded-lg border border-neutral-300 p-6 hover:border-petrol"
+        >
+          <span className="font-semibold text-petrol">Templates</span>
+          <p className="text-sm text-neutral-500 mt-1">
+            Phase-1 CAP-derived templates (structural logic only, draft — pending director approval).
+          </p>
+        </Link>
       </div>
     </main>
   );

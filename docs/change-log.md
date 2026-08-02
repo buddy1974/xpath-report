@@ -2,6 +2,42 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-02 — M1 live-verified + pushed; M3 template engine + Breast templates
+- **M1 closed out (partially):** ran `db:generate`/`db:migrate`/`db:seed`
+  against real Neon, confirmed G1/G2 isolation and the full login+TOTP HTTP
+  flow (8/8 checks, incl. forged cross-origin request rejected) against
+  real data, confirmed `audit_log` rows written for real. Committed and
+  pushed to `main` (c547e92) once Marcel confirmed directly. Still open:
+  Vercel project isn't visible to the Vercel connector (R-013) — "login on
+  the live URL" specifically unverified until that's sorted.
+- **M3 started ahead of the M1 gate closing**, per Marcel's explicit
+  go-ahead on a Cowork "full execution order" addendum. Built the
+  versioned template engine (`src/lib/templates/types.ts`: tiered fields
+  using CAP's own core/conditional/non-core convention, single/multi-select,
+  controlled vocabulary, "cannot be determined", repeatable blocks,
+  versioned classification bindings, draft/pending_review/approved gate).
+  Authored two Phase-1 templates as derived data from the two CAP source
+  files Marcel supplied locally (never committed):
+  `src/lib/templates/data/breast-invasive-resection.ts` (AJCC 8th, WHO
+  6th — full Specimen/Tumor/Margins/Regional Lymph Nodes/Distant
+  Metastasis/pTNM/Additional Findings/Special Studies/Comments) and
+  `src/lib/templates/data/breast-biomarker.ts` (ER/PgR/HER2 IHC/HER2
+  ISH/Ki-67 + methods). Several "standardized comment" checklist options
+  in the Biomarker source are full authored paragraphs, not just labels —
+  those are marked `needsInHouseAuthoring: true` with a short in-house
+  label instead of copied CAP text (DL-014, R-012). Added
+  `/dashboard/templates` + `/dashboard/templates/[templateId]` as a
+  static structural render (no value binding — that's M5).
+- **Explicitly held back:** the Cowork addendum's §1 "team provisioning"
+  workstream (8 real accounts incl. a named real individual, PII claim
+  wizard, Cloudflare Turnstile) — this scope isn't in any of the three
+  verified source-of-truth documents, so it's parked pending a direct
+  one-line confirmation from Marcel rather than built off a relayed
+  document alone.
+- `npx tsc --noEmit` and `npm run build` pass throughout. M3 work
+  committed locally, not pushed (no live deploy target yet; push-at-
+  milestone-gate is the agreed cadence going forward).
+
 ## 2026-08-02 — M1 build (login + TOTP) + header sync (v1.0 → v1.1, G2a)
 - Built out M1: NextAuth route handler, `/api/auth/verify-totp` (TOTP check
   + session upgrade via `unstable_update`), root `/` redirect, dashboard
