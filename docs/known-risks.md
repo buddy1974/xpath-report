@@ -103,3 +103,14 @@ Format: R-nnn · risk · current mitigation / status.
   `Buffer()`'s legacy constructor could be removed in a future Node
   major version. Low priority; re-check if `qrcode` ships an update or if
   Node's deprecation timeline firms up.
+- **R-018 — RESOLVED.** `AUTH_URL=https://xpath.report` (set, not
+  DNS-live) caused Auth.js to redirect real browsers mid-login off
+  `xpath-report.vercel.app` onto the parked domain, losing the session
+  with no visible error — found via full browser walkthrough (scripted
+  `redirect: 'manual'` HTTP checks never caught it, since they don't
+  actually follow the Location header the way a browser does). Fixed by
+  removing `AUTH_URL` from Vercel entirely (DL-019); re-verified live —
+  login+TOTP succeeds end to end, host never changes, audit_log entry
+  confirmed. Second entry (after R-016) for the same underlying lesson:
+  scripted API checks aren't sufficient on their own for user-facing
+  flows a real browser drives.

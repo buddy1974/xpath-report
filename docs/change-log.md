@@ -2,6 +2,37 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-02 — AUTH_URL redirect bug found live, fixed, re-verified
+- Pushed `496fba2` to `main`; Vercel auto-deployed it (`dpl_FbZv7aYoSbTcnDjMw5DfQwFKthdc`,
+  confirmed READY).
+- A full browser walkthrough of login+TOTP against the live URL (not the
+  scripted HTTP checks used for the earlier "M1 verified live" claim)
+  found a serious bug: `AUTH_URL=https://xpath.report` was set in Vercel
+  but that domain isn't DNS-live until M7 — real login redirected users
+  mid-flow off `xpath-report.vercel.app` onto the parked domain, landing
+  on Hostinger's parking page with the session lost and no error shown.
+  `trustHost: true` only relaxes Auth.js's inbound host check, not
+  outbound redirect construction, which an explicit `AUTH_URL` still
+  controls (DL-019, R-018).
+- Could not fix directly — no Vercel MCP tool exposes environment
+  variable editing. Reported the exact diagnosis and fix to Marcel:
+  remove `AUTH_URL` from Vercel entirely (better than pointing it at the
+  preview host, since it then self-corrects at M7 with no further change
+  needed) rather than just repointing it. Marcel removed it from both
+  Production and Preview.
+- Re-verified live via full browser walkthrough: login+TOTP succeeds end
+  to end, host never changes, `audit_log` entry confirmed written. All 4
+  M1 DoD items now proven on the actual live URL via an actual browser —
+  the strongest verification standard used so far this session.
+- Corrected the record on the earlier "M1 verified live" claim: it was
+  true of the HTTP/API mechanics (scripted checks using
+  `redirect: 'manual'`, which never follows the Location header the way
+  a browser does) but did not catch this redirect bug. Third real bug
+  this session found only via an actual browser, not scripted HTTP tests
+  (after the missing-CSRF and stale-session-email bugs) — logged as a
+  standing lesson (R-016/R-018): scripted API checks aren't sufficient on
+  their own for user-facing flows.
+
 ## 2026-08-02 — M1 closed for real (live URL); team provisioning (Cowork addendum §1)
 - **M1 fully closed:** verified independently (not on the relayed claim
   alone) that the Vercel project is real — `get_project`/`get_deployment`

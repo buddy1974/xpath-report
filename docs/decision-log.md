@@ -33,8 +33,9 @@ Format: DL-nnn · decision · rationale.
   `unstable_`.
 - **DL-010 — `trustHost: true` in `auth.config.ts`.** M1 deploys to a
   Vercel *preview* URL that changes per deploy; Auth.js otherwise requires
-  the request host to match `AUTH_URL` exactly. Revisit at M7 once
-  `xpath.report` is the fixed production host.
+  the request host to match `AUTH_URL` exactly. **Incomplete on its own —
+  see DL-019: an explicitly-set `AUTH_URL` still overrides `trustHost` for
+  outbound redirect construction.**
 - **DL-011 — CSRF and rate-limit state for `/api/auth/verify-totp` are
   both explicit application code, not framework defaults.** NextAuth's
   CSRF token only protects its own `/api/auth/callback/*` handlers; a
@@ -107,3 +108,20 @@ Format: DL-nnn · decision · rationale.
   existing `openssl rand -base64 32`-style bar for secrets in this repo;
   swept the working tree for all 8 generated passwords after provisioning
   to confirm none landed in a tracked (or even untracked) file.
+- **DL-019 — `AUTH_URL` removed entirely from Vercel (Production +
+  Preview), not pointed at the preview host.** `trustHost: true` (DL-010)
+  only relaxes Auth.js's *inbound* host-acceptance check; an explicitly
+  set `AUTH_URL` still wins for *outbound* redirect construction. With
+  `AUTH_URL=https://xpath.report` set (the eventual production domain,
+  not DNS-live until M7), a real browser walkthrough — not scripted HTTP
+  checks, which used `redirect: 'manual'` and never actually followed the
+  Location header — found that login redirected users mid-flow off
+  `xpath-report.vercel.app` onto `xpath.report`, which resolved to
+  Hostinger's parked-domain page, losing the session with no error
+  (R-018). Removing `AUTH_URL` lets `trustHost` fully take over: Auth.js
+  now infers the host from each actual request, which works correctly on
+  the current Vercel URL *and* will keep working unchanged once
+  `xpath.report` DNS goes live at M7 — no second fix needed then.
+  Re-verified via full browser walkthrough after the env var was removed:
+  login+TOTP succeeds end to end, host never changes, audit_log entry
+  confirmed written.

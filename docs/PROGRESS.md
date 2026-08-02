@@ -1,87 +1,66 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓░░░░░░ ~42% (you are here → M3 templates done; team provisioning built + verified)
+Overall: ▓▓▓▓░░░░░░ ~44% (you are here → M1 fully closed live; starting M4 prerequisites)
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
 [ ] M2 Private workspace         0%
-[>] M3 Template engine           70%   ← current
-[ ] M4 Voice + transcription     0%
+[>] M3 Template engine           70%   ← in progress
+[>] M4 Voice + transcription     0%   ← starting
 [ ] M5 Structure & auto-fill     0%
 [ ] M6 Review · validate · assign 0%
 [ ] M7 Hardening + demo          0%
 
 Team provisioning (Cowork execution-order §1 — parallel workstream, not a
-numbered milestone): schema + provisioning script + claim wizard + Turnstile
-wiring all built and verified end-to-end locally against real Neon.
+numbered milestone): built and verified end-to-end, both locally and live.
 
 WAITING ON MARCEL:
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
-   until these are set (widget doesn't render, server check passes through).
-🔔 The 8 provisioned session passwords are sitting in this session's
-   scrollback only (never written to a file) — hand them off to the real
-   people before this context is gone, or re-run `npm run provision:team`
-   for a fresh set later (would need the 8 existing placeholder rows
-   cleared first, since email is now uniquely constrained per tenant).
+   until these are set.
+🔔 The 8 provisioned session passwords were handed off already (Marcel
+   confirmed moved/saved) — nothing further needed there.
 
 LAST UPDATE: 2026-08-02 —
 
-**M1 CLOSED — verified for real against the live URL**
-(https://xpath-report.vercel.app, commit c547e92; confirmed independently
-via direct Vercel API check after the relayed claim — `list_projects` had
-a list/index lag, `get_project`/`get_deployment` by ID confirmed READY,
-aliased to xpath-report.vercel.app / www.xpath.report / xpath.report).
-Full login+TOTP HTTP flow 8/8 checks PASS, forged cross-origin request
-rejected (403), audit_log entries confirmed written for real. All 4 M1
-DoD items proven against real data on the live URL. Flagged, not
-blocking: GitHub repo is public not private (R-015, release-checklist.md
-calls for private); AUTH_SECRET is still low-entropy.
+**M1 — fully closed, live, on the actual production-path URL.**
+`AUTH_URL=https://xpath.report` (set, but not DNS-live until M7) was
+overriding `trustHost` for outbound redirects — a real browser walkthrough
+(not scripted HTTP checks, which used `redirect: 'manual'` and never
+followed the Location header) found login redirecting real users off
+`xpath-report.vercel.app` onto the parked `xpath.report` domain mid-flow,
+losing the session with no visible error (R-018). Marcel removed
+`AUTH_URL` from Vercel entirely (Production + Preview) — the correct fix,
+better than pointing it at the preview host, since it now self-corrects
+at M7 with no further change needed. Re-verified live via full browser
+walkthrough: login+TOTP succeeds end to end, host never changes,
+`audit_log` entry confirmed written (DL-019). All 4 M1 DoD items now
+proven on the actual live URL, via an actual browser. Also flagged, not
+blocking: GitHub repo is public not private (R-015); AUTH_SECRET still
+low-entropy.
 
-**M3 — template engine + Breast templates.** Extracted structural logic
-(field names, tiers, controlled vocabulary — never paragraph text, Header
-G3) from the two supplied CAP source files, never committed. Built the
-versioned template engine (`src/lib/templates/types.ts`) and two full
-Phase-1 templates: Breast Invasive Carcinoma (Resection) and Breast
-Biomarker Reporting. A handful of Biomarker "standardized comment"
-options are full authored paragraphs in the source — tagged
-`needsInHouseAuthoring: true` with a short in-house label instead of
-copied text (DL-014, R-012), not clinically usable until authored/
-approved. `/dashboard/templates` renders both as a static structural
-view (no value binding — that's M5).
+**M3 — template engine + Breast templates (unchanged this round).**
+Versioned template engine + two full Phase-1 templates (Breast Invasive
+Resection, Breast Biomarker) derived from the supplied CAP source files,
+structural logic only. `/dashboard/templates` renders both statically —
+value binding is M5.
 
-**Team provisioning (Cowork addendum §1) — built and verified.**
-`mustCompleteSetup` schema gate (same pattern as `totpVerified`);
-`scripts/provision-team.ts` provisioned the 8 real accounts (3
-pathologists, Dr. Ivo, 4 technicians) with strong random session
-passwords, printed once to console, never written to a file (swept the
-working tree afterward to confirm); a 2-step claim wizard (profile +
-password replacement, then real TOTP QR enrollment); Cloudflare Turnstile
-wired on `/sign-in` (inactive pending keys). Added a genuine unique
-constraint on `(tenant_id, email)` — this caught a real collision between
-M1's dev-test seed emails and the provisioning emails, which got renamed
-(`dev-pathologist-a/b@...`) rather than deviating from the spec's exact
-real-account emails.
+**Team provisioning (Cowork addendum §1) — built and verified, twice
+now.** `mustCompleteSetup` schema gate, 8 real accounts provisioned, 2-step
+claim wizard (profile + real TOTP QR enrollment), Turnstile wired
+(inactive pending keys). Walked end to end against real Neon both locally
+and on the live URL. Two real bugs found via actual browser walkthroughs
+this session (not scripted HTTP tests) and fixed: missing CSRF token on
+sign-in (DL-016), stale session email after profile update (DL-017) — on
+top of the AUTH_URL redirect bug above. Three bugs total this session
+that only surfaced because real browsers were used to test real
+user-facing flows, not just HTTP scripts against the API surface
+(R-016/R-018 — logged as a standing lesson for future verification work).
 
-**Two real bugs found via an actual browser walkthrough of the claim
-wizard (not just scripted HTTP tests), both fixed:**
-1. Sign-in had always been missing the CSRF token NextAuth's callback
-   endpoint requires — real users would hit `?error=MissingCSRF`. M1's
-   earlier "verified" claim only worked because the test script manually
-   injected a token the real page never provided. Fixed by switching to
-   a Server Action calling `signIn()` directly, protected by Next.js's
-   built-in Origin-header check instead (DL-016, R-016 — the lesson:
-   scripted API checks aren't sufficient on their own for user-facing
-   pages).
-2. Dashboard header showed the stale placeholder email after Step 1
-   changed it — DB was correct, the JWT cache wasn't refreshed. Fixed via
-   `unstable_update` in `completeProfile` (DL-017).
+`npx tsc --noEmit` and `npm run build` pass throughout. Pushed to `main`
+(`496fba2`) and deployed — confirmed live and correct.
 
-Full flow walked end to end locally against real Neon: placeholder login
-→ blocked from `/dashboard` → Step 1 → Step 2 (real QR, real TOTP code)
-→ dashboard → log out → log back in with the new real email/password →
-straight to `/verify` (not the wizard again) → correct email displayed.
-`account_claimed` audit entry confirmed written.
-
-`npx tsc --noEmit` and `npm run build` pass. Committed locally
-(not pushed yet — per the addendum's own cadence: push at milestone
-gates or when Marcel says so).
+**Next: M4 (voice + transcription).** `OPENAI_API_KEY` and R2 credentials
+are already present in `.env.local` (from earlier in this session) —
+first step is confirming they're also set in Vercel and doing a real
+test call to Whisper before building on top of them, per the execution
+order's own instruction not to just check the env var exists.
