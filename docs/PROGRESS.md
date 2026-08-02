@@ -1,11 +1,11 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓░░░░░ ~48% (you are here → M4 built, blocked on R2 write permission)
+Overall: ▓▓▓▓▓░░░░░ ~52% (you are here → M4 pipeline verified live; pushing)
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
 [ ] M2 Private workspace         0%
 [>] M3 Template engine           70%   ← in progress
-[>] M4 Voice + transcription    60%   ← current, blocked on R2 write permission
+[>] M4 Voice + transcription    85%   ← current, server-side pipeline verified
 [ ] M5 Structure & auto-fill     0%
 [ ] M6 Review · validate · assign 0%
 [ ] M7 Hardening + demo          0%
@@ -14,15 +14,6 @@ Team provisioning (Cowork execution-order §1 — parallel workstream, not a
 numbered milestone): built and verified end-to-end, both locally and live.
 
 WAITING ON MARCEL:
-🔔 R2 API token has read-only permission on `xpath-storage` — `PutObject`
-   fails (403) via presigned URL *and* direct SDK call, while
-   `HeadBucket`/`ListObjectsV2` succeed with the same credentials. Not a
-   code bug (isolated precisely — see R-019). Needs: Cloudflare dashboard
-   → R2 → Manage API Tokens → give the token Object Read & Write on
-   `xpath-storage` (or issue a new token and update `.env.local` +
-   Vercel). This blocks end-to-end M4 testing (upload → transcribe →
-   save) — the code is written and believed correct, just unverified
-   past the upload step.
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
    until these are set.
@@ -83,18 +74,25 @@ permission.**
 - Installing `@aws-sdk/client-s3` pulled in a **critical** transitive
   vulnerability (`fast-xml-parser`) — caught before it shipped, resolved
   via `npm audit fix` (non-breaking), re-verified clean.
-- **Blocked:** R2 write permission (R-019, SIGNAL above). Isolated
-  precisely — `HeadBucket`/`ListObjectsV2` succeed, `PutObject` fails
-  (403) identically via presigned URL and direct SDK call, ruling out a
-  bug in the presigning code or an endpoint/format mismatch. Whisper leg
-  independently confirmed working; only the R2 write leg is unverified
-  past this point.
+- **R-019 resolved.** Marcel edited the R2 API token in place to Object
+  Read & Write (same credentials, no `.env.local`/Vercel changes
+  needed). Re-ran the full pipeline test: presign → upload (200) →
+  server-side download (byte-for-byte match) → Whisper transcription
+  ("colorectal adenocarcinoma, moderately differentiated, margins
+  negative" — accurate) → cleanup. **PASSED end to end against real R2
+  and real OpenAI.**
 - Logged rather than silently built: audio retention/auto-delete policy
   (R-020, needs a cron mechanism not yet built), verbal-PII-in-audio
   residual risk (R-021, procedural mitigation only), week-one FR/accent
   benchmark still needs Dr. Ivo's real voice (R-022, not substitutable
   with synthesized test speech).
+- **Not yet exercised: the actual browser recorder UI with a real
+  microphone.** The pipeline test proves the server-side plumbing
+  (presign/upload/download/transcribe) is correct; it doesn't exercise
+  `MediaRecorder`/`getUserMedia` in a live browser, which isn't
+  practical to test via this session's automation (no real mic input).
+  Someone should click through `/dashboard/dictate` with a real
+  microphone before fully trusting the feature — noted, not assumed
+  equivalent to the pipeline test.
 
-`npx tsc --noEmit` and `npm run build` pass. Committed locally, not
-pushed (mid-milestone, blocked on the R2 SIGNAL — will finish
-verification and push once that's resolved).
+`npx tsc --noEmit` and `npm run build` pass. Pushing and deploying now.

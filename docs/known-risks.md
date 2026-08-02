@@ -114,19 +114,16 @@ Format: R-nnn · risk · current mitigation / status.
   confirmed. Second entry (after R-016) for the same underlying lesson:
   scripted API checks aren't sufficient on their own for user-facing
   flows a real browser drives.
-- **R-019 — OPEN, blocks M4 end-to-end testing.** The R2 API token in
-  `.env.local` (`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`) has read-only
-  permission on the `xpath-storage` bucket. Isolated precisely:
-  `HeadBucket`/`ListObjectsV2` succeed; `PutObject` fails with
-  `AccessDenied` (403) identically via a presigned URL *and* a direct SDK
-  call — ruling out a bug in `src/lib/r2.ts`'s presigning or a URL/
-  endpoint format issue (the endpoint and account ID match, the bucket is
-  reachable). Needs Marcel: in the Cloudflare dashboard, R2 → Manage API
-  Tokens → give this token (or a new one) Object Read & Write permission
-  on `xpath-storage`, then update `.env.local` and Vercel if a new token
-  was issued. `OPENAI_API_KEY`/Whisper transcription is independently
-  confirmed working (real synthesized-speech test, see `docs/PROGRESS.md`
-  M4 prerequisite check) — only the R2 write leg is blocked.
+- **R-019 — RESOLVED.** R2 API token had read-only permission on
+  `xpath-storage`; `PutObject` failed (403) identically via presigned
+  URL and direct SDK call while `HeadBucket`/`ListObjectsV2` succeeded.
+  Marcel edited the token in place to Object Read & Write (same
+  credentials, no `.env.local`/Vercel changes needed). Re-ran the full
+  pipeline test after the fix: presign → upload (200) → server-side
+  download (byte-for-byte match, 267004 bytes) → Whisper transcription
+  ("colorectal adenocarcinoma, moderately differentiated, margins
+  negative" — accurate) → cleanup. PASSED end to end against real R2 and
+  real OpenAI.
 - **R-020 — Audio retention policy not implemented.** Dictation audio in
   R2 has no auto-delete after validation (privacy + cost concern flagged
   in the original roadmap gap list, "In M4"). Building actual scheduled
