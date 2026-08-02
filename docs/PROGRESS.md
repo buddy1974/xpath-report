@@ -1,12 +1,12 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓░░░░ ~58% (you are here → M5 core engine built + verified with real transcripts)
+Overall: ▓▓▓▓▓▓▓░░░ ~68% (you are here → M5 complete: all 6 Phase-1 templates + auto-fill engine)
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
 [ ] M2 Private workspace         0%
-[>] M3 Template engine           70%   ← in progress
+[x] M3 Template engine          100%   ← all 6 Phase-1 templates built
 [x] M4 Voice + transcription    95%   ← pipeline verified live, mic-UI unverified
-[>] M5 Structure & auto-fill    50%   ← current
+[x] M5 Structure & auto-fill    90%   ← engine + all templates verified
 [ ] M6 Review · validate · assign 0%
 [ ] M7 Hardening + demo          0%
 
@@ -35,58 +35,33 @@ WAITING ON MARCEL:
 
 LAST UPDATE: 2026-08-03 —
 
-**M1/M3/M4/team-provisioning: unchanged since last report, all still
-live and verified** (see `docs/change-log.md` for full history —
-login+TOTP live on `xpath-report.vercel.app`, Breast templates built,
-M4 pipeline verified against real R2+OpenAI, 8 real accounts
-provisioned and claimed via the wizard).
+**M1/M3(Breast)/M4/team-provisioning: unchanged since last report, all
+still live and verified** (see `docs/change-log.md` for full history).
 
-**M5 — structure & auto-fill. Core engine built and verified with real
-transcripts + real API calls, not just typechecked:**
-- `src/lib/templates/flatten.ts` — flattens a template's nested
-  sections/fields into addressable dotted paths; this is the fillable
-  surface offered to the AI and validated against.
-- `src/lib/structuring.ts` — transcript → field values, OpenAI or
-  Anthropic per `AI_STRUCTURING_PROVIDER` (Header §8). Every returned
-  value must (1) reference a real field path/option key — invented ones
-  rejected — and (2) come with a verbatim quote that's checked against
-  the actual transcript — ungrounded values rejected (DL-023). This is
-  the concrete, runtime mechanism behind Header G8 ("never fabricate"),
-  not a policy statement.
-- `src/lib/reflex.ts` — HER2 IHC 2+ (Equivocal) → Ventana HER2 Dual-ISH
-  reflex suggestion, advisory only, from the real 38-antibody register
-  (handover §12–13). One rule for M5, as the roadmap specifies ("build
-  first").
-- `src/lib/templates/suggest.ts` — deterministic keyword-overlap
-  template shortlist (DL-025) — pathologist always confirms explicitly,
-  never blind-routed.
-- `/dashboard/structure/[dictationId]` — suggest → confirm → auto-fill
-  → read-only review showing AI-suggested values with their grounding
-  quotes and any reflex suggestions. Shares a renderer
-  (`src/components/template-view.tsx`) with the M3 blank-template view.
-- **Verified with a real transcript and a real OpenAI call** (not
-  synthetic/mocked): "Estrogen receptor is positive, ninety percent...
-  HER2... equivocal, score two plus... Ki-67... twenty five percent."
-  correctly filled ER/PgR/HER2/Ki-67 fields, each grounded with a real
-  quote, and correctly fired the HER2 Dual-ISH reflex suggestion.
-- **Two real gaps found via this testing, one fixed, one logged:**
-  (1) FIXED — "Specify percentage: ___" style options had no separate
-  path for the actual number, only for which option was chosen; "90%"
-  would auto-fill "positive" but silently drop the 90 (DL-024). (2)
-  LOGGED, not fixed — the model can correctly quote real transcript text
-  ("ninety percent") while still picking an adjacent numeric bucket
-  ("91-100%" instead of "81-90%"); grounding-quote validation doesn't
-  catch semantic/numeric miscategorization. Mitigated by design (every
-  AI field shows its quote for the pathologist's mandatory M6 review),
-  not by additional parsing (R-023).
-- **Also logged rather than silently built or assumed:** repeatable
-  blocks (Tumor Characteristics ×5) only auto-fill as a single instance
-  (R-024); Anthropic path authenticates correctly but is blocked by an
-  empty credit balance, unverified end to end (R-025, SIGNAL above).
+**M3/M5 — all 6 Phase-1 templates now built.** Added Colon & Rectum
+(Resection), Prostate (Needle Biopsy — one `TemplateVersion` combining
+CAP's specimen-level + case-level protocol pair, DL-028), Lymphoma
+(Basic), and CUP (no CAP source exists — built from the header's
+generic-fallback-protocol pattern + the real CUP IHC panel from
+`XPATH_handover.md` §13; PAX8 explicitly tagged as an unconfirmed-clone
+open item, not silently included as if confirmed). Built via 4 parallel
+forked agents, each given identical G3-boundary instructions and the
+Breast templates as reference — then independently re-verified, not
+just trusted (DL-027): full-repo typecheck, a duplicate-field-path
+check across all 6 templates (`0` collisions), templateId uniqueness,
+a copied-prose smell test (grep for suspiciously long labels — none
+found), and a manual read of each file's header + a substantive
+section. One schema constraint honestly logged rather than silently
+worked around: `tier` is per-field not per-option, so Lymphoma's
+~100-option diagnosis field (3 of which CAP marks non-core) is modeled
+as a single core field (DL-029).
 
-**Not yet done in M5:** the remaining Phase-1 templates (Colon &
-Rectum, Prostate, Lymphoma, CUP) — CAP source files are available
-locally, same extraction process as Breast. Building next.
+**M5 auto-fill engine verified against a newly-added template too, not
+just Breast** — real transcript, real OpenAI call, against CUP:
+correctly extracted histologic type, all 6 IHC panel results (CK7/
+CK20/CDX2/TTF-1/GATA3/CD45), and the free-text differential
+interpretation field, each with a real grounding quote. Template
+suggestion correctly ranked CUP highest for a CUP-shaped transcript.
 
-`npx tsc --noEmit` and `npm run build` pass. Committing and continuing
-straight into the remaining M5 template work.
+`npx tsc --noEmit` and `npm run build` pass across all 6 templates.
+Committing and continuing into M6 (review, validate, sign-out) next.

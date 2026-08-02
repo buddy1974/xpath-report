@@ -2,6 +2,39 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — Remaining Phase-1 templates built (Colon & Rectum, Prostate, Lymphoma, CUP)
+- Built the last 4 of 6 Phase-1 templates via 4 parallel forked agents
+  (each inherits full conversation context — schema, G3 rules, the
+  Breast templates as the reference pattern — so the raw CAP source
+  text stayed out of the main thread): `colorectal-resection.ts`,
+  `prostate-needle-biopsy.ts`, `lymphoma-basic.ts`, `cup.ts`.
+- Prostate combines CAP's specimen-level + case-level protocol pair
+  into one `TemplateVersion` (DL-028) — a real needle biopsy report
+  synthesizes both. CUP has no CAP source (none exists); built from
+  `PROJECT_HEADER.md` §5's generic-fallback-protocol pattern + the real
+  CUP IHC panel from `XPATH_handover.md` §13, with PAX8 explicitly
+  tagged as an unconfirmed-clone open item rather than silently
+  included as confirmed.
+- Did not just trust the forked agents' self-reports — re-verified
+  independently: full-repo `npx tsc --noEmit`, a duplicate-field-path
+  check across all 6 registered templates via `flattenTemplate` (0
+  collisions found), templateId uniqueness, a grep for suspiciously
+  long label strings as a copied-prose smell test (none found), and a
+  manual read of each file's header comment plus one substantive
+  section (Colon & Rectum's pTNM, Lymphoma's flagged tier
+  simplification, Prostate's shared-option helper, CUP in full).
+- Logged, not silently smoothed over: Lymphoma's "Final Integrated
+  Diagnosis" field has 3 of ~100 options CAP marks non-core while the
+  template engine's `tier` is per-field not per-option — modeled as a
+  single core field, documented in the file's own header (DL-029).
+- Wired all 6 into `src/lib/templates/index.ts`. Verified the M5
+  auto-fill engine against a newly-added template (CUP), not just
+  Breast — real transcript, real OpenAI call: correctly extracted
+  histologic type, all 6 IHC panel results, and a free-text
+  interpretation field, each with a real grounding quote; template
+  suggestion correctly ranked CUP highest for a CUP-shaped transcript.
+- `npx tsc --noEmit` and `npm run build` pass across all 6 templates.
+
 ## 2026-08-03 — M5 core engine built and verified (structure & auto-fill)
 - Built the transcript→template structuring engine: `lib/templates/flatten.ts`
   (addressable field paths), `lib/structuring.ts` (OpenAI/Anthropic per

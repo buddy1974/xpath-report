@@ -185,3 +185,31 @@ Format: DL-nnn · decision · rationale.
   separate from the structured interpretation of it (`fieldValues`,
   `aiFieldPaths`, `quotes`, `reflexSuggestions` on the draft item) —
   both stay private-workspace data, not audited, until M6 sign-out.
+- **DL-027 — Remaining Phase-1 templates (Colon & Rectum, Prostate
+  Needle Biopsy, Lymphoma Basic) extracted via parallel forked agents,
+  each given the exact same G3 boundary instructions and the Breast
+  templates as a reference pattern — then independently re-verified
+  (not just trusted) before wiring up: full-repo typecheck, a duplicate-
+  field-path check across all 6 templates via `flattenTemplate`
+  (`0` collisions), templateId uniqueness, a grep for suspiciously long
+  label strings (a copied-prose smell test), and a manual read of each
+  file's header comment plus one substantive section.** CUP was built
+  the same way but from the header's generic-fallback-protocol pattern
+  instead of a CAP source, since none exists for CUP.
+- **DL-028 — Prostate Needle Biopsy is modeled as ONE `TemplateVersion`
+  combining CAP's specimen-level and case-level protocol pair**, not two
+  separate templates — a real needle biopsy report synthesizes both
+  levels into one document. Specimen-level findings are a repeatable
+  block (`max: 24`, one per positive core/zone); case-level fields
+  summarize across all of them. A shared 22-zone location option list is
+  factored into one helper function, reused across both levels, rather
+  than duplicated three times.
+- **DL-029 — `TemplateField.tier` is per-field, not per-option (existing
+  M3 schema constraint) — Lymphoma Basic's "Final Integrated Diagnosis"
+  field has 3 of its ~100 options marked non-core by CAP while the rest
+  are core.** Modeled as a single `core` field (matching the large
+  majority of its options) rather than changing the schema to support
+  per-option tiers for one field in one template. Logged explicitly in
+  the file's own header comment, not silently smoothed over — worth
+  revisiting only if per-option tiering turns out to matter for more
+  templates later.
