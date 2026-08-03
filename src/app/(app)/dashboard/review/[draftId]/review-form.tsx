@@ -301,15 +301,22 @@ export function ReviewForm({
 
   return (
     <div className="max-w-3xl pb-28">
-      <div className="sticky top-0 z-30 -mx-4 px-4 py-2 mb-4 bg-white/95 backdrop-blur border-b border-neutral-200">
-        <p className="text-xs font-semibold text-petrol">{progressLabel}</p>
+      <div className="sticky top-0 z-30 -mx-4 px-4 py-2.5 mb-4 bg-white/95 backdrop-blur border-b border-neutral-200">
+        {remaining === 0 ? (
+          <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-mint">
+            <span className="w-4 h-4 rounded-full bg-mint text-white flex items-center justify-center text-[10px]">✓</span>
+            {progressLabel}
+          </p>
+        ) : (
+          <p className="text-xs font-semibold text-petrol">{progressLabel}</p>
+        )}
       </div>
 
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">
+        <h1 className="text-3xl font-bold tracking-tight">
           {t(STRINGS.reviewHeadingPrefix, locale)} {templateTitle}
         </h1>
-        <p className="text-neutral-600 mt-1 text-sm">{t(STRINGS.reviewBody, locale)}</p>
+        <p className="text-neutral-600 mt-1.5 text-sm">{t(STRINGS.reviewBody, locale)}</p>
         <div className="mt-3">
           <PrivacyIndicator locale={locale} />
         </div>
@@ -317,7 +324,7 @@ export function ReviewForm({
           <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{errorText}</p>
         )}
         {saved && (
-          <p className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+          <p className="mt-3 text-sm text-mint bg-mint/10 border border-mint/25 rounded-lg px-3 py-2 font-medium">
             {t(STRINGS.savedMessage, locale)}
           </p>
         )}

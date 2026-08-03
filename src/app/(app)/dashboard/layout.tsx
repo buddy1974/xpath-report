@@ -26,28 +26,28 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="min-h-screen bg-neutral-50">
       <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/85 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-            <span className="w-7 h-7 rounded-md bg-gradient-to-br from-eosin to-hema shadow-sm" />
-            <span className="font-bold tracking-tight">X-PATH</span>
+          <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-eosin to-hema shadow-sm" />
+            <span className="font-bold tracking-tight text-[15px]">X-PATH</span>
           </Link>
 
           {role === "pathologist" && (
             <nav className="flex items-center gap-1 text-sm">
               <Link
                 href="/dashboard"
-                className="px-3 py-1.5 rounded-full font-medium text-petrol hover:bg-petrol/5 transition-colors"
+                className="min-h-[40px] flex items-center px-3.5 rounded-full font-semibold text-petrol bg-petrol/8 hover:bg-petrol/12 transition-colors"
               >
                 {t(STRINGS.navDictateTitle, locale)}
               </Link>
               <Link
                 href="/dashboard/templates"
-                className="px-3 py-1.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
+                className="min-h-[40px] flex items-center px-3.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
               >
                 {t(STRINGS.navTemplatesTitle, locale)}
               </Link>
               <Link
                 href="/dashboard/archive"
-                className="px-3 py-1.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
+                className="min-h-[40px] flex items-center px-3.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
               >
                 {t(STRINGS.navArchiveTitle, locale)}
               </Link>
@@ -58,7 +58,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <nav className="flex items-center gap-1 text-sm">
               <Link
                 href="/dashboard/templates"
-                className="px-3 py-1.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
+                className="min-h-[40px] flex items-center px-3.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
               >
                 {t(STRINGS.navTemplatesTitle, locale)}
               </Link>
@@ -68,7 +68,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <span className="hidden sm:inline ml-auto text-xs text-neutral-500 truncate max-w-[14rem]">
             {session.user.email}
           </span>
-          <span className="text-xs text-neutral-500 sm:ml-0 ml-auto">{roleLabel}</span>
+          <span className="text-xs text-neutral-500 sm:ml-0 ml-auto bg-neutral-100 rounded-full px-2.5 py-1 font-medium">
+            {roleLabel}
+          </span>
           <div className="flex items-center gap-1 text-xs">
             <form action={setLocaleAction.bind(null, "en", "/dashboard")}>
               <button className={locale === "en" ? "font-bold text-petrol" : "text-neutral-400 hover:text-petrol"}>
@@ -89,7 +91,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               await signOut({ redirectTo: "/sign-in" });
             }}
           >
-            <button className="text-xs font-semibold text-petrol underline underline-offset-2">
+            <button className="min-h-[40px] px-3 rounded-full text-xs font-semibold text-petrol border border-petrol/25 hover:bg-petrol/5 transition-colors">
               {t(STRINGS.signOut, locale)}
             </button>
           </form>

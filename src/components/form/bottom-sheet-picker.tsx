@@ -102,7 +102,7 @@ export function BottomSheetPicker({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="w-full rounded-lg bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-200 transition-colors min-h-[44px]"
+                className="w-full rounded-lg border border-petrol text-petrol px-4 py-2.5 text-sm font-semibold hover:bg-petrol/5 transition-colors min-h-[44px]"
               >
                 {t(STRINGS.doneButton, locale)}
               </button>

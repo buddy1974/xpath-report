@@ -25,21 +25,25 @@ export function AccordionSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+    <section className="rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-3 px-6 py-4 text-left min-h-[44px]"
+        className="w-full flex items-center justify-between gap-3 px-6 py-4 text-left min-h-[44px] hover:bg-neutral-50/60 transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
           {complete && (
-            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-petrol text-white text-xs flex items-center justify-center">
+            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-mint text-white text-xs flex items-center justify-center">
               ✓
             </span>
           )}
           <div className="min-w-0">
             <h2 className="text-lg font-semibold uppercase tracking-wide text-petrol">{title}</h2>
-            {!open && summary && <p className="text-sm text-neutral-500 truncate mt-0.5">{summary}</p>}
+            {!open && summary && (
+              <p className="text-sm text-neutral-500 truncate mt-0.5">
+                <span className="text-mint">✓</span> {summary}
+              </p>
+            )}
           </div>
         </div>
         <span className={`text-neutral-400 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`}>▾</span>
