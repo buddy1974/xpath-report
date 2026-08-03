@@ -434,6 +434,7 @@ export function ReviewForm({
               <button
                 type="submit"
                 formAction={saveAction}
+                formNoValidate
                 className="rounded-lg border border-petrol text-petrol px-4 py-2 text-sm font-semibold hover:bg-petrol/5 transition-colors min-h-[44px]"
               >
                 {t(STRINGS.saveChanges, locale)}
