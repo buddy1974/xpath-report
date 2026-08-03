@@ -2,6 +2,39 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — Two production bugs found and fixed: broken TOTP dead-end, broken real onboarding (DL-039, DL-040)
+- Investigating a report that DL-038 wasn't working, found and fixed a
+  real (if narrow) bug: `/verify` dead-ended any account with no active
+  TOTP secret at a code box with nothing to scan. Fixed by showing the
+  same QR-enrollment UI `claim-account` uses when `totpEnabled` is false.
+- The first fix attempt (a Server Action) crashed live in production.
+  Root-caused via Vercel's actual runtime logs, not guessed: the
+  sign-in → middleware-redirect chain leaves the browser's address bar
+  on `/dashboard` even when different content renders, so the Server
+  Action's implicit POST target was wrong and middleware redirecting it
+  broke the Server Action protocol. Fixed properly with a Route Handler
+  (`/api/auth/enroll-totp`, outside `middleware.ts`'s matcher) — same
+  pattern `/api/auth/verify-totp` already used. Live-verified with a
+  disposable dev-fixture account, not `dev-pathologist-a`.
+- Deliberately tested whether the same bug could hit real accounts: yes.
+  `claim-account`'s onboarding Server Actions (`completeProfile`,
+  `confirmEnrollment`) had the identical bug, live in production, for
+  every not-yet-claimed real account — confirmed with a disposable
+  throwaway account, not one of the 8 real provisioned identities.
+  Flagged for Marcel before fixing (out of original scope, touches real
+  staff's onboarding); confirmed, fixed with the same Route-Handler
+  pattern (`/api/auth/claim-profile`, `/api/auth/claim-enroll`),
+  live-verified end to end with a second throwaway account (Step 1 →
+  Step 2 QR → dashboard, no crash).
+- Also re-confirmed DL-038 (TOTP-off for `dev-administrator`) still works
+  after all these deploys — the original "still hitting TOTP" report was
+  most likely a stale pre-fix session cookie, not a regression.
+- Open item: whether any of the 8 real accounts hit the onboarding bug
+  before today's fix hasn't been checked — see R-033.
+- `npx tsc --noEmit` and `npm run build` passed at every step; nothing
+  reported "done" without a live browser re-verification against
+  production.
+
 ## 2026-08-03 — TOTP removed for dev-administrator account (Marcel's explicit call)
 - Marcel's relayed instruction named two different seeded accounts as if
   one; flagged and confirmed the actual target with him before touching

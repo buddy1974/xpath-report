@@ -410,9 +410,9 @@ Format: DL-nnn · decision · rationale.
   a fresh sign-in re-evaluates the exemption). Re-confirmed dev-
   administrator live again after this fix: still zero `/verify` redirect,
   straight to `/dashboard`.
-- **DL-040 — found while testing DL-039, NOT YET FIXED: the real
-  onboarding flow (`claim-account`'s Server Actions) has the identical
-  bug, live in production, and blocks first-time login for every
+- **DL-040 — found while testing DL-039, FIXED and live-verified: the real
+  onboarding flow (`claim-account`'s Server Actions) had the identical
+  bug, live in production, blocking first-time login for every
   not-yet-claimed real account.** Traced this deliberately after DL-039's
   root cause turned out to be generic (any Server Action reached via the
   sign-in → middleware-redirect chain, not something specific to
@@ -434,8 +434,21 @@ Format: DL-nnn · decision · rationale.
   claimed successfully (if any did, they either navigated to
   `/claim-account` directly rather than via the sign-in redirect chain,
   or got lucky with a browser that updates history differently — not
-  verified either way). Not fixed in this session: the same Route-Handler
-  conversion that fixed DL-039 would fix this too, but it touches the
-  primary onboarding path for real staff (not a dev-only account) and is
-  well outside this session's original scope (DL-038's TOTP removal) —
-  flagged for Marcel's go-ahead rather than deployed unilaterally.
+  verified either way). Flagged for Marcel's go-ahead rather than fixed
+  unilaterally, since it touches the primary onboarding path for real
+  staff and was well outside this session's original scope (DL-038's
+  TOTP removal) — **Marcel confirmed, fixed the same session.**
+  Converted `completeProfile`/`confirmEnrollment` to Route Handlers,
+  `src/app/api/auth/claim-profile/route.ts` and `src/app/api/auth/
+  claim-enroll/route.ts` (same pattern as DL-039: fixed URLs, outside
+  `middleware.ts`'s matcher). Deleted the broken `claim-account/
+  actions.ts`. `npx tsc --noEmit` and `npm run build` both passed.
+  **Live-verified end to end**, not just built: a second disposable
+  throwaway account (`_test-throwaway2@xpath.report`, created and deleted
+  within this session), signed in, completed Step 1 (profile + password),
+  landed on Step 2 (QR), computed a valid code (`otplib`), submitted,
+  reached `/dashboard` as a real pathologist session — no crash at any
+  step. Still open: whether any of the 8 real provisioned accounts hit
+  the bug before this fix landed has not been checked against `docs/
+  PROGRESS.md`/team communication — worth confirming with Marcel/Dr. Ivo
+  whether anyone needs to retry their claim.
