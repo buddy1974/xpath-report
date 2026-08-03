@@ -33,7 +33,30 @@ WAITING ON MARCEL:
    verified end to end with a real response. Not blocking — OpenAI (the
    default) is fully verified.
 
-LAST UPDATE: 2026-08-03 —
+LAST UPDATE: 2026-08-04 —
+
+**Post-M7 UX polish: review-form redesign (DL-045).** A "UX North-Star"
+design-bible document arrived mid-session with a later §8 addendum
+specifically redesigning the long CAP-derived form rendering. Checked its
+own claims before building (it cites nonexistent files and a wrong "M2"
+definition) and saved it as `docs/ux-north-star.md` — reference only,
+sections 0-7 not actioned. §8 alone confirmed and built: the review/sign
+form now uses collapsible per-section accordions, a searchable bottom-
+sheet picker for long single-select fields (Histologic Type, Tumor Site,
+etc.), a bottom-sheet multi-select, "…(specify)" fields that reveal only
+after their parent option is chosen, an optional-fields toggle, and a
+sticky progress/action bar — presentation only, no change to how data is
+collected or submitted. Deliberately left out and logged (R-034):
+CONDITIONAL-field trigger-based hiding and danger-zone urgency banners,
+both of which need real data-modeling/design work beyond this pass.
+Found and fixed a real bug during live verification: "Save changes" was
+silently blocked by the Sign card's unrelated required accession field
+(shared `<form>`, native browser validation) — fixed with
+`formNoValidate`, re-verified against the database that saves now
+actually persist. Live-verified end to end with a real dictation run
+through the real structuring pipeline.
+
+
 
 **M1/M3(Breast)/M4/team-provisioning: unchanged since last report, all
 still live and verified** (see `docs/change-log.md` for full history).

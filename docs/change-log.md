@@ -2,6 +2,52 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — Review-form redesign: accordions, bottom-sheet pickers (DL-045)
+- Relayed as part of a large "UX North-Star" design-bible document with a
+  later §8 addendum specifically redesigning the long CAP-derived forms.
+  Checked the document's own claims before building anything: it cites
+  files that don't exist in this repo and redefines "M2" in a way that
+  conflicts with the real roadmap and with where the project actually
+  stands (M7). Saved the full document as `docs/ux-north-star.md` —
+  reference only; its sections 0-7 (bottom nav, sharing, demo pathologist,
+  etc.) are explicitly not actioned. Confirmed with Marcel via a direct
+  question that §8 alone should be built now, as its own scoped task.
+- Rewrote `review/[draftId]`'s form as a client component: CAP sections
+  collapse to a one-line summary once complete and stay open while a
+  CORE field is missing; single-select fields with more than 5 options
+  (Histologic Type, Tumor Site, Procedure, etc.) open a searchable
+  bottom-sheet picker instead of a long radio wall; multi-select fields
+  use the same sheet pattern with chip display; "…(specify)" and "cannot
+  be determined, explain" companion fields reveal only once their parent
+  option is actually chosen; NON-CORE fields collapse behind a "Show
+  optional fields" toggle; a sticky progress line and action bar stay
+  reachable while scrolling. The underlying `<form>`/Server Action
+  submission mechanism is unchanged — this is presentation only.
+- Deliberately left out and logged as R-034, not silently dropped:
+  CONDITIONAL-field trigger-based hiding (needs new per-field trigger
+  metadata that doesn't exist in the template data model yet — a real
+  data-modeling task, and guessing at it heuristically risks hiding a
+  field a pathologist actually needs) and danger-zone urgency banners
+  (no pathologist-facing "mark as urgent" mechanism exists; auto-
+  inferring urgency from field values would be an uncredentialed
+  clinical judgment, Header G1/G8).
+- Found and fixed a real bug during live verification: "Save changes"
+  appeared to work but a direct DB read proved it silently did nothing,
+  because it shared one `<form>` with the Sign card's `required`
+  accession field — the browser's native validation blocked every save
+  whenever accession was empty, with no visible error. Fixed with
+  `formNoValidate` on the Save button only; re-verified via a direct DB
+  read that edits now persist.
+- Live-verified end to end: seeded a real Colon & Rectum dictation
+  (chosen to exercise the 15+-option Histologic Type and 11-option Tumor
+  Site fields §8.9 names directly), ran it through the real template-
+  suggestion and OpenAI structuring pipeline, and exercised every new
+  interaction in the real browser — search-filtered picker selection,
+  specify-reveal appearing/disappearing, multi-select chips, optional-
+  fields toggle, and a Save that now actually persists (confirmed
+  against the database, not just the UI). Test data deleted afterward.
+- `npx tsc --noEmit` and `npm run build` passed before and after the fix.
+
 ## 2026-08-03 — Two production bugs found and fixed: broken TOTP dead-end, broken real onboarding (DL-039, DL-040)
 - Investigating a report that DL-038 wasn't working, found and fixed a
   real (if narrow) bug: `/verify` dead-ended any account with no active
