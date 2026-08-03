@@ -349,3 +349,93 @@ Format: DL-nnn · decision · rationale.
   with no `/verify` redirect and no TOTP prompt at any point. Confirmed
   `dev-administrator@xpath.report` / role `administrator` in the
   authenticated page itself, not just a redirect target.
+- **DL-039 — `/verify` no longer dead-ends an account that has no active
+  TOTP secret; it shows the QR enrollment step instead of a code box with
+  nothing to scan.** Found while investigating a report that
+  `dev-administrator` was "stuck" on the 2FA screen: before DL-038 landed,
+  `scripts/remove-totp-dev-administrator.ts` had already cleared that
+  account's `totpEnabled`/secret in the DB. Anyone who reached `/verify`
+  in that window (or with a stale pre-DL-038 session cookie — JWTs don't
+  retroactively pick up a code change; only a fresh sign-in does) hit
+  `/api/auth/verify-totp`'s existing `not_enrolled` guard, which correctly
+  refused the code but left them on the same empty code box with no path
+  forward. Traced whether real pathologist accounts can reach this state
+  through normal use: **they cannot** — the claim wizard (`claim-account/
+  actions.ts:confirmEnrollment`) only flips `totpEnabled: true` together
+  with `mustCompleteSetup: false`, in the same transaction, so a claimed
+  account is never left with `mustCompleteSetup: false` and `totpEnabled:
+  false` except via manual DB intervention (exactly what the DL-038 script
+  did). Fixed anyway, defensively, since that intervention is a real
+  admin action that can recur: `src/app/(auth)/verify/page.tsx` now checks
+  `totpEnabled` server-side and renders the same QR-enrollment UI
+  `claim-account` uses (generating/reusing `totpSecretEncrypted`) instead
+  of the plain code form.
+  **First implementation attempt failed live, root-caused via Vercel
+  runtime logs, not guessed:** the confirm step was originally a Server
+  Action (`<form action={confirmVerifyEnrollment}>`), mirroring
+  `claim-account`'s pattern. Live-tested against production with
+  `dev-pathologist-b@xpath.report` (a dev/test fixture, not the
+  DL-037-protected `dev-pathologist-a` identity) deliberately put into the
+  broken state — signing in reached the new QR screen correctly, but
+  submitting the code crashed the browser with "Application error: a
+  client-side exception has occurred" / "An unexpected response was
+  received from the server." `mcp__Vercel__get_runtime_logs` showed the
+  actual request: `POST /dashboard 302 [edge-middleware]` — the form
+  submitted to `/dashboard`, not `/verify`, because the browser's address
+  bar never actually left `/dashboard` through the sign-in → middleware-
+  redirect chain (`signInAction` redirects to `/dashboard`; middleware's
+  `authorized()` then redirects that to `/verify`, but the client router
+  doesn't update history through a redirect-of-a-redirect), so the Server
+  Action's implicit POST target was still `/dashboard`. Middleware then
+  redirected THAT POST too — and a middleware redirect is not a valid
+  Server Action protocol response, which is what crashed the client. DB
+  confirmed nothing had run server-side (`totpEnabled` still `false`).
+  **Fixed** by converting the confirm step to a Route Handler,
+  `src/app/api/auth/enroll-totp/route.ts` (POST to a fixed URL, same-
+  origin CSRF check, same shape as the already-proven `/api/auth/
+  verify-totp`) — `middleware.ts`'s matcher does not cover `/api/auth/*`,
+  so this whole class of bug doesn't apply there. Deleted the broken
+  `src/app/(auth)/verify/actions.ts`. Re-verified live end to end with the
+  same `dev-pathologist-b` account: signed in, reached the QR screen,
+  computed a valid code from the displayed secret (`otplib`), submitted
+  it, reached `/dashboard` with `totpEnabled` now `true` — confirmed in
+  the DB, not just the redirect. `npx tsc --noEmit` and `npm run build`
+  both passed.
+  **This is also why DL-038's live-verification worked while the earlier,
+  now-superseded report of `dev-administrator` "still hitting the TOTP
+  screen" didn't reproduce here**: that account is in `TOTP_EXEMPT_EMAILS`
+  and never reaches `/verify` at all on a fresh sign-in — the most likely
+  explanation for that report is a stale pre-DL-038 session cookie (a JWT
+  issued before the fix landed keeps `totpVerified: false` baked in; only
+  a fresh sign-in re-evaluates the exemption). Re-confirmed dev-
+  administrator live again after this fix: still zero `/verify` redirect,
+  straight to `/dashboard`.
+- **DL-040 — found while testing DL-039, NOT YET FIXED: the real
+  onboarding flow (`claim-account`'s Server Actions) has the identical
+  bug, live in production, and blocks first-time login for every
+  not-yet-claimed real account.** Traced this deliberately after DL-039's
+  root cause turned out to be generic (any Server Action reached via the
+  sign-in → middleware-redirect chain, not something specific to
+  `/verify`) — tested with a disposable throwaway account
+  (`_test-throwaway@xpath.report`, created and deleted within this
+  session, NOT one of the 8 real provisioned accounts) in the exact state
+  a freshly provisioned real account starts in (`mustCompleteSetup:
+  true`). Signed in, correctly reached claim-wizard Step 1, filled it out,
+  submitted — same crash: "Application error: a client-side exception."
+  DB confirmed `completeProfile` never ran (`profileCompletedAt` still
+  `null`, placeholder email unchanged) — same root cause as DL-039,
+  unfixed here: `claim-account/actions.ts`'s `completeProfile` and
+  `confirmEnrollment` are Server Actions reached through the same sign-in
+  → middleware-redirect chain, so they inherit the same bug. **Every one
+  of the 8 real accounts provisioned by `scripts/provision-team.ts`
+  (`pathologist1-3@`, `ivo@`, `technician1-4@`) will hit this on their
+  first claim attempt if still unclaimed** — has not been checked against
+  `docs/PROGRESS.md`/team communication for whether any have already
+  claimed successfully (if any did, they either navigated to
+  `/claim-account` directly rather than via the sign-in redirect chain,
+  or got lucky with a browser that updates history differently — not
+  verified either way). Not fixed in this session: the same Route-Handler
+  conversion that fixed DL-039 would fix this too, but it touches the
+  primary onboarding path for real staff (not a dev-only account) and is
+  well outside this session's original scope (DL-038's TOTP removal) —
+  flagged for Marcel's go-ahead rather than deployed unilaterally.

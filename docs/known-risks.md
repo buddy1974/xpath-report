@@ -259,3 +259,25 @@ Format: R-nnn · risk · current mitigation / status.
   instead of fixed `h-14`, and hiding the email address below the `sm:`
   breakpoint. Not verified with a real screenshot — a genuine gap,
   worth a real device/browser check before the Dr. Ivo demo.
+- **R-033 — OPEN, HIGH SEVERITY: the real onboarding flow
+  (`claim-account`'s Server Actions) crashes for every not-yet-claimed
+  real account.** Discovered live in production (see `docs/decision-log.md`
+  DL-040) via a disposable throwaway test account, not one of the 8 real
+  provisioned identities. Root cause: `completeProfile`/`confirmEnrollment`
+  are Server Actions whose implicit POST target is the browser's current
+  address-bar URL — after the sign-in to middleware-redirect chain
+  (`signInAction` redirects to `/dashboard`; middleware redirects that to
+  `/claim-account`), the address bar never actually updates off
+  `/dashboard`, so the form posts there instead. Middleware then redirects
+  that POST too, and a middleware redirect is not a valid Server Action
+  protocol response — the client crashes with "Application error: a
+  client-side exception," and the DB write never happens (confirmed:
+  `profileCompletedAt` stays `null`). Every one of the 8 real accounts
+  from `scripts/provision-team.ts` will hit this on first claim attempt if
+  still unclaimed — not yet cross-checked against team communication for
+  whether anyone already claimed successfully. DL-039 fixed the identical
+  bug in `/verify` by converting its Server Action to a Route Handler
+  (`/api/auth/enroll-totp`, outside middleware's matcher); the same fix
+  would apply to `claim-account`, but it touches the primary onboarding
+  path for real staff and is outside this session's original scope — not
+  fixed yet, flagged for Marcel's go-ahead.

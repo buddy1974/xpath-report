@@ -9,7 +9,6 @@ import { encrypt, decrypt } from "@/lib/crypto";
 import { TOTP_LOCKOUT_MINUTES } from "@/lib/totp-policy";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
-import { confirmVerifyEnrollment } from "./actions";
 
 export default async function VerifyPage({
   searchParams,
@@ -66,7 +65,7 @@ export default async function VerifyPage({
               {error}
             </p>
           )}
-          <form action={confirmVerifyEnrollment} className="space-y-4">
+          <form action="/api/auth/enroll-totp" method="post" className="space-y-4">
             <input
               name="code"
               inputMode="numeric"
