@@ -452,3 +452,21 @@ Format: DL-nnn · decision · rationale.
   the bug before this fix landed has not been checked against `docs/
   PROGRESS.md`/team communication — worth confirming with Marcel/Dr. Ivo
   whether anyone needs to retry their claim.
+- **DL-041 — `dev-administrator@xpath.report`'s password set to Marcel's
+  own chosen value, on his explicit, direct instruction — same
+  memorability-over-entropy precedent DL-037 already established for
+  this exact dev-only admin login, not a pattern for real accounts.**
+  Context: he could sign in on his laptop with the password this session
+  had generated for him (`scripts/reset-dev-administrator-password.ts`,
+  DL-038's live-verification), but rejected it on his iPhone — almost
+  certainly a manual-retype error against an unmemorable random string
+  (confirmed the account/hash were otherwise fine before this change: DB
+  check showed `isActive: true`, and the generated password still matched
+  the stored hash). He asked for his own password instead of another
+  generated one; honored directly, without re-litigating the
+  already-established DL-037 precedent for this account.
+  `scripts/set-dev-administrator-password.ts` — one row, matched by
+  email. Value not repeated in this log or in chat prose (Marcel chose
+  and typed it himself). Live-verified: signed in with email + his
+  password only, no `/verify` redirect, landed on `/dashboard` as
+  `administrator`.
