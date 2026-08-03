@@ -507,3 +507,80 @@ Format: DL-nnn · decision · rationale.
   entire section is absent — zero pathologist-visible surface, in
   either EN or FR locale. `npx tsc --noEmit` and `npm run build` both
   passed.
+- **DL-043 — Dashboard UX correction: capture-first landing, templates
+  grouped by category, visual pass — presentation/navigation only.**
+  Relayed via Cowork, citing the header's own mission statement (the
+  core loop — capture → transcribe → suggest → auto-fill → review →
+  sign — is "the first thing we prove and the first thing we show").
+  Reasonable and unambiguous; no factual mismatch to flag, unlike prior
+  relayed requests this session. **What changed:** `/dashboard` now
+  renders the capture/dictate UI directly for the `pathologist` role
+  instead of a template-list index (`/dashboard/dictate` redirects
+  there to avoid a duplicate route); a new
+  `src/app/(app)/dashboard/layout.tsx` gives every `/dashboard/*` page
+  a single shared header+nav (previously duplicated per-page, and
+  entirely absent on `archive`/`templates`); `TemplateVersion` gained a
+  `category` field (populated in all 6 template data files) driving
+  templates-library grouping via native `<details>/<summary>` — no
+  hardcoded UI mapping, scales as templates are added; elevated card
+  styling (rounded-2xl, shadow-sm, hover states) across
+  dashboard/templates/structure/review/archive, using only the existing
+  petrol/hema/eosin palette. No auth/structuring/PDF/reflex logic
+  touched — confirmed by `git diff --stat` before committing. `npx tsc
+  --noEmit` and `npm run build` passed.
+  **A later relayed message claimed this work "wasn't built"** (cited
+  screenshots showing a flat, ungrouped templates list). Investigated
+  before either arguing or rebuilding: signed in fresh as
+  `dev-administrator`, captured real screenshots — the shared nav
+  rendered, and `/dashboard/templates` grouped correctly into 5
+  categories (Breast: 2, Colorectal: 1, Prostate: 1,
+  Lymphoma/Hematologic: 1, CUP: 1) with the intended styling. The
+  specific claim didn't match the live state at time of re-check —
+  most likely stale screenshots taken before the deploy propagated.
+  Reported this with evidence rather than either accepting or
+  dismissing the claim outright.
+- **DL-044 — Guided-experience layer: onboarding checklist, contextual
+  help, richer template library, admin visual pass.** Relayed via
+  Cowork as a follow-up once DL-043 was confirmed live — legitimate
+  continuation, not scope creep: "admin is the plainest screen" and
+  "no guidance anywhere" were fair observations even though DL-043
+  itself had shipped correctly. Stayed inside G1/G8 throughout: help
+  copy describes the workflow, never claims X-PATH diagnoses or
+  interprets; the "why this template was suggested" reasoning uses
+  `suggest.ts`'s real matched keywords (function now returns
+  `matchedWords`, not just a score) — never fabricated reasoning; each
+  template's new `blurb`/`panelPreview` fields are either in-house
+  one-line descriptions or pulled directly from that template's own
+  CORE fields (breast biomarker: ER/PgR/HER2/Ki-67; CUP: its 7-marker
+  IHC panel; lymphoma: its Special Studies categories) — nothing
+  invented. One correction made silently in the build: the requested
+  sign/validate copy ("you can add an addendum") would have been
+  false — R-027 already documents that no amendment path exists yet —
+  so the existing accurate wording ("an amendment would be a new
+  version — not yet built") was kept as-is rather than replaced.
+  **What was built:** dismissible-but-reachable onboarding checklist
+  (`src/components/onboarding-checklist.tsx`, localStorage-only state,
+  reopens via a new "?" button in the nav,
+  `src/components/help-button.tsx`) on the pathologist capture screen;
+  a one-line capture prompt above the recorder; grounding quotes
+  upgraded from subtle italic text to a visible "AI found this in your
+  transcript" badge, and threaded into the review/edit screen where it
+  had never been rendered at all before; Archive's empty state gained
+  an explanation + primary CTA; admin dashboard got an icon + honest
+  "here's what's actually built" copy (no fabricated stats). No new
+  DB tables, API routes, or auth/structuring/PDF/reflex changes — copy,
+  presentation, and client-side-only logic. `npx tsc --noEmit` and
+  `npm run build` passed.
+  **Live-verified end to end**, not just built: fresh browser tab,
+  localStorage cleared, signed in as `dev-pathologist-b` — checklist
+  appeared with all 4 steps, capture prompt visible, dismiss worked,
+  reopening via the "?" button worked. Archive (genuinely empty for
+  this account) showed the new empty state with working CTA. Drove a
+  real dictation through the full pipeline with a fresh test dictation
+  (real OpenAI structuring call): the template-suggestion screen showed
+  real matched-keyword pills ("Suggested because your dictation
+  mentions: breast, invasive, carcinoma, resection, specimen, tumor,
+  margins, special") correctly ranking Breast — Invasive Carcinoma
+  highest; the new grounding-quote badge rendered on both the
+  structure view and — the actual gap being fixed — the review/edit
+  screen. Test dictation/draft deleted afterward.
