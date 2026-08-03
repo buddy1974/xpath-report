@@ -8,7 +8,6 @@ import { users } from "@/db/schema";
 import { encrypt, decrypt } from "@/lib/crypto";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
-import { completeProfile, confirmEnrollment } from "./actions";
 
 export default async function ClaimAccountPage({
   searchParams,
@@ -43,7 +42,7 @@ export default async function ClaimAccountPage({
   if (!user.profileCompletedAt) {
     return (
       <main className="min-h-screen flex items-center justify-center p-8">
-        <form action={completeProfile} className="w-full max-w-sm space-y-4">
+        <form action="/api/auth/claim-profile" method="post" className="w-full max-w-sm space-y-4">
           <div>
             <p className="text-xs font-bold tracking-widest uppercase text-petrol">{t(STRINGS.step1Of2, locale)}</p>
             <h2 className="text-xl font-semibold mt-1">{t(STRINGS.completeYourProfile, locale)}</h2>
@@ -113,7 +112,7 @@ export default async function ClaimAccountPage({
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>
         )}
-        <form action={confirmEnrollment} className="space-y-4">
+        <form action="/api/auth/claim-enroll" method="post" className="space-y-4">
           <input
             name="code"
             inputMode="numeric"

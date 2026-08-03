@@ -45,7 +45,7 @@ export const authConfig = {
       if (trigger === "update" && s?.totpVerified) token.totpVerified = true;
       if (trigger === "update" && s?.mustCompleteSetup === false) token.mustCompleteSetup = false;
       // Claim wizard Step 1 replaces the placeholder email/name with the
-      // real ones (src/app/(auth)/claim-account/actions.ts:completeProfile).
+      // real ones (src/app/api/auth/claim-profile/route.ts).
       // Without this, the JWT keeps caching the old values for the rest of
       // the session — DB is correct immediately, but anything reading
       // session.user.email/name (e.g. the dashboard header) shows stale
