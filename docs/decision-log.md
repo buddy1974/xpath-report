@@ -470,3 +470,40 @@ Format: DL-nnn · decision · rationale.
   and typed it himself). Live-verified: signed in with email + his
   password only, no `/verify` redirect, landed on `/dashboard` as
   `administrator`.
+- **DL-042 — Admin-only "coming soon" UI teasers for 6 future
+  capabilities, a deliberate, scoped exception to Header G4 — relayed
+  via Cowork addendum, confirmed with Marcel before building.** The
+  relayed instruction claimed the account to gate this on was already
+  `dev-pathologist-a@xpath.report` ("already seeded" as administrator) —
+  factually wrong, caught before writing any code: `dev-pathologist-a`
+  has role `pathologist` (confirmed via a live DB query during the
+  audit immediately preceding this), and is the DL-037-protected
+  identity, not the admin account. `dev-administrator@xpath.report` is
+  the actual administrator. Flagged the mismatch and the fact that this
+  feature appears nowhere in `docs/PROGRESS.md`/`docs/decision-log.md`
+  prior to this session; confirmed directly with Marcel to proceed,
+  gating on the real `administrator` role rather than the named account.
+  **Rationale for the G4 exception:** marketing/vision-signaling only,
+  for dev-level walkthroughs with Dr. Ivo — zero real functionality,
+  zero backend. **What was built:** `src/lib/i18n.ts` — 7 new bilingual
+  strings (`teasersSectionHeading`, `teaserPlannedSuffix`, one per
+  feature). `src/app/(app)/dashboard/page.tsx` — a
+  `role === "administrator"` gated section rendering 6 literal
+  `<button type="button" disabled>` elements (billing, navify results
+  linking, referring-doctor sharing, second opinion/telepathology,
+  add-tenant, registry/FHIR export), each with a `title="[label] —
+  planned."` tooltip. No `<Link>`, no route, no API route, no DB table,
+  no SDK import — confirmed by diff review (`git diff --stat`: exactly
+  the two files above, 45 insertions, 0 deletions elsewhere). The
+  navify label reads exactly "Link results from navify" per the G1
+  boundary — never worded as X-PATH reading/interpreting images itself.
+  Excludes LIS integration, case management, and notifications, per the
+  relayed instruction's own list and matching Header's existing
+  DEFERRED/REMOVED list. **Live-verified**, not just built: signed in as
+  `dev-administrator@xpath.report`, all 6 buttons render (confirmed via
+  DOM query: `disabled: true` on all 6, correct tooltip text on all 6,
+  correct label text including the exact navify wording); signed in as
+  `dev-pathologist-b@xpath.report` (role `pathologist`), confirmed the
+  entire section is absent — zero pathologist-visible surface, in
+  either EN or FR locale. `npx tsc --noEmit` and `npm run build` both
+  passed.
