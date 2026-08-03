@@ -280,3 +280,18 @@ Format: R-nnn · risk · current mitigation / status.
   accounts from `scripts/provision-team.ts` hit this bug before the fix
   landed has not been cross-checked against team communication — worth
   confirming with Marcel/Dr. Ivo whether anyone needs to retry their claim.
+- **R-034 — CONDITIONAL-field trigger-based hiding and danger-zone urgency
+  banners were deliberately not built as part of DL-045's review-form
+  redesign.** CONDITIONAL fields (e.g. "Rectal Tumor Location," required
+  only when Tumor Site is rectal) still render inline/always-visible
+  rather than hidden until their trigger fires, because no field in the
+  template type/data model currently carries "depends on field X = value
+  Y" metadata — encoding it correctly across ~30-50 conditional fields
+  spanning all 6 templates is a real data-modeling task, and guessing at
+  triggers from label text is a real clinical-correctness risk (could
+  hide a field a pathologist actually needs to fill on a signed record).
+  Separately, there is no "mark as urgent" mechanism anywhere in the data
+  model, so danger-zone banners for urgent findings (positive margin,
+  high grade) were not built — auto-inferring urgency from field values
+  would be an uncredentialed clinical inference (Header G1/G8). Both need
+  real design/data-modeling work, not a fast follow inside a UI task.

@@ -584,3 +584,100 @@ Format: DL-nnn · decision · rationale.
   highest; the new grounding-quote badge rendered on both the
   structure view and — the actual gap being fixed — the review/edit
   screen. Test dictation/draft deleted afterward.
+- **DL-045 — Review-form redesign, North-Star Sec8 (accordions, bottom-sheet
+  pickers for long option lists).** Relayed as a large "UX North-Star"
+  design-bible document (sections 0-7: bottom nav, Home/Cases/Transcribe/
+  Learn/Profile, sharing/invite-a-doctor, trend graphs, demo pathologist)
+  with a later addendum, Sec8, specifically redesigning the long
+  CAP-derived form rendering. Investigated before building anything:
+  confirmed the document cites files that don't exist in this repo
+  (docs/ROADMAP.md, docs/HANDOVER.md -- the real files are
+  XPATH_Roadmap_to_First_Login.md/XPATH_handover.md at repo root) and
+  redefines "M2" in a way that conflicts with the actual roadmap (real M2
+  = "private encrypted workspace," already built since M1/M0 -- not "design
+  language + home shell") and with where the project actually stands (M7,
+  post-DL-043/044). Saved as docs/ux-north-star.md -- reference only;
+  sections 0-7 are explicitly NOT actioned (new backend scope like
+  sharing/invite-a-doctor doesn't match this session's mandate, and the
+  M2-timing claim is wrong). Surfaced this via AskUserQuestion rather
+  than building everything or refusing everything; confirmed answer:
+  build Sec8 now, as its own scoped task.
+  **What was built** (review/[draftId]/review-form.tsx, new client
+  component replacing the old server-rendered flat field list; three new
+  components under src/components/form/): CAP sections render as
+  collapsible AccordionSections that default open only while a CORE
+  field is missing and collapse to a one-line summary (first 3 filled
+  CORE values) once complete; single-select fields with >5 options
+  (Histologic Type, Tumor Site, Rectal Tumor Location, Procedure, etc.)
+  render as a searchable BottomSheetPicker instead of a radio wall;
+  2-option fields render as a segmented toggle; multi-select fields
+  render as a MultiSelectSheet with chip display; "...(specify)" and
+  "cannot be determined, explain" companion text fields (already
+  addressable via flattenTemplate's {path}.{optionKey}.text scheme)
+  are detected generically (by path suffix, not hardcoded per template)
+  and revealed only once their parent option is actually selected --
+  hidden again if deselected; NON-CORE fields collapse behind a
+  per-section "Show optional fields (N)" toggle; a sticky top progress
+  line ("N required field(s) left") and sticky bottom action bar (Save /
+  jump-to-sign) stay reachable while scrolling. flatten.ts's FlatField
+  gained a passthrough unit field (needed for the numeric-field unit
+  suffix in Sec8.6's mapping table) -- pure metadata plumbing, no schema/
+  DB change. Existing AI-suggested styling and grounding-quote badges
+  (DL-044) carried through unchanged. The underlying <form> submission
+  mechanism (field.path as name, saveReview/signAndAssign in
+  actions.ts) is byte-for-byte unchanged -- this is presentation only.
+  **Deliberately out of scope, not silently dropped** (logged as R-034):
+  Sec8.4's CONDITIONAL-field trigger-based hiding (e.g. "Rectal Tumor
+  Location" should stay hidden until Tumor Site = rectal) needs new
+  per-field trigger metadata (which sibling field/value shows it) that
+  does not exist anywhere in the template type/data model today; adding
+  it correctly across roughly 30-50 conditional fields spanning 6
+  templates is a real data-modeling task, and guessing at triggers
+  heuristically from label text risks hiding a field a pathologist
+  actually needs on a signed clinical record -- a correctness risk worse
+  than the status quo (CONDITIONAL fields stay visible inline, same as
+  before). Sec8.8's danger-zone urgency banners are also out: there is
+  no pathologist-facing "mark as urgent" mechanism anywhere in the data
+  model, and auto-inferring urgency from field values (e.g. "margin
+  involved" => red banner) would be exactly the kind of uncredentialed
+  clinical inference Header G1/G8 rules out -- building it requires a
+  real, human-designed interaction (a manual flag), not something to
+  invent unilaterally under a UI-polish task. npx tsc --noEmit and
+  npm run build passed both before and after the fix below.
+  **Bug found and fixed during live verification, not shipped blind:**
+  first live pass showed "Save changes" appearing to work (page visibly
+  changed after clicking) but a direct DB read before/after proved
+  nothing was actually persisted -- aiFieldPaths never cleared, edited
+  values never written. Root cause: "Save changes" and "Sign & assign"
+  share one <form> (same structure as the pre-Sec8 page), and the Sign
+  card's required accession input triggered the browser's native
+  constraint validation on every "Save changes" click too, silently
+  blocking submission with no visible error whenever accession was still
+  empty -- the "page changed" was actually the browser auto-scrolling to
+  the invalid field, not a navigation. Fixed with formNoValidate on the
+  "Save changes" button only (Sign & assign keeps validation, so
+  accession is still required before signing). Re-verified: direct DB
+  read now shows the edited field value persisted and aiFieldPaths
+  correctly cleared to [].
+  **Live-verified end to end**, not just built: seeded a real dictation
+  for dev-pathologist-b (Colon & Rectum resection transcript, chosen
+  specifically to exercise Histologic Type's 15+ options and Tumor
+  Site's 11 options -- the exact cases Sec8.9 names), ran it through the
+  real template-suggestion + real OpenAI structuring pipeline (Colon &
+  Rectum correctly ranked #1), opened the redesigned review page: sticky
+  progress line showed "18 required field(s) left"; SPECIMEN's Procedure
+  field opened a bottom sheet with working search-filter ("sigm" ->
+  "Sigmoidectomy" only) and a checkmark on the current selection;
+  selecting "Other" revealed its specify text input, typed into it,
+  then re-selecting "Sigmoidectomy" made it disappear again; the
+  AI-suggested "Lymphatic and/or Vascular Invasion" multi-select showed
+  its existing grounding-quote badge and one pre-filled chip, opening it
+  and adding a second option ("Small vessel") showed both chips and
+  revealed its specify field too; "Show optional fields (7)" correctly
+  revealed NON-CORE fields (e.g. a comment field rendering as a
+  textarea); after the formNoValidate fix, "Save changes" round-tripped
+  through a hard page reload with the edited values intact and
+  aiFieldPaths cleared, confirmed via direct DB read (not just the UI).
+  Test dictation/draft deleted afterward; dev-pathologist-b's
+  password/TOTP secret were rotated for this session (established
+  pattern for this dev/test fixture) and not persisted anywhere.
