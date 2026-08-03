@@ -231,14 +231,18 @@ Format: R-nnn · risk · current mitigation / status.
   Vercel dashboard's Production env vars directly, or gives explicit
   go-ahead for a real (metered, production-data-creating) live E2E
   pass before the Dr. Ivo demo.
-- **R-031 — `xpath.report` DNS confirmed still pointed at Hostinger's
-  parked-domain page, not Vercel, as of 2026-08-03 — the M7 Cloudflare
-  cutover gate is intact, not silently crossed.** Verified by fetching
-  `https://xpath.report/sign-in` directly: response is Hostinger's
-  parked-domain HTML (title "Parked Domain name on Hostinger DNS
-  system"), served via Cloudflare's shared parked-domain proxy — DNS
-  is not yet pointed at Vercel. This is expected, not a problem;
-  logged as confirmation, not as a finding requiring action.
+- **RESOLVED (2026-08-03) — R-031 — `xpath.report` DNS cutover.**
+  Originally logged as confirmation that DNS was still on Hostinger's
+  parked page (gate intact, not silently crossed). Marcel cut over
+  Cloudflare DNS the same day; independently re-verified: both
+  `xpath.report` and `www.xpath.report` now resolve to the real X-PATH
+  app on Vercel (`server: cloudflare` + `x-powered-by: Next.js`, no
+  more Hostinger HTML). Also caught and fixed in the same pass: Vercel
+  production was still serving the pre-M6 deployment (M5–M7 existed
+  only in local commits, never pushed) — pushed to `origin/main`,
+  Vercel auto-deployed, re-verified live (Archive/EN-FR/PDF all present
+  and working on the real production domain, logged into with a real
+  session).
 - **R-032 — M7's mobile pass was done via responsive-class code review,
   not a real mobile-viewport screenshot.** The browser automation's
   `resize_window` tool reported success but never actually changed

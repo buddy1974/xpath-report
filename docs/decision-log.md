@@ -287,3 +287,18 @@ Format: DL-nnn · decision · rationale.
   before this pass could ship. Approved 2026-08-03. Template field
   bilingual support is a real gap, not silently dropped — logged as
   R-029 in `docs/known-risks.md`.
+- **DL-036 — Cloudflare DNS cutover for `xpath.report` executed by
+  Marcel directly (2026-08-03), not by Claude Code.** No Cloudflare
+  DNS/zone-management tool was available in this session (only
+  D1/KV/R2/Workers/Hyperdrive MCP tools) — consistent with the
+  project's SIGNAL protocol treating DNS/secrets as Marcel's own
+  action, never executed blind. Independently re-verified afterward via
+  direct fetch rather than trusting the report alone: both
+  `xpath.report` and `www.xpath.report` correctly serve the real app
+  through Vercel. Surfaced and fixed a second issue found while
+  verifying: Vercel production was still on the pre-M6 deployment since
+  M5–M7 had only ever been committed locally, never pushed to
+  `origin/main` — pushed (Marcel's go-ahead), Vercel auto-deployed,
+  re-verified live end to end (real login, Archive, real signed record,
+  real PDF fetch — `200`, valid `%PDF-` bytes — all against production
+  infrastructure, not local `.env.local`).

@@ -2,6 +2,34 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — M7 closed: Cloudflare DNS cutover, missed push caught, live re-verification
+- Marcel cut over Cloudflare DNS for `xpath.report`/`www.xpath.report`
+  to Vercel (DL-036) — no DNS-management tool was available this
+  session, so this was his own action per the SIGNAL protocol, not
+  executed blind. Independently re-verified via direct fetch rather
+  than trusting the report: both domains now serve the real X-PATH app
+  through Vercel, not Hostinger's parked page (R-031 resolved).
+- Caught a real gap while verifying: the live dashboard was missing
+  Archive and the EN/FR toggle — Vercel production was still on the
+  pre-M6 deployment, because M5–M7 existed only in local commits
+  (`dfd90a4`, `e244c6f`, `5e11b28`), never pushed to `origin/main`.
+  Pushed with Marcel's go-ahead; Vercel's GitHub integration
+  auto-deployed (`dpl_2uiP25cFkVHTka2upG6g4x7V1zKj`), confirmed `READY`
+  and aliased to both production domains.
+- Re-verified the redeploy live, end to end, on the real domain: logged
+  in as `dev-pathologist-a@xpath.report` with a real password + real
+  TOTP code on `https://www.xpath.report`; confirmed Archive and EN/FR
+  now present; opened the real signed test record in the Archive;
+  fetched `/api/pdf/[recordId]` directly against production — `200`,
+  valid `%PDF-` payload, 3.8 kB. This confirms the self-hosted PDF path
+  works on real production infrastructure, independent of the earlier
+  env-var uncertainty (R-030).
+- M7 is now done except the live walkthrough demo to Dr. Ivo itself.
+  R-030 partially resolved (PDF path confirmed live); the
+  dictation→transcription path (`OPENAI_API_KEY`/`R2_*`) still hasn't
+  been exercised against production — recommend a real run-through
+  before the demo, or a direct Vercel env-var spot-check.
+
 ## 2026-08-03 — M7 hardening pass (isolation tests, privacy indicator, search, EN/FR chrome, mobile fix)
 - Logged scope decisions before building: M2's dedicated personal-notes/
   tips UI stays deferred (DL-034); EN/FR polish scoped to UI chrome
