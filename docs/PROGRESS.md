@@ -35,6 +35,25 @@ WAITING ON MARCEL:
 
 LAST UPDATE: 2026-08-04 —
 
+**Visual design pass — app shell + ONE reference screen, STOPPED for
+sign-off as instructed.** Applied North-Star §2 design tokens (additive
+`mint` semantic color; existing amber/red left alone to avoid an
+unintended shift elsewhere) to the dashboard shell nav (filled pill for
+the primary action, proper petrol-outline "Sign out" button, larger
+touch targets) and to the review/sign screen specifically (mint
+"complete" checkmarks, mint saved-confirmation, bigger heading,
+consistent primary/secondary button language on the bottom-sheet
+picker). No other screen touched yet. Live-verified on
+`www.xpath.report` with a real dictation run through structuring.
+Mobile-viewport screenshot verification hit the same known tooling
+limitation as R-032 (`resize_window` doesn't actually change
+`window.innerWidth`) — reported honestly rather than claimed; relied on
+a responsive-code review instead (flex-wrap header, fluid `max-w-3xl`
+content, mobile-first bottom sheets, ≥40-44px touch targets, all
+already true of the touched files). `npx tsc --noEmit`/`npm run build`
+pass. **Waiting on Marcel's sign-off on the shell + review screen
+before rolling the same tokens out to the rest of the app.**
+
 **Post-M7 UX polish: review-form redesign (DL-045).** A "UX North-Star"
 design-bible document arrived mid-session with a later §8 addendum
 specifically redesigning the long CAP-derived form rendering. Checked its

@@ -2,6 +2,48 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — Visual design pass: North-Star §2 tokens on app shell + review screen (STOP gate)
+- Scoped, gated task: apply the North-Star §2 design language (palette,
+  card/button language) to the app shell and exactly ONE reference
+  screen, then stop for sign-off before any further rollout — not a
+  full-app restyle.
+- `tailwind.config.ts`: added `mint` (#1F9E82) as an additive semantic
+  "normal/complete" token. Left existing amber/red (CONDITIONAL badge,
+  error states) on Tailwind's default palette rather than renaming them,
+  to avoid an unintended color shift across screens outside this pass.
+- Dashboard shell (`dashboard/layout.tsx`): primary nav item gets a
+  filled petrol-tint pill instead of plain text; nav/sign-out touch
+  targets bumped toward 40px; "Sign out" is now a proper petrol-outline
+  button instead of an underlined link; role label sits in a soft pill;
+  logo mark slightly larger with more rounded corners.
+- Reference screen (`review/[draftId]` + its form components):
+  `AccordionSection`'s "complete" checkmark switched from petrol to
+  mint; sticky top progress line shows a mint checkmark pill once all
+  required fields are filled; the "Saved." confirmation now uses mint
+  instead of Tailwind's default green; page heading enlarged for a more
+  confident feel; `BottomSheetPicker`'s "Done" button changed from plain
+  gray to the same petrol-outline secondary-button pattern used
+  elsewhere.
+- Live-verified on `www.xpath.report`: signed in fresh, ran a real
+  dictation through structuring, confirmed the styled shell and the
+  mint "complete" state on the review screen render correctly.
+- **Mobile viewport check: tooling limitation recurred (see R-032)** —
+  `resize_window` reported success but `window.innerWidth` did not
+  actually change (read back 1920 then 1568, never the requested 390),
+  and the header nav did not wrap as it would at a true 390px width —
+  so no genuine phone-width screenshot was obtained. Relied on a
+  responsive-code review instead (header already `flex flex-wrap`;
+  review content uses fluid `max-w-3xl` with no fixed pixel widths; the
+  bottom sheets are already mobile-first by construction — full-width
+  slide-up on narrow viewports, centered modal only at `sm:` and up;
+  touch targets are ≥40-44px throughout the touched files) rather than
+  claim a visual pass that didn't happen.
+- `npx tsc --noEmit` and `npm run build` pass.
+- **Explicitly not done, per the task's own scope:** no other screen
+  (dashboard home capture view, templates list/detail, structure,
+  archive) was restyled — holding for sign-off before rolling the same
+  tokens out further, per instruction.
+
 ## 2026-08-04 — Review-form redesign: accordions, bottom-sheet pickers (DL-045)
 - Relayed as part of a large "UX North-Star" design-bible document with a
   later §8 addendum specifically redesigning the long CAP-derived forms.
