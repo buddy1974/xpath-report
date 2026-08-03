@@ -187,6 +187,7 @@ const COMMENTS: TemplateSection = {
 export const cup: TemplateVersion = {
   templateId: "cup",
   title: "Carcinoma of Unknown Primary (CUP)",
+  category: "Carcinoma of Unknown Primary (CUP)",
   sourceVersion: "1.0.0-inhouse",
   sourceProtocolName:
     "X-PATH generic fallback protocol (no CAP source exists for CUP) — Header §5 pattern + XPATH_handover.md §13 CUP panel",

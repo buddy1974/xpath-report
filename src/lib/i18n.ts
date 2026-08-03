@@ -162,6 +162,8 @@ export const STRINGS = {
     fr: "— pas encore valide pour un usage clinique (Header G3)",
   },
   sectionsWord: { en: "sections", fr: "sections" },
+  templateWord: { en: "template", fr: "modèle" },
+  templatesWord: { en: "templates", fr: "modèles" },
 
   // Sign-in
   signInTagline: { en: "Your reporting workspace.", fr: "Votre espace de compte rendu." },

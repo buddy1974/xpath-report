@@ -73,6 +73,11 @@ export interface ClassificationBinding {
 export interface TemplateVersion {
   templateId: string;
   title: string;
+  /** Clinical topic / organ-system grouping for the templates library
+   * (e.g. "Breast", "Colorectal") — presentation/navigation only, not a
+   * CAP concept. Add a new category string as new organ systems are
+   * added; no fixed enum, so this scales without a type change. */
+  category: string;
   /** The CAP protocol's own version string (their versioning, not ours). */
   sourceVersion: string;
   sourceProtocolName: string;

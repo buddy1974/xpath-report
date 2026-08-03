@@ -626,6 +626,7 @@ const COMMENTS: TemplateSection = {
 export const colorectalResection: TemplateVersion = {
   templateId: "colorectal-resection",
   title: "Colon & Rectum (Resection)",
+  category: "Colorectal",
   sourceVersion: "4.4.0.1",
   sourceProtocolName: "CAP Protocol for the Examination of Resection Specimens from Patients with Primary Carcinoma of the Colon and/or Rectum",
   sourcePostingDate: "2025-09",

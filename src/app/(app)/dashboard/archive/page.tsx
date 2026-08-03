@@ -45,7 +45,7 @@ export default async function ArchivePage({
     .orderBy(desc(clinicalRecords.releasedAt));
 
   return (
-    <main className="min-h-screen p-8 max-w-3xl">
+    <div className="max-w-3xl">
       <h1 className="text-2xl font-semibold">{t(STRINGS.archiveHeading, locale)}</h1>
       <p className="text-neutral-600 mt-1 text-sm">{t(STRINGS.archiveBody, locale)}</p>
 
@@ -55,7 +55,7 @@ export default async function ArchivePage({
           name="q"
           defaultValue={q ?? ""}
           placeholder={t(STRINGS.archiveSearchPlaceholder, locale)}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-petrol focus:ring-1 focus:ring-petrol/30 outline-none"
         />
       </form>
 
@@ -75,7 +75,10 @@ export default async function ArchivePage({
           const statusLabel = t(RECORD_STATUS_LABELS[record.status] ?? RECORD_STATUS_LABELS.released, locale);
           return (
             <li key={record.id}>
-              <Link href={`/dashboard/archive/${record.id}`} className="block rounded-lg border border-neutral-300 p-4 hover:border-petrol">
+              <Link
+                href={`/dashboard/archive/${record.id}`}
+                className="block rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-petrol/30 transition-all"
+              >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-petrol">{content.templateTitle}</span>
                   <span className="text-xs text-neutral-400">{record.releasedAt.toLocaleString?.() ?? String(record.releasedAt)}</span>
@@ -88,6 +91,6 @@ export default async function ArchivePage({
           );
         })}
       </ul>
-    </main>
+    </div>
   );
 }

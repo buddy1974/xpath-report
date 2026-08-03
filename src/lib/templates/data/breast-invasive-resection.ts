@@ -801,6 +801,7 @@ const COMMENTS: TemplateSection = {
 export const breastInvasiveResection: TemplateVersion = {
   templateId: "breast-invasive-resection",
   title: "Breast — Invasive Carcinoma (Resection)",
+  category: "Breast",
   sourceVersion: "4.11.0.0",
   sourceProtocolName: "CAP Invasive Carcinoma of the Breast: Resection",
   sourcePostingDate: "2026-06",

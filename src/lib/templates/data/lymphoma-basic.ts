@@ -375,6 +375,7 @@ const COMMENTS: TemplateSection = {
 export const lymphomaBasic: TemplateVersion = {
   templateId: "lymphoma-basic",
   title: "Lymphoma (Basic)",
+  category: "Lymphoma / Hematologic",
   sourceVersion: "1.0.0.1",
   sourceProtocolName: "CAP Precursor and Mature Lymphoid Malignancies",
   sourcePostingDate: "2025-09",

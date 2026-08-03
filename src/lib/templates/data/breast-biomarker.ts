@@ -499,6 +499,7 @@ const COMMENTS: TemplateSection = {
 export const breastBiomarker: TemplateVersion = {
   templateId: "breast-biomarker",
   title: "Breast Biomarker Reporting Template",
+  category: "Breast",
   sourceVersion: "1.6.1.0",
   sourceProtocolName: "CAP Breast Biomarker Reporting Template (incl. ASCO/CAP HER2 Guidelines 2018 interpretive content)",
   sourcePostingDate: "2025-06",

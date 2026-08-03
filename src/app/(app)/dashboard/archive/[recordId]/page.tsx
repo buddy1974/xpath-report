@@ -61,17 +61,23 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
   const statusLabel = t(RECORD_STATUS_LABELS[row.record.status] ?? RECORD_STATUS_LABELS.released, locale);
 
   return (
-    <main className="min-h-screen p-8 max-w-3xl">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold">{content.templateTitle}</h1>
+    <div className="max-w-3xl">
+      <header className="mb-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
+          {statusLabel}
+        </span>
+        <h1 className="text-2xl font-semibold mt-2">{content.templateTitle}</h1>
         <p className="text-sm text-neutral-500 mt-1">
-          {t(STRINGS.accessionWord, locale)} {row.accession} · v{row.record.version} · {statusLabel} ·{" "}
+          {t(STRINGS.accessionWord, locale)} {row.accession} · v{row.record.version} ·{" "}
           {t(STRINGS.signedWord, locale)} {row.record.releasedAt.toLocaleString?.() ?? String(row.record.releasedAt)}
         </p>
         <p className="text-sm text-neutral-500">
           {t(STRINGS.sourceTemplateVersion, locale)} {content.sourceVersion}
         </p>
-        <a href={`/api/pdf/${row.record.id}`} className="inline-block mt-2 text-sm font-semibold text-petrol underline">
+        <a
+          href={`/api/pdf/${row.record.id}`}
+          className="inline-flex items-center gap-1.5 mt-3 rounded-lg bg-petrol px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-petrol-deep transition-colors"
+        >
           {t(STRINGS.downloadPdf, locale)}
         </a>
       </header>
@@ -79,7 +85,7 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
       {content.reflexSuggestionsAtSignOut?.length > 0 && (
         <div className="mb-4 space-y-2">
           {content.reflexSuggestionsAtSignOut.map((r, i) => (
-            <div key={i} className="rounded-md border border-amber-300 bg-amber-50 p-3">
+            <div key={i} className="rounded-xl border border-amber-300 bg-amber-50 p-3">
               <p className="font-semibold text-amber-800 text-sm">{r.title}</p>
               <p className="text-sm text-amber-700 mt-1">{r.detail}</p>
             </div>
@@ -87,8 +93,10 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      {template &&
-        template.sections.map((s) => <SectionView key={s.key} section={s} filled={{ values: content.fieldValues }} />)}
-    </main>
+      <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        {template &&
+          template.sections.map((s) => <SectionView key={s.key} section={s} filled={{ values: content.fieldValues }} />)}
+      </div>
+    </div>
   );
 }

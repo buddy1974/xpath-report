@@ -36,7 +36,7 @@ export function FieldView({ field, pathPrefix, filled }: { field: TemplateField;
   const textValue = typeof filled?.values?.[path] === "string" ? (filled?.values?.[path] as string) : undefined;
 
   return (
-    <div className="border-l-2 border-neutral-200 pl-4 py-2">
+    <div className="border-l-2 border-neutral-200 hover:border-petrol/40 pl-4 py-2 transition-colors">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="font-medium text-sm">{field.label}</span>
         <TierBadge tier={field.tier} />
@@ -121,8 +121,8 @@ export function FieldView({ field, pathPrefix, filled }: { field: TemplateField;
 
 export function SectionView({ section, filled }: { section: TemplateSection; filled?: FilledValues }) {
   return (
-    <section className="mb-8">
-      <h2 className="text-lg font-semibold uppercase tracking-wide text-petrol">{section.title}</h2>
+    <section className="mb-8 last:mb-0">
+      <h2 className="text-lg font-semibold uppercase tracking-wide text-petrol pb-2 border-b border-petrol/10">{section.title}</h2>
       <div className="mt-3 space-y-3">
         {section.fields.map((f) => (
           <FieldView key={f.key} field={f} pathPrefix={section.key} filled={filled} />

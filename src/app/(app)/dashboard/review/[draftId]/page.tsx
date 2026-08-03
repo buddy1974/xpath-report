@@ -110,28 +110,30 @@ export default async function ReviewPage({
   const errorText = errorMessage(sp?.error, locale);
 
   return (
-    <main className="min-h-screen p-8 max-w-3xl">
-      <h1 className="text-2xl font-semibold">
-        {t(STRINGS.reviewHeadingPrefix, locale)} {template.title}
-      </h1>
-      <p className="text-neutral-600 mt-1 text-sm">{t(STRINGS.reviewBody, locale)}</p>
-      <div className="mt-3">
-        <PrivacyIndicator locale={locale} />
-      </div>
+    <div className="max-w-3xl">
+      <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h1 className="text-2xl font-semibold">
+          {t(STRINGS.reviewHeadingPrefix, locale)} {template.title}
+        </h1>
+        <p className="text-neutral-600 mt-1 text-sm">{t(STRINGS.reviewBody, locale)}</p>
+        <div className="mt-3">
+          <PrivacyIndicator locale={locale} />
+        </div>
 
-      {errorText && (
-        <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{errorText}</p>
-      )}
-      {sp?.saved && (
-        <p className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
-          {t(STRINGS.savedMessage, locale)}
-        </p>
-      )}
+        {errorText && (
+          <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{errorText}</p>
+        )}
+        {sp?.saved && (
+          <p className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+            {t(STRINGS.savedMessage, locale)}
+          </p>
+        )}
+      </div>
 
       {data.reflexSuggestions?.length > 0 && (
         <div className="mt-4 space-y-2">
           {data.reflexSuggestions.map((r, i) => (
-            <div key={i} className="rounded-md border border-amber-300 bg-amber-50 p-3">
+            <div key={i} className="rounded-xl border border-amber-300 bg-amber-50 p-3">
               <p className="font-semibold text-amber-800 text-sm">{r.title}</p>
               <p className="text-sm text-amber-700 mt-1">{r.detail}</p>
             </div>
@@ -142,9 +144,9 @@ export default async function ReviewPage({
       {/* One form, two submit buttons routed to different Server Actions
           via formAction — avoids nested/sibling <form> problems while
           keeping "sign" able to pick up last-second edits too. */}
-      <form className="mt-6 space-y-8">
+      <form className="mt-6 space-y-6">
         {[...bySection.entries()].map(([sectionTitle, sectionFields]) => (
-          <section key={sectionTitle}>
+          <section key={sectionTitle} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold uppercase tracking-wide text-petrol">{sectionTitle}</h2>
             <div className="mt-3 space-y-4">
               {sectionFields.map((f) => (
@@ -154,13 +156,13 @@ export default async function ReviewPage({
           </section>
         ))}
 
-        <div>
-          <button type="submit" formAction={saveAction} className="rounded-md border border-petrol text-petrol px-4 py-2 text-sm font-semibold">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <button type="submit" formAction={saveAction} className="rounded-lg border border-petrol text-petrol px-4 py-2 text-sm font-semibold hover:bg-petrol/5 transition-colors">
             {t(STRINGS.saveChanges, locale)}
           </button>
         </div>
 
-        <div className="border-t border-neutral-200 pt-6 space-y-3">
+        <div className="rounded-2xl border border-petrol/20 bg-gradient-to-br from-petrol/5 to-transparent p-6 space-y-3 shadow-sm">
           <h2 className="text-lg font-semibold">{t(STRINGS.validateAndSign, locale)}</h2>
           <p className="text-sm text-neutral-600">{t(STRINGS.signingExplainer, locale)}</p>
           <label className="block text-sm font-semibold max-w-xs">
@@ -169,14 +171,14 @@ export default async function ReviewPage({
               name="accession"
               required
               placeholder={t(STRINGS.accessionPlaceholder, locale)}
-              className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm shadow-sm focus:border-petrol focus:ring-1 focus:ring-petrol/30 outline-none"
             />
           </label>
-          <button type="submit" formAction={signAction} className="rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold">
+          <button type="submit" formAction={signAction} className="rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold shadow-sm hover:bg-petrol-deep transition-colors">
             {t(STRINGS.signAndAssign, locale)}
           </button>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

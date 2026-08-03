@@ -23,8 +23,9 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
   const statusLabel = t(APPROVAL_STATUS_LABELS[template.approval.status] ?? APPROVAL_STATUS_LABELS.draft, locale);
 
   return (
-    <main className="min-h-screen p-8 max-w-3xl">
-      <header className="mb-6">
+    <div className="max-w-3xl">
+      <p className="text-xs font-bold tracking-widest uppercase text-petrol">{template.category}</p>
+      <header className="mt-1 mb-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold">{template.title}</h1>
         <p className="text-sm text-neutral-500 mt-1">
           {t(STRINGS.templateSourcePrefix, locale)} {template.sourceProtocolName} · v{template.sourceVersion} ·{" "}
@@ -43,9 +44,11 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
           )}
         </p>
       </header>
-      {template.sections.map((s) => (
-        <SectionView key={s.key} section={s} />
-      ))}
-    </main>
+      <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        {template.sections.map((s) => (
+          <SectionView key={s.key} section={s} />
+        ))}
+      </div>
+    </div>
   );
 }

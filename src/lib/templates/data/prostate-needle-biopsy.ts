@@ -619,6 +619,7 @@ const COMMENTS: TemplateSection = {
 export const prostateNeedleBiopsy: TemplateVersion = {
   templateId: "prostate-needle-biopsy",
   title: "Prostate — Needle Biopsy",
+  category: "Prostate",
   sourceVersion: "1.1.0.0",
   sourceProtocolName: "CAP Prostate Needle Biopsies — Specimen Level + Case Level Reporting",
   sourcePostingDate: "2023-09",
