@@ -86,6 +86,38 @@ export default async function DashboardPage() {
           <span className="font-semibold text-petrol">{t(STRINGS.navTemplatesTitle, locale)}</span>
           <p className="text-sm text-neutral-500 mt-1">{t(STRINGS.navTemplatesBlurb, locale)}</p>
         </Link>
+
+        {role === "administrator" && (
+          <div className="mt-10 max-w-xl">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+              {t(STRINGS.teasersSectionHeading, locale)}
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {[
+                STRINGS.teaserBilling,
+                STRINGS.teaserNavify,
+                STRINGS.teaserReferring,
+                STRINGS.teaserSecondOpinion,
+                STRINGS.teaserAddTenant,
+                STRINGS.teaserRegistryFhir,
+              ].map((teaser) => {
+                const label = t(teaser, locale);
+                return (
+                  <li key={label}>
+                    <button
+                      type="button"
+                      disabled
+                      title={`${label} ${t(STRINGS.teaserPlannedSuffix, locale)}`}
+                      className="w-full text-left rounded-lg border border-dashed border-neutral-300 p-3 text-sm text-neutral-400 bg-neutral-50 cursor-not-allowed"
+                    >
+                      {label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </main>
   );

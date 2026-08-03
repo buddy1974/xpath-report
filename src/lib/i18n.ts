@@ -43,6 +43,19 @@ export const STRINGS = {
     fr: "Modèles Phase 1 dérivés du CAP (logique structurelle uniquement, brouillon — en attente d'approbation).",
   },
 
+  // Dashboard "coming soon" teasers — admin-only, disabled, no real code
+  // behind them (DL-042, deliberate G4 exception, marketing/vision-signaling
+  // only). Never edit teaserNavify's wording without re-checking the G1
+  // boundary in DL-042 — it must never imply X-PATH reads/interprets images.
+  teasersSectionHeading: { en: "Coming soon", fr: "Bientôt disponible" },
+  teaserPlannedSuffix: { en: "— planned.", fr: "— prévu." },
+  teaserBilling: { en: "Billing & subscription management", fr: "Facturation et gestion des abonnements" },
+  teaserNavify: { en: "Link results from navify", fr: "Lier les résultats depuis navify" },
+  teaserReferring: { en: "Referring-doctor sharing", fr: "Partage avec le médecin traitant" },
+  teaserSecondOpinion: { en: "Second opinion / telepathology", fr: "Deuxième avis / télépathologie" },
+  teaserAddTenant: { en: "Add another lab / tenant", fr: "Ajouter un autre laboratoire" },
+  teaserRegistryFhir: { en: "Registry / FHIR export", fr: "Registre / export FHIR" },
+
   // Dictate page
   dictateHeading: { en: "Dictate", fr: "Dicter" },
   dictatePrivacyLine: {
