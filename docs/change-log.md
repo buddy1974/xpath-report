@@ -2,6 +2,20 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — TOTP removed for dev-administrator account (Marcel's explicit call)
+- Marcel's relayed instruction named two different seeded accounts as if
+  one; flagged and confirmed the actual target with him before touching
+  anything — `dev-administrator@xpath.report`, not `dev-pathologist-a`
+  (DL-037 had just preserved the latter's TOTP as a live verified
+  production identity).
+- `src/auth.config.ts`: single-email `TOTP_EXEMPT_EMAILS` allowlist —
+  `jwt` callback marks that one account `totpVerified` at sign-in,
+  skipping `/verify`. No other account's login path changed.
+- `scripts/remove-totp-dev-administrator.ts`: cleared `totpEnabled`,
+  `totpSecretEncrypted`, and lockout counters for that one row in
+  production. Logged as DL-038 (explicit override, not a default).
+- `npx tsc --noEmit` and `npm run build` both passed.
+
 ## 2026-08-03 — M7 closed: Cloudflare DNS cutover, missed push caught, live re-verification
 - Marcel cut over Cloudflare DNS for `xpath.report`/`www.xpath.report`
   to Vercel (DL-036) — no DNS-management tool was available this

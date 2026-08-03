@@ -12,6 +12,12 @@
  */
 import type { NextAuthConfig } from "next-auth";
 
+// DL-038: Marcel's explicit, direct instruction — TOTP fully removed for
+// this one administrator account (password-only login). Not a default and
+// not a pattern to extend; every other account still requires 2FA via
+// /api/auth/verify-totp. See docs/decision-log.md.
+const TOTP_EXEMPT_EMAILS = ["dev-administrator@xpath.report"];
+
 export const authConfig = {
   session: { strategy: "jwt" },
   pages: { signIn: "/sign-in" },
@@ -26,7 +32,11 @@ export const authConfig = {
         token.tenantId = (user as any).tenantId;
         token.role = (user as any).role;
         token.totpEnabled = (user as any).totpEnabled;
-        token.totpVerified = false; // set true by /api/auth/verify-totp
+        // set true by /api/auth/verify-totp, except the DL-038 exemption
+        // above, which is trusted at password-verification time already.
+        token.totpVerified = TOTP_EXEMPT_EMAILS.includes(
+          String((user as any).email ?? "").toLowerCase()
+        );
         token.mustCompleteSetup = (user as any).mustCompleteSetup;
       }
       // Set via unstable_update(...) from /api/auth/verify-totp (login

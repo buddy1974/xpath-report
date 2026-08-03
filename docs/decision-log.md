@@ -302,3 +302,41 @@ Format: DL-nnn · decision · rationale.
   re-verified live end to end (real login, Archive, real signed record,
   real PDF fetch — `200`, valid `%PDF-` bytes — all against production
   infrastructure, not local `.env.local`).
+- **DL-037 — Marcel's permanent admin dev-login reuses the already-seeded
+  `dev-administrator@xpath.report` account (M1 seeding, `scripts/seed.ts`)
+  rather than converting `dev-pathologist-a@xpath.report`'s role, and
+  rather than provisioning a new account.** The relayed request asked for
+  `dev-pathologist-a` to be flipped to `administrator`, but that account
+  is not a spare test identity — it's the live credential just used for
+  M7's real production login verification (`docs/PROGRESS.md`, real
+  password + real TOTP against `xpath.report`); converting its role would
+  have invalidated that verified identity and blurred a pathologist test
+  persona into an admin one for no benefit, when a dedicated admin seed
+  account already existed and needed no role change at all. Only the
+  password was reset (to Marcel's chosen value, live in production);
+  TOTP was already enrolled and active from M1 seeding — no new
+  enrollment needed. Flagged and confirmed with Marcel before touching
+  the database: which account to use, how to report the credential back
+  (terminal-only, not pasted into chat, matching DL-018's existing
+  discipline for the 8 real session passwords), and explicit acceptance
+  of a low-entropy password as a deliberate memorability-over-entropy
+  tradeoff for this one dev-only login (not a pattern to repeat for real
+  accounts).
+- **DL-038 — TOTP fully removed for `dev-administrator@xpath.report`
+  (password-only login), on Marcel's explicit, direct instruction — not a
+  default and not extended to any other account.** The instruction as
+  relayed named the account two ways (`admin@xpath.report` and
+  `dev-pathologist-a`) that map to two different seeded users; flagged and
+  confirmed with Marcel before touching anything, since `dev-pathologist-a`
+  is the account DL-037 explicitly preserved TOTP on (live production
+  login-verification identity). Confirmed target: `dev-administrator@xpath.report`
+  only. Implementation: `src/auth.config.ts` carries a small, explicitly
+  named `TOTP_EXEMPT_EMAILS` allowlist (currently one entry) — the `jwt`
+  callback sets `totpVerified: true` at sign-in for that email instead of
+  requiring `/api/auth/verify-totp`, so the account never reaches
+  `/verify`. DB side: `scripts/remove-totp-dev-administrator.ts` cleared
+  `totpEnabled`, `totpSecretEncrypted`, and lockout counters for that one
+  row in production, matched by email — no other account touched. All
+  pathologist/technician/manager accounts, and `dev-pathologist-a`
+  specifically, keep 2FA unchanged. `npx tsc --noEmit` and `npm run build`
+  both passed after the change.
