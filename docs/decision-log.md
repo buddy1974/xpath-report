@@ -265,3 +265,25 @@ Format: DL-nnn · decision · rationale.
   value for one new read path. Verified end to end: real signed record
   from the M6 browser test, fetched through the real route with a real
   session, returned `200` with a valid `%PDF-` payload.
+- **DL-034 — M2's dedicated private-workspace UI (personal notes CRUD,
+  a learning/tips area) stays deferred going into M7; M7's own listed
+  items (encryption indicator, archive search) are being built as part
+  of M7, not treated as blocked on M2.** M2's underlying guardrail
+  (`privateWorkspaceItems` + `assertWorkspaceOwner`, G2) has been real
+  and enforced since M0/M1 — dictation and report drafts already live
+  there. What was never built is dedicated UI for free-standing
+  personal notes or a tips area; per Marcel's explicit "build straight
+  through M5→M7, nothing here gates that," that UI stays out of this
+  MVP-demo critical path rather than becoming a blocking detour. Not
+  silently dropped — logged here so it isn't mistaken for "done."
+- **DL-035 — M7 "EN/FR polish": UI chrome only (buttons, nav, static
+  copy), EN default, via a lightweight i18n layer — NOT template field
+  labels/options.** Presented to Marcel as a scope choice rather than
+  assumed, because the alternative (drafting French translations for
+  the ~700+ CAP-derived field labels/options across all 6 templates)
+  would mean either fabricating unreviewed French pathology terminology
+  (a real G8 risk — "never fabricate" applies to translation accuracy
+  too, not just extracted values) or blocking on Dr. Ivo's review
+  before this pass could ship. Approved 2026-08-03. Template field
+  bilingual support is a real gap, not silently dropped — logged as
+  R-029 in `docs/known-risks.md`.

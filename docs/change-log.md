@@ -2,6 +2,50 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — M7 hardening pass (isolation tests, privacy indicator, search, EN/FR chrome, mobile fix)
+- Logged scope decisions before building: M2's dedicated personal-notes/
+  tips UI stays deferred (DL-034); EN/FR polish scoped to UI chrome
+  only, not template field content (DL-035, approved by Marcel,
+  R-029 logged for the gap).
+- Extended `scripts/verify-isolation.ts` to cover M6's `clinicalRecords`
+  alongside M1's private-workspace items — released records readable
+  tenant-wide (any pathologist/manager/administrator), drafts
+  signer-only regardless of role. 14/14 checks pass against real Neon
+  data; script cleans up its own temp rows.
+- Added `src/components/privacy-indicator.tsx` to dictate/structure/
+  review pages — worded to match what's actually true (code-enforced
+  access control, not an overstated encryption claim).
+- Added search to `dashboard/archive` (accession or report-type
+  substring match via `ilike`/`or`). Verified live against the real
+  signed test record: accession match, template-title match, and the
+  no-match empty state all correct.
+- Checked production deploy readiness independently: live Vercel
+  deployment serves the correct sign-in page for an unauthenticated
+  request, no fatal runtime errors in the last 7 days. Could not
+  enumerate Production-scope env vars directly (no available tool) —
+  logged as R-030. Confirmed `xpath.report` DNS is still on Hostinger's
+  parked page, not Vercel — the M7 cutover gate is intact (R-031).
+- Built EN/FR UI-chrome translation via a forked agent: `src/lib/i18n.ts`
+  (plain dictionary + `t()`, no framework dependency), `i18n-server.ts`
+  (cookie-based `getLocale()`), `i18n-actions.ts` (locale-switcher
+  Server Action). Applied across the dashboard shell, dictate/structure/
+  review/archive pages, templates pages (chrome only — field content
+  untouched), and all three auth pages. Independently re-verified after
+  the fork returned: re-ran `npx tsc --noEmit` and `npm run build`
+  clean, live-clicked the EN/FR toggle on the real dashboard and
+  confirmed both directions render correctly.
+- Mobile pass done via responsive-class code review — the browser
+  automation's `resize_window` tool reported success but never actually
+  changed `window.innerWidth` this session (confirmed directly, R-032
+  logs this honestly rather than claiming a visual pass that didn't
+  happen). Sign-in/verify/claim-account were already mobile-solid.
+  Found and fixed a real bug: the dashboard header packed logo/email/
+  role/locale-toggle/sign-out into one non-wrapping fixed-height row —
+  fixed with `flex-wrap`, `min-h-14`, and hiding the email below `sm:`.
+- `npx tsc --noEmit` and `npm run build` pass after every change.
+  Remaining for M7: the Cloudflare DNS cutover (holding for Marcel's
+  explicit go-ahead) and the live Dr. Ivo demo once cut over.
+
 ## 2026-08-03 — M6 PDF generation built (self-hosted, no new infra)
 - Marcel approved the pre-flagged PDF-worker recommendation
   (`@react-pdf/renderer`, self-hosted — see DL-033 for the full

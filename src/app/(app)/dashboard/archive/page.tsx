@@ -1,15 +1,25 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { clinicalRecords, cases } from "@/db/schema";
+import { getLocale } from "@/lib/i18n-server";
+import { STRINGS, RECORD_STATUS_LABELS, t } from "@/lib/i18n";
 
-export default async function ArchivePage() {
+export default async function ArchivePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/sign-in");
   if ((session as any).totpVerified !== true) redirect("/verify");
   const userId = (session.user as any).id as string;
+  const locale = await getLocale();
+
+  const sp = await searchParams;
+  const q = sp?.q?.trim();
 
   // Own signed records only, for now — "files into the pathologist's
   // archive" (Header roadmap M6). Cross-pathologist/manager visibility
@@ -20,19 +30,49 @@ export default async function ArchivePage() {
     .select({ record: clinicalRecords, accession: cases.accession })
     .from(clinicalRecords)
     .innerJoin(cases, eq(cases.id, clinicalRecords.caseId))
-    .where(and(eq(clinicalRecords.tenantId, (session as any).tenantId), eq(clinicalRecords.signedByPathologistId, userId)))
+    .where(
+      and(
+        eq(clinicalRecords.tenantId, (session as any).tenantId),
+        eq(clinicalRecords.signedByPathologistId, userId),
+        q
+          ? or(
+              ilike(cases.accession, `%${q}%`),
+              ilike(sql`${clinicalRecords.content}->>'templateTitle'`, `%${q}%`),
+            )
+          : undefined,
+      ),
+    )
     .orderBy(desc(clinicalRecords.releasedAt));
 
   return (
     <main className="min-h-screen p-8 max-w-3xl">
-      <h1 className="text-2xl font-semibold">Archive</h1>
-      <p className="text-neutral-600 mt-1 text-sm">Your signed, released reports — the audited clinical record.</p>
+      <h1 className="text-2xl font-semibold">{t(STRINGS.archiveHeading, locale)}</h1>
+      <p className="text-neutral-600 mt-1 text-sm">{t(STRINGS.archiveBody, locale)}</p>
 
-      {rows.length === 0 && <p className="mt-6 text-sm text-neutral-500">Nothing signed yet.</p>}
+      <form method="get" className="mt-4 max-w-sm">
+        <input
+          type="text"
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder={t(STRINGS.archiveSearchPlaceholder, locale)}
+          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+        />
+      </form>
+
+      {q && rows.length === 0 && (
+        <p className="mt-6 text-sm text-neutral-500">
+          {t(STRINGS.noSearchMatchPrefix, locale)} &quot;{q}&quot;.{" "}
+          <Link href="/dashboard/archive" className="text-petrol underline">
+            {t(STRINGS.clearSearch, locale)}
+          </Link>
+        </p>
+      )}
+      {!q && rows.length === 0 && <p className="mt-6 text-sm text-neutral-500">{t(STRINGS.nothingSignedYet, locale)}</p>}
 
       <ul className="mt-6 space-y-2">
         {rows.map(({ record, accession }) => {
           const content = record.content as { templateTitle: string };
+          const statusLabel = t(RECORD_STATUS_LABELS[record.status] ?? RECORD_STATUS_LABELS.released, locale);
           return (
             <li key={record.id}>
               <Link href={`/dashboard/archive/${record.id}`} className="block rounded-lg border border-neutral-300 p-4 hover:border-petrol">
@@ -41,7 +81,7 @@ export default async function ArchivePage() {
                   <span className="text-xs text-neutral-400">{record.releasedAt.toLocaleString?.() ?? String(record.releasedAt)}</span>
                 </div>
                 <p className="text-sm text-neutral-500 mt-1">
-                  Accession {accession} · v{record.version} · {record.status}
+                  {t(STRINGS.accessionWord, locale)} {accession} · v{record.version} · {statusLabel}
                 </p>
               </Link>
             </li>

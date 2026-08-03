@@ -7,6 +7,8 @@ import { assertCanReadClinicalRecord, type Actor } from "@/lib/access";
 import { getTemplate } from "@/lib/templates";
 import { SectionView } from "@/components/template-view";
 import { writeAudit } from "@/lib/audit";
+import { getLocale } from "@/lib/i18n-server";
+import { STRINGS, RECORD_STATUS_LABELS, t } from "@/lib/i18n";
 
 export default async function ArchiveRecordPage({ params }: { params: Promise<{ recordId: string }> }) {
   const session = await auth();
@@ -17,6 +19,7 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
     tenantId: (session as any).tenantId,
     role: (session as any).role,
   };
+  const locale = await getLocale();
 
   const { recordId } = await params;
   const rows = await db
@@ -55,18 +58,21 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
     reflexSuggestionsAtSignOut: { title: string; detail: string }[];
   };
   const template = getTemplate(content.templateId);
+  const statusLabel = t(RECORD_STATUS_LABELS[row.record.status] ?? RECORD_STATUS_LABELS.released, locale);
 
   return (
     <main className="min-h-screen p-8 max-w-3xl">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">{content.templateTitle}</h1>
         <p className="text-sm text-neutral-500 mt-1">
-          Accession {row.accession} · v{row.record.version} · {row.record.status} ·{" "}
-          signed {row.record.releasedAt.toLocaleString?.() ?? String(row.record.releasedAt)}
+          {t(STRINGS.accessionWord, locale)} {row.accession} · v{row.record.version} · {statusLabel} ·{" "}
+          {t(STRINGS.signedWord, locale)} {row.record.releasedAt.toLocaleString?.() ?? String(row.record.releasedAt)}
         </p>
-        <p className="text-sm text-neutral-500">Source template version {content.sourceVersion}</p>
+        <p className="text-sm text-neutral-500">
+          {t(STRINGS.sourceTemplateVersion, locale)} {content.sourceVersion}
+        </p>
         <a href={`/api/pdf/${row.record.id}`} className="inline-block mt-2 text-sm font-semibold text-petrol underline">
-          Download PDF
+          {t(STRINGS.downloadPdf, locale)}
         </a>
       </header>
 

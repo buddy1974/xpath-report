@@ -7,6 +7,9 @@ import { privateWorkspaceItems } from "@/db/schema";
 import { getTemplate } from "@/lib/templates";
 import { suggestTemplates } from "@/lib/templates/suggest";
 import { SectionView } from "@/components/template-view";
+import { PrivacyIndicator } from "@/components/privacy-indicator";
+import { getLocale } from "@/lib/i18n-server";
+import { STRINGS, t } from "@/lib/i18n";
 import { confirmTemplateAction, findDraftForDictation } from "./actions";
 
 export default async function StructurePage({ params }: { params: Promise<{ dictationId: string }> }) {
@@ -14,6 +17,7 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
   if (!session?.user) redirect("/sign-in");
   if ((session as any).totpVerified !== true) redirect("/verify");
   const userId = (session.user as any).id as string;
+  const locale = await getLocale();
 
   const { dictationId } = await params;
   const rows = await db.select().from(privateWorkspaceItems).where(eq(privateWorkspaceItems.id, dictationId)).limit(1);
@@ -24,8 +28,8 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
   if (!dictation.body) {
     return (
       <main className="min-h-screen p-8 max-w-2xl">
-        <h1 className="text-2xl font-semibold">Not transcribed yet</h1>
-        <p className="text-neutral-600 mt-1">This dictation has no transcript yet — finish it on the Dictate page first.</p>
+        <h1 className="text-2xl font-semibold">{t(STRINGS.notTranscribedHeading, locale)}</h1>
+        <p className="text-neutral-600 mt-1">{t(STRINGS.notTranscribedBody, locale)}</p>
       </main>
     );
   }
@@ -36,21 +40,28 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
     const suggestions = suggestTemplates(dictation.body);
     return (
       <main className="min-h-screen p-8 max-w-2xl">
-        <h1 className="text-2xl font-semibold">Choose a template</h1>
-        <p className="text-neutral-600 mt-1">
-          Suggested from your dictation — confirm the one that matches. Never auto-routed (Header §5).
-        </p>
+        <h1 className="text-2xl font-semibold">{t(STRINGS.chooseTemplateHeading, locale)}</h1>
+        <p className="text-neutral-600 mt-1">{t(STRINGS.chooseTemplateBody, locale)}</p>
+        <div className="mt-3">
+          <PrivacyIndicator locale={locale} />
+        </div>
         <div className="mt-4 rounded-md border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-600 whitespace-pre-wrap">
-          <p className="font-semibold text-xs uppercase tracking-wide text-neutral-400 mb-1">Transcript</p>
+          <p className="font-semibold text-xs uppercase tracking-wide text-neutral-400 mb-1">
+            {t(STRINGS.transcriptSectionLabel, locale)}
+          </p>
           {dictation.body}
         </div>
         <div className="mt-6 space-y-2">
-          {suggestions.length === 0 && <p className="text-sm text-neutral-500">No templates available yet.</p>}
+          {suggestions.length === 0 && <p className="text-sm text-neutral-500">{t(STRINGS.noTemplatesAvailable, locale)}</p>}
           {suggestions.map((s) => (
             <form key={s.templateId} action={confirmTemplateAction.bind(null, dictationId, s.templateId)}>
               <button className="w-full text-left rounded-lg border border-neutral-300 p-4 hover:border-petrol">
                 <span className="font-semibold text-petrol">{s.title}</span>
-                {s.score > 0 && <span className="ml-2 text-xs text-neutral-400">match score {s.score}</span>}
+                {s.score > 0 && (
+                  <span className="ml-2 text-xs text-neutral-400">
+                    {t(STRINGS.matchScorePrefix, locale)} {s.score}
+                  </span>
+                )}
               </button>
             </form>
           ))}
@@ -73,14 +84,18 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
     <main className="min-h-screen p-8 max-w-3xl">
       <h1 className="text-2xl font-semibold">{template.title}</h1>
       <p className="text-sm text-neutral-500 mt-1">
-        Auto-filled from your dictation. Fields marked <span className="text-hema font-medium">AI-suggested</span> need
-        your review before this becomes a signed record (Header G1/G8). Nothing here is part of the clinical record yet.
+        {t(STRINGS.autoFilledNote, locale)}{" "}
+        <span className="text-hema font-medium">{t(STRINGS.aiSuggestedLabel, locale)}</span>{" "}
+        {t(STRINGS.autoFilledNoteEnd, locale)}
       </p>
+      <div className="mt-3">
+        <PrivacyIndicator locale={locale} />
+      </div>
       <Link
         href={`/dashboard/review/${draft.id}`}
         className="inline-block mt-3 rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold"
       >
-        Review &amp; sign →
+        {t(STRINGS.reviewAndSignLink, locale)}
       </Link>
 
       {data.reflexSuggestions.length > 0 && (

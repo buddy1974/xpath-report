@@ -1,10 +1,6 @@
 import { TOTP_LOCKOUT_MINUTES } from "@/lib/totp-policy";
-
-const ERRORS: Record<string, string> = {
-  invalid: "That code didn't match. Try the next code from your app.",
-  not_enrolled: "This account has no authenticator enrolled yet.",
-  locked: `Too many incorrect codes. Try again in ${TOTP_LOCKOUT_MINUTES} minutes.`,
-};
+import { getLocale } from "@/lib/i18n-server";
+import { STRINGS, t } from "@/lib/i18n";
 
 export default async function VerifyPage({
   searchParams,
@@ -12,6 +8,15 @@ export default async function VerifyPage({
   searchParams?: Promise<{ error?: string }>;
 }) {
   const params = await searchParams;
+  const locale = await getLocale();
+  const ERRORS: Record<string, string> = {
+    invalid: t(STRINGS.verifyErrorInvalid, locale),
+    not_enrolled: t(STRINGS.verifyErrorNotEnrolled, locale),
+    locked:
+      locale === "fr"
+        ? `Trop de codes incorrects. Réessayez dans ${TOTP_LOCKOUT_MINUTES} minutes.`
+        : `Too many incorrect codes. Try again in ${TOTP_LOCKOUT_MINUTES} minutes.`,
+  };
   const error = params?.error ? ERRORS[params.error] : undefined;
 
   return (
@@ -21,10 +26,8 @@ export default async function VerifyPage({
           <span className="w-5 h-5 rounded border-2 border-hema" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold">Two-factor authentication</h2>
-          <p className="text-sm text-neutral-600 mt-1">
-            Enter the 6-digit code from your authenticator app.
-          </p>
+          <h2 className="text-lg font-semibold">{t(STRINGS.twoFactorHeading, locale)}</h2>
+          <p className="text-sm text-neutral-600 mt-1">{t(STRINGS.twoFactorBody, locale)}</p>
         </div>
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
@@ -40,12 +43,10 @@ export default async function VerifyPage({
             placeholder="••••••"
           />
           <button className="w-full rounded-md bg-petrol py-2.5 text-white text-sm font-semibold">
-            Verify &amp; continue
+            {t(STRINGS.verifyAndContinue, locale)}
           </button>
         </form>
-        <p className="text-xs text-neutral-500">
-          Authenticator only — no SMS, nothing to intercept.
-        </p>
+        <p className="text-xs text-neutral-500">{t(STRINGS.authenticatorOnlyNote, locale)}</p>
       </div>
     </main>
   );

@@ -209,3 +209,49 @@ Format: R-nnn · risk · current mitigation / status.
   but the ranking quality is worse than expected for an unambiguous
   transcript. Worth revisiting `src/lib/templates/suggest.ts`'s scoring
   once more templates exist and this stops being a one-off.
+- **R-029 — Template field labels/options (all 6 Phase-1 templates)
+  are English-only; M7's EN/FR polish pass deliberately scoped to UI
+  chrome, not template content (DL-035).** A French-speaking
+  pathologist using X-PATH today gets an English-only structured form,
+  even though the dictation-language selector already supports French
+  transcription. Real gap for genuine bilingual use — needs Dr. Ivo's
+  review of any French pathology terminology before it ships (G8 —
+  fabricated/unreviewed medical translation is worse than none).
+- **R-030 — Production Vercel env vars (M2-M6 features: `OPENAI_API_KEY`,
+  `R2_*`, `ANTHROPIC_*`) not independently confirmed as set in
+  Production scope; no available tool can enumerate them.** Verified
+  what's actually checkable: the production deployment
+  (`xpath-report.vercel.app`) is live and serves the correct sign-in
+  page for an unauthenticated `/dashboard` request; `get_runtime_errors`
+  shows no fatal errors in the last 7 days (one benign `Buffer()`
+  deprecation warning only). That does NOT prove the M4-M6 metered/
+  external-service paths (Whisper transcription, R2 upload, PDF
+  generation) work in production — those haven't been exercised live,
+  only against local `.env.local`. Recommend Marcel spot-checks the
+  Vercel dashboard's Production env vars directly, or gives explicit
+  go-ahead for a real (metered, production-data-creating) live E2E
+  pass before the Dr. Ivo demo.
+- **R-031 — `xpath.report` DNS confirmed still pointed at Hostinger's
+  parked-domain page, not Vercel, as of 2026-08-03 — the M7 Cloudflare
+  cutover gate is intact, not silently crossed.** Verified by fetching
+  `https://xpath.report/sign-in` directly: response is Hostinger's
+  parked-domain HTML (title "Parked Domain name on Hostinger DNS
+  system"), served via Cloudflare's shared parked-domain proxy — DNS
+  is not yet pointed at Vercel. This is expected, not a problem;
+  logged as confirmation, not as a finding requiring action.
+- **R-032 — M7's mobile pass was done via responsive-class code review,
+  not a real mobile-viewport screenshot.** The browser automation's
+  `resize_window` tool reported success but never actually changed
+  `window.innerWidth` in this session (confirmed via direct JS check,
+  tried on two separate tabs) — a tooling limitation, not a claim
+  about the app itself. What was actually done: reviewed every page's
+  Tailwind classes for mobile-first correctness. Sign-in/verify/
+  claim-account were already solid (single-column `max-w-sm` forms,
+  decorative panel correctly `hidden md:flex`). Found and fixed one
+  real bug: the dashboard shell header (`dashboard/page.tsx`) packed
+  logo + email + role + EN/FR toggle + sign-out into one fixed-height,
+  non-wrapping flex row — on a ~390px phone width the combined content
+  width exceeds the viewport. Fixed with `flex-wrap`, `min-h-14`
+  instead of fixed `h-14`, and hiding the email address below the `sm:`
+  breakpoint. Not verified with a real screenshot — a genuine gap,
+  worth a real device/browser check before the Dr. Ivo demo.

@@ -6,20 +6,9 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { encrypt, decrypt } from "@/lib/crypto";
+import { getLocale } from "@/lib/i18n-server";
+import { STRINGS, t } from "@/lib/i18n";
 import { completeProfile, confirmEnrollment } from "./actions";
-
-const ERRORS: Record<string, string> = {
-  name_required: "Enter your name.",
-  department_required: "Enter your unit / department.",
-  phone_required: "Enter a phone number.",
-  email_invalid: "Enter a valid email address.",
-  password_weak: "Password needs 12+ characters with upper/lower case, a number, and a symbol.",
-  password_mismatch: "Passwords don't match.",
-  email_taken: "That email is already in use in this workspace.",
-  invalid: "That code didn't match. Try the next code from your app.",
-  locked: "Too many incorrect codes. Try again in 15 minutes.",
-  not_enrolled: "Enrollment secret missing — reload the page.",
-};
 
 export default async function ClaimAccountPage({
   searchParams,
@@ -34,6 +23,20 @@ export default async function ClaimAccountPage({
   const user = rows[0];
   if (!user || !user.mustCompleteSetup) redirect("/dashboard");
 
+  const locale = await getLocale();
+  const ERRORS: Record<string, string> = {
+    name_required: t(STRINGS.claimNameRequired, locale),
+    department_required: t(STRINGS.claimDepartmentRequired, locale),
+    phone_required: t(STRINGS.claimPhoneRequired, locale),
+    email_invalid: t(STRINGS.claimEmailInvalid, locale),
+    password_weak: t(STRINGS.claimPasswordWeak, locale),
+    password_mismatch: t(STRINGS.claimPasswordMismatch, locale),
+    email_taken: t(STRINGS.claimEmailTaken, locale),
+    invalid: t(STRINGS.verifyErrorInvalid, locale),
+    locked: locale === "fr" ? "Trop de codes incorrects. Réessayez dans 15 minutes." : "Too many incorrect codes. Try again in 15 minutes.",
+    not_enrolled: t(STRINGS.claimNotEnrolled, locale),
+  };
+
   const params = await searchParams;
   const error = params?.error ? ERRORS[params.error] : undefined;
 
@@ -42,41 +45,39 @@ export default async function ClaimAccountPage({
       <main className="min-h-screen flex items-center justify-center p-8">
         <form action={completeProfile} className="w-full max-w-sm space-y-4">
           <div>
-            <p className="text-xs font-bold tracking-widest uppercase text-petrol">Step 1 of 2</p>
-            <h2 className="text-xl font-semibold mt-1">Complete your profile</h2>
-            <p className="text-sm text-neutral-500 mt-1">
-              This replaces the placeholder account you were given. Your new email and password become your login going forward.
-            </p>
+            <p className="text-xs font-bold tracking-widest uppercase text-petrol">{t(STRINGS.step1Of2, locale)}</p>
+            <h2 className="text-xl font-semibold mt-1">{t(STRINGS.completeYourProfile, locale)}</h2>
+            <p className="text-sm text-neutral-500 mt-1">{t(STRINGS.completeProfileExplainer, locale)}</p>
           </div>
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>
           )}
           <label className="block text-sm font-semibold">
-            Full name
+            {t(STRINGS.fullNameLabel, locale)}
             <input name="displayName" required className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </label>
           <label className="block text-sm font-semibold">
-            Unit / department
+            {t(STRINGS.unitDepartmentLabel, locale)}
             <input name="department" required className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </label>
           <label className="block text-sm font-semibold">
-            Phone
+            {t(STRINGS.phoneLabel, locale)}
             <input name="phone" type="tel" required className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </label>
           <label className="block text-sm font-semibold">
-            Your real work email
+            {t(STRINGS.realWorkEmailLabel, locale)}
             <input name="email" type="email" required className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </label>
           <label className="block text-sm font-semibold">
-            New password
+            {t(STRINGS.newPasswordLabel, locale)}
             <input name="password" type="password" required className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </label>
           <label className="block text-sm font-semibold">
-            Confirm password
+            {t(STRINGS.confirmPasswordLabel, locale)}
             <input name="confirmPassword" type="password" required className="mt-1 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </label>
           <button type="submit" className="w-full rounded-md bg-petrol py-2.5 text-white text-sm font-semibold">
-            Continue
+            {t(STRINGS.continueButton, locale)}
           </button>
         </form>
       </main>
@@ -100,15 +101,15 @@ export default async function ClaimAccountPage({
     <main className="min-h-screen flex items-center justify-center p-8">
       <div className="w-full max-w-sm text-center space-y-5">
         <div>
-          <p className="text-xs font-bold tracking-widest uppercase text-petrol">Step 2 of 2</p>
-          <h2 className="text-xl font-semibold mt-1">Set up two-factor authentication</h2>
-          <p className="text-sm text-neutral-600 mt-1">
-            Scan with an authenticator app, then enter the 6-digit code. No SMS — nothing to intercept.
-          </p>
+          <p className="text-xs font-bold tracking-widest uppercase text-petrol">{t(STRINGS.step2Of2, locale)}</p>
+          <h2 className="text-xl font-semibold mt-1">{t(STRINGS.setUp2fa, locale)}</h2>
+          <p className="text-sm text-neutral-600 mt-1">{t(STRINGS.setUp2faExplainer, locale)}</p>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={qrDataUrl} alt="TOTP enrollment QR code" className="mx-auto rounded-md border border-neutral-200" />
-        <p className="text-xs text-neutral-400 break-all">Manual entry: {secret}</p>
+        <p className="text-xs text-neutral-400 break-all">
+          {t(STRINGS.manualEntryPrefix, locale)} {secret}
+        </p>
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{error}</p>
         )}
@@ -121,7 +122,7 @@ export default async function ClaimAccountPage({
             placeholder="••••••"
           />
           <button className="w-full rounded-md bg-petrol py-2.5 text-white text-sm font-semibold">
-            Verify &amp; finish
+            {t(STRINGS.verifyAndFinish, locale)}
           </button>
         </form>
       </div>

@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓░░ ~78% (you are here → M6 complete: review/sign/archive/PDF, all E2E-verified live)
+Overall: ▓▓▓▓▓▓▓▓▓░ ~90% (you are here → M7 in progress: isolation tests, privacy indicator, archive search, EN/FR chrome, mobile pass done; holding at the Cloudflare DNS gate)
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
@@ -8,7 +8,7 @@ Overall: ▓▓▓▓▓▓▓▓░░ ~78% (you are here → M6 complete: revi
 [x] M4 Voice + transcription    95%   ← pipeline verified live, mic-UI unverified
 [x] M5 Structure & auto-fill    90%   ← engine + all templates verified
 [x] M6 Review · validate · assign 100%   ← review/sign/archive/PDF loop E2E-verified live
-[ ] M7 Hardening + demo          0%
+[>] M7 Hardening + demo          80%   ← everything but the DNS cutover + live prod demo
 
 Team provisioning (Cowork execution-order §1 — parallel workstream, not a
 numbered milestone): built and verified end-to-end, both locally and live.
@@ -89,6 +89,49 @@ only the pre-existing accepted R-007, nothing new. Verified for real:
 fetched `/api/pdf/[recordId]` through a real authenticated session
 against the real signed record from the E2E test — `200`, valid PDF.
 
-Moving into M7 (hardening + demo) next — holding at the Cloudflare DNS
-cutover step for Marcel's explicit go-ahead, per the other pre-flagged
-gate.
+**M7 — hardening pass, mostly complete.** Before touching UI: logged
+the scope decisions this pass depended on (DL-034: M2's dedicated
+personal-notes/tips UI stays deferred, M7's own listed items — indicator,
+search — get built directly; DL-035: EN/FR polish scoped to UI chrome
+only, not template field content, to avoid fabricating unreviewed
+French medical terminology — approved by Marcel, logged as R-029).
+
+Then, in order:
+- **G1/G2 isolation tests extended to cover M6's `clinicalRecords`**
+  (`scripts/verify-isolation.ts`), not just M1's private-workspace
+  items — released records readable tenant-wide, drafts signer-only
+  regardless of role. 14/14 checks pass against real Neon data, temp
+  rows cleaned up.
+- **Privacy indicator** (`src/components/privacy-indicator.tsx`) added
+  to all private-workspace-scoped pages (dictate, structure, review) —
+  worded to match what's actually true (access-control enforced in
+  code, not a stronger encryption claim than exists).
+- **Archive search** (accession or report-type substring match) built
+  and verified live against the real signed test record — accession
+  match, template-title match, and no-match empty state all correct.
+- **Production deploy readiness checked independently**, not assumed:
+  the live Vercel deployment serves the correct sign-in page, no fatal
+  runtime errors in 7 days. Could not enumerate Production-scope env
+  vars directly (no tool for that) — flagged as R-030, recommend Marcel
+  spot-checks the Vercel dashboard before the demo. Confirmed
+  `xpath.report` DNS is still on Hostinger's parked page, not
+  Vercel — the cutover gate is intact (R-031).
+- **EN/FR UI-chrome translation** built via a forked agent (lightweight
+  dictionary + cookie-based locale, no new framework dependency),
+  independently re-verified afterward (not just trusted): typecheck/
+  build re-run clean, live browser check of the FR/EN toggle on the
+  real dashboard confirmed both directions render correctly. Template
+  field content stays English-only, as scoped (R-029).
+- **Mobile pass** — done via responsive-class code review, since the
+  browser automation's viewport-resize tool didn't actually work this
+  session (confirmed via direct `window.innerWidth` checks — R-032,
+  logged honestly rather than claimed as visually verified). Found and
+  fixed one real bug: the dashboard header didn't wrap and would
+  overflow on a phone-width screen.
+
+`npx tsc --noEmit` and `npm run build` pass after every change above.
+
+**Remaining for M7:** the Cloudflare DNS cutover itself (holding for
+Marcel's explicit go-ahead — genuinely irreversible-ish, per the
+pre-flagged gate) and the live demo to Dr. Ivo on the production URL
+once cut over.

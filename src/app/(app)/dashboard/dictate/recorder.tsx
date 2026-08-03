@@ -11,10 +11,11 @@
  */
 import { useRef, useState } from "react";
 import { createCapture, transcribeCapture, saveTranscriptEdit } from "./actions";
+import { STRINGS, t, type Locale } from "@/lib/i18n";
 
 type Phase = "idle" | "recording" | "uploading" | "transcribing" | "editing" | "saved" | "error";
 
-export function Recorder() {
+export function Recorder({ locale = "en" }: { locale?: Locale }) {
   const [language, setLanguage] = useState<"en" | "fr">("en");
   const [phase, setPhase] = useState<Phase>("idle");
   const [transcript, setTranscript] = useState("");
@@ -43,7 +44,7 @@ export function Recorder() {
       recorder.start();
       setPhase("recording");
     } catch {
-      setError("Microphone access denied or unavailable.");
+      setError(t(STRINGS.micDenied, locale));
       setPhase("error");
     }
   }
@@ -64,14 +65,14 @@ export function Recorder() {
         headers: { "Content-Type": mimeType },
         body: blob,
       });
-      if (!putRes.ok) throw new Error("Upload to storage failed.");
+      if (!putRes.ok) throw new Error(t(STRINGS.uploadFailed, locale));
 
       setPhase("transcribing");
       const { text } = await transcribeCapture(newItemId);
       setTranscript(text);
       setPhase("editing");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : t(STRINGS.somethingWentWrong, locale));
       setPhase("error");
     }
   }
@@ -87,7 +88,7 @@ export function Recorder() {
   return (
     <div className="max-w-xl">
       <label className="text-sm font-semibold block mb-4">
-        Language
+        {t(STRINGS.languageLabel, locale)}
         <select
           value={language}
           onChange={(e) => setLanguage(e.target.value as "en" | "fr")}
@@ -101,18 +102,20 @@ export function Recorder() {
 
       {(phase === "idle" || phase === "error" || phase === "saved") && (
         <button onClick={startRecording} className="rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold">
-          {phase === "saved" ? "Record another" : "Start recording"}
+          {phase === "saved" ? t(STRINGS.recordAnother, locale) : t(STRINGS.startRecording, locale)}
         </button>
       )}
 
       {phase === "recording" && (
         <button onClick={stopRecording} className="rounded-md bg-red-600 px-4 py-2 text-white text-sm font-semibold">
-          Stop recording
+          {t(STRINGS.stopRecording, locale)}
         </button>
       )}
 
       {(phase === "uploading" || phase === "transcribing") && (
-        <p className="text-sm text-neutral-500">{phase === "uploading" ? "Uploading…" : "Transcribing…"}</p>
+        <p className="text-sm text-neutral-500">
+          {phase === "uploading" ? t(STRINGS.uploadingStatus, locale) : t(STRINGS.transcribingStatus, locale)}
+        </p>
       )}
 
       {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
@@ -120,8 +123,8 @@ export function Recorder() {
       {(phase === "editing" || phase === "saved") && (
         <div className="mt-4">
           <label className="block text-sm font-semibold mb-1">
-            Transcript{" "}
-            <span className="text-neutral-400 font-normal">— AI-generated, review and correct before saving</span>
+            {t(STRINGS.transcriptLabel, locale)}{" "}
+            <span className="text-neutral-400 font-normal">{t(STRINGS.transcriptAiNote, locale)}</span>
           </label>
           <textarea
             value={transcript}
@@ -130,9 +133,9 @@ export function Recorder() {
             className="w-full border border-neutral-300 rounded-md p-3 text-sm"
           />
           <button onClick={save} className="mt-2 rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold">
-            Save
+            {t(STRINGS.saveButton, locale)}
           </button>
-          {phase === "saved" && <span className="ml-3 text-sm text-green-700">Saved to your private workspace.</span>}
+          {phase === "saved" && <span className="ml-3 text-sm text-green-700">{t(STRINGS.savedToWorkspace, locale)}</span>}
         </div>
       )}
     </div>
