@@ -15,6 +15,10 @@ Format: date · session · what changed · why.
   `totpSecretEncrypted`, and lockout counters for that one row in
   production. Logged as DL-038 (explicit override, not a default).
 - `npx tsc --noEmit` and `npm run build` both passed.
+- Pushed (`2110fb9`), then verified live via a real Chrome walkthrough
+  against `https://www.xpath.report`: rotated the account's password
+  (`scripts/reset-dev-administrator-password.ts`), signed in, landed on
+  `/dashboard` directly with no TOTP prompt — not just "it built."
 
 ## 2026-08-03 — M7 closed: Cloudflare DNS cutover, missed push caught, live re-verification
 - Marcel cut over Cloudflare DNS for `xpath.report`/`www.xpath.report`

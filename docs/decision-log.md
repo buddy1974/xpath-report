@@ -340,3 +340,12 @@ Format: DL-nnn · decision · rationale.
   pathologist/technician/manager accounts, and `dev-pathologist-a`
   specifically, keep 2FA unchanged. `npx tsc --noEmit` and `npm run build`
   both passed after the change.
+  **Live-verified, not just committed:** pushed to `origin/main`
+  (`2110fb9`), Vercel auto-deployed, then re-verified with a real browser
+  walkthrough against `https://www.xpath.report` — rotated the account's
+  password to a freshly generated value (`scripts/reset-dev-administrator-
+  password.ts`, since the prior value was never shared to this session),
+  signed in with email + password only, landed directly on `/dashboard`
+  with no `/verify` redirect and no TOTP prompt at any point. Confirmed
+  `dev-administrator@xpath.report` / role `administrator` in the
+  authenticated page itself, not just a redirect target.
