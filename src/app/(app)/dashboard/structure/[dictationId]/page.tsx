@@ -62,6 +62,16 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
                     {t(STRINGS.matchScorePrefix, locale)} {s.score}
                   </span>
                 )}
+                {s.matchedWords.length > 0 && (
+                  <p className="text-xs text-neutral-500 mt-1.5">
+                    {t(STRINGS.suggestedBecausePrefix, locale)}{" "}
+                    {s.matchedWords.map((w) => (
+                      <span key={w} className="inline-block bg-petrol/10 text-petrol rounded-full px-2 py-0.5 mr-1 mt-1">
+                        {w}
+                      </span>
+                    ))}
+                  </p>
+                )}
               </button>
             </form>
           ))}
@@ -117,6 +127,7 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
             key={s.key}
             section={s}
             filled={{ values: data.fieldValues, aiPaths: new Set(data.aiFieldPaths), quotes: data.quotes }}
+            locale={locale}
           />
         ))}
       </div>

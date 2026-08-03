@@ -500,6 +500,8 @@ export const breastBiomarker: TemplateVersion = {
   templateId: "breast-biomarker",
   title: "Breast Biomarker Reporting Template",
   category: "Breast",
+  blurb: "ER, PgR, HER2 and Ki-67 biomarker interpretation per ASCO/CAP guidelines.",
+  panelPreview: ["ER", "PgR", "HER2 (IHC)", "HER2 (ISH)", "Ki-67"],
   sourceVersion: "1.6.1.0",
   sourceProtocolName: "CAP Breast Biomarker Reporting Template (incl. ASCO/CAP HER2 Guidelines 2018 interpretive content)",
   sourcePostingDate: "2025-06",

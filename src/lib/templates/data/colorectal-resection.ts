@@ -627,6 +627,7 @@ export const colorectalResection: TemplateVersion = {
   templateId: "colorectal-resection",
   title: "Colon & Rectum (Resection)",
   category: "Colorectal",
+  blurb: "Colon and rectum resection — tumor extent, margins, lymph nodes, TNM staging.",
   sourceVersion: "4.4.0.1",
   sourceProtocolName: "CAP Protocol for the Examination of Resection Specimens from Patients with Primary Carcinoma of the Colon and/or Rectum",
   sourcePostingDate: "2025-09",

@@ -24,9 +24,21 @@ function errorMessage(code: string | undefined, locale: Locale): string | undefi
 // so one render function covers all of them. Known simplification: a
 // selected single-select radio can't be un-selected without JS — a real
 // but minor rough edge for this first version, not hidden here.
-function FieldEditor({ field, value, isAi, locale }: { field: FlatField; value?: string | string[]; isAi: boolean; locale: Locale }) {
+function FieldEditor({
+  field,
+  value,
+  isAi,
+  quote,
+  locale,
+}: {
+  field: FlatField;
+  value?: string | string[];
+  isAi: boolean;
+  quote?: string;
+  locale: Locale;
+}) {
   return (
-    <div className="border-l-2 border-neutral-200 pl-4 py-1">
+    <div className="border-l-2 border-neutral-200 hover:border-petrol/40 pl-4 py-1 transition-colors">
       <label className="text-sm font-medium flex items-center gap-2 flex-wrap">
         {field.label}
         <TierBadge tier={field.tier} />
@@ -36,6 +48,11 @@ function FieldEditor({ field, value, isAi, locale }: { field: FlatField; value?:
           </span>
         )}
       </label>
+      {isAi && quote && (
+        <p className="text-xs text-hema bg-hema/5 border border-hema/20 rounded-lg px-2 py-1 mt-1 inline-block">
+          <span className="font-semibold">{t(STRINGS.groundingQuoteLabel, locale)}</span> "{quote}"
+        </p>
+      )}
       {field.options ? (
         <div className="mt-1 space-y-1">
           {field.options.map((opt) => {
@@ -91,6 +108,7 @@ export default async function ReviewPage({
     templateId: string;
     fieldValues: Record<string, string | string[]>;
     aiFieldPaths: string[];
+    quotes?: Record<string, string>;
     reflexSuggestions: { title: string; detail: string }[];
   };
   const template = getTemplate(data.templateId);
@@ -150,7 +168,14 @@ export default async function ReviewPage({
             <h2 className="text-lg font-semibold uppercase tracking-wide text-petrol">{sectionTitle}</h2>
             <div className="mt-3 space-y-4">
               {sectionFields.map((f) => (
-                <FieldEditor key={f.path} field={f} value={data.fieldValues?.[f.path]} isAi={aiPaths.has(f.path)} locale={locale} />
+                <FieldEditor
+                  key={f.path}
+                  field={f}
+                  value={data.fieldValues?.[f.path]}
+                  isAi={aiPaths.has(f.path)}
+                  quote={data.quotes?.[f.path]}
+                  locale={locale}
+                />
               ))}
             </div>
           </section>

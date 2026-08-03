@@ -55,6 +55,7 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
     templateTitle: string;
     sourceVersion: string;
     fieldValues: Record<string, string | string[]>;
+    quotes?: Record<string, string>;
     reflexSuggestionsAtSignOut: { title: string; detail: string }[];
   };
   const template = getTemplate(content.templateId);
@@ -95,7 +96,9 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
 
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         {template &&
-          template.sections.map((s) => <SectionView key={s.key} section={s} filled={{ values: content.fieldValues }} />)}
+          template.sections.map((s) => (
+            <SectionView key={s.key} section={s} filled={{ values: content.fieldValues, quotes: content.quotes }} locale={locale} />
+          ))}
       </div>
     </div>
   );

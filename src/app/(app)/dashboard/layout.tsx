@@ -9,6 +9,7 @@ import { auth } from "@/auth";
 import { getLocale } from "@/lib/i18n-server";
 import { setLocaleAction } from "@/lib/i18n-actions";
 import { STRINGS, ROLE_LABELS, t } from "@/lib/i18n";
+import { HelpButton } from "@/components/help-button";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -50,6 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               >
                 {t(STRINGS.navArchiveTitle, locale)}
               </Link>
+              <HelpButton locale={locale} />
             </nav>
           )}
           {role !== "pathologist" && (

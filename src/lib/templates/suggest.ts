@@ -19,21 +19,28 @@ export interface TemplateSuggestion {
   templateId: string;
   title: string;
   score: number;
+  /** Which transcript words actually matched this template's title/section
+   * titles — real, derived data for "why this was suggested" contextual
+   * help (DL-044), never a fabricated explanation. */
+  matchedWords: string[];
 }
 
 export function suggestTemplates(transcript: string): TemplateSuggestion[] {
   const transcriptWords = new Set(words(transcript));
 
-  function score(t: TemplateVersion): number {
+  function scoreAndMatch(t: TemplateVersion): { score: number; matchedWords: string[] } {
     const candidateWords = words([t.title, ...t.sections.map((s) => s.title)].join(" "));
-    let hits = 0;
+    const matched = new Set<string>();
     for (const w of candidateWords) {
-      if (w.length > 3 && transcriptWords.has(w)) hits++;
+      if (w.length > 3 && transcriptWords.has(w)) matched.add(w);
     }
-    return hits;
+    return { score: matched.size, matchedWords: [...matched] };
   }
 
   return templates
-    .map((t) => ({ templateId: t.templateId, title: t.title, score: score(t) }))
+    .map((t) => {
+      const { score, matchedWords } = scoreAndMatch(t);
+      return { templateId: t.templateId, title: t.title, score, matchedWords };
+    })
     .sort((a, b) => b.score - a.score);
 }

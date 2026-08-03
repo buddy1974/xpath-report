@@ -56,6 +56,39 @@ export const STRINGS = {
   teaserAddTenant: { en: "Add another lab / tenant", fr: "Ajouter un autre laboratoire" },
   teaserRegistryFhir: { en: "Registry / FHIR export", fr: "Registre / export FHIR" },
 
+  // Guided-experience layer (DL-044) — onboarding checklist + contextual
+  // help. Copy stays inside G1/G8: describes the workflow, never implies
+  // X-PATH diagnoses or interprets on its own.
+  onboardingTitle: { en: "Your first case, in 4 steps", fr: "Votre premier cas, en 4 étapes" },
+  onboardingStep1: {
+    en: "Press the mic (or upload audio) and describe the case.",
+    fr: "Appuyez sur le micro (ou téléversez un fichier audio) et décrivez le cas.",
+  },
+  onboardingStep2: { en: "Review the transcript — fix anything the AI mis-heard.", fr: "Relisez la transcription — corrigez ce que l'IA a mal compris." },
+  onboardingStep3: {
+    en: "Confirm the suggested template — you always choose, it never auto-routes.",
+    fr: "Confirmez le modèle suggéré — c'est toujours vous qui choisissez, jamais automatique.",
+  },
+  onboardingStep4: { en: "Review the auto-filled fields, then sign.", fr: "Relisez les champs remplis automatiquement, puis signez." },
+  onboardingDismiss: { en: "Got it", fr: "Compris" },
+  helpIconLabel: { en: "Show the getting-started guide", fr: "Afficher le guide de démarrage" },
+  capturePrompt: {
+    en: "Describe what you see — specimen type, gross findings, microscopic impression. We'll transcribe and structure it for you.",
+    fr: "Décrivez ce que vous observez — type de prélèvement, aspect macroscopique, impression microscopique. Nous le transcrivons et le structurons pour vous.",
+  },
+  suggestedBecausePrefix: { en: "Suggested because your dictation mentions:", fr: "Suggéré car votre dictée mentionne :" },
+  groundingQuoteLabel: { en: "AI found this in your transcript:", fr: "L'IA a trouvé ceci dans votre transcription :" },
+  archiveEmptyTitle: { en: "Your signed reports will appear here", fr: "Vos comptes rendus signés apparaîtront ici" },
+  archiveEmptyBody: {
+    en: "This is the permanent, audited record of everything you've signed. Nothing shows up here until you complete your first case.",
+    fr: "Ceci est le dossier permanent et audité de tout ce que vous avez signé. Rien n'apparaît ici tant que vous n'avez pas terminé votre premier cas.",
+  },
+  archiveEmptyCta: { en: "Start your first case", fr: "Commencer votre premier cas" },
+  adminIntroExtra: {
+    en: "Templates are the only management surface built so far — user/role management and audit views are on the roadmap.",
+    fr: "Les modèles sont la seule fonctionnalité de gestion construite pour l'instant — la gestion des utilisateurs/rôles et les vues d'audit sont sur la feuille de route.",
+  },
+
   // Dictate page
   dictateHeading: { en: "Dictate", fr: "Dicter" },
   dictatePrivacyLine: {

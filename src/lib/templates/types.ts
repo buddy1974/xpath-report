@@ -78,6 +78,14 @@ export interface TemplateVersion {
    * CAP concept. Add a new category string as new organ systems are
    * added; no fixed enum, so this scales without a type change. */
   category: string;
+  /** One-line, in-house-authored description of what this template
+   * covers — library-card copy, not CAP prose (Header G3). */
+  blurb: string;
+  /** Optional short list of the fixed panel/marker names this template's
+   * own CORE fields test for (e.g. breast biomarker's ER/PR/HER2/Ki-67) —
+   * pulled from the template's real fields, never invented. Omit when a
+   * template has no fixed panel concept. */
+  panelPreview?: string[];
   /** The CAP protocol's own version string (their versioning, not ours). */
   sourceVersion: string;
   sourceProtocolName: string;

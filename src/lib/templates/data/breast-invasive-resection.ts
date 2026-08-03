@@ -802,6 +802,7 @@ export const breastInvasiveResection: TemplateVersion = {
   templateId: "breast-invasive-resection",
   title: "Breast — Invasive Carcinoma (Resection)",
   category: "Breast",
+  blurb: "Invasive breast carcinoma resection — histologic type/grade, margins, lymph nodes, TNM staging.",
   sourceVersion: "4.11.0.0",
   sourceProtocolName: "CAP Invasive Carcinoma of the Breast: Resection",
   sourcePostingDate: "2026-06",

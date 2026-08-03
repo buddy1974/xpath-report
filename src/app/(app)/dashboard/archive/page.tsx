@@ -67,7 +67,18 @@ export default async function ArchivePage({
           </Link>
         </p>
       )}
-      {!q && rows.length === 0 && <p className="mt-6 text-sm text-neutral-500">{t(STRINGS.nothingSignedYet, locale)}</p>}
+      {!q && rows.length === 0 && (
+        <div className="mt-6 rounded-2xl border border-dashed border-neutral-300 bg-white p-8 text-center">
+          <h2 className="font-semibold text-petrol">{t(STRINGS.archiveEmptyTitle, locale)}</h2>
+          <p className="text-sm text-neutral-500 mt-1 max-w-sm mx-auto">{t(STRINGS.archiveEmptyBody, locale)}</p>
+          <Link
+            href="/dashboard"
+            className="inline-block mt-4 rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold shadow-sm hover:bg-petrol-deep transition-colors"
+          >
+            {t(STRINGS.archiveEmptyCta, locale)}
+          </Link>
+        </div>
+      )}
 
       <ul className="mt-6 space-y-2">
         {rows.map(({ record, accession }) => {

@@ -46,7 +46,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
       </header>
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         {template.sections.map((s) => (
-          <SectionView key={s.key} section={s} />
+          <SectionView key={s.key} section={s} locale={locale} />
         ))}
       </div>
     </div>

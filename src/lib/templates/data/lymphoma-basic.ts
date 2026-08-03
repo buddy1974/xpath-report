@@ -376,6 +376,8 @@ export const lymphomaBasic: TemplateVersion = {
   templateId: "lymphoma-basic",
   title: "Lymphoma (Basic)",
   category: "Lymphoma / Hematologic",
+  blurb: "Lymphoid neoplasm classification (WHO 5th Ed.) with IHC, flow, cytogenetics and molecular findings.",
+  panelPreview: ["Immunohistochemistry", "Flow Cytometry", "Cytogenetics", "FISH", "Molecular"],
   sourceVersion: "1.0.0.1",
   sourceProtocolName: "CAP Precursor and Mature Lymphoid Malignancies",
   sourcePostingDate: "2025-09",

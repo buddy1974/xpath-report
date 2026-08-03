@@ -188,6 +188,8 @@ export const cup: TemplateVersion = {
   templateId: "cup",
   title: "Carcinoma of Unknown Primary (CUP)",
   category: "Carcinoma of Unknown Primary (CUP)",
+  blurb: "In-house IHC panel to help narrow the likely primary site — advisory, pathologist-interpreted.",
+  panelPreview: ["CK7", "CK20", "CDX2", "TTF-1", "GATA3", "PAX8", "CD45"],
   sourceVersion: "1.0.0-inhouse",
   sourceProtocolName:
     "X-PATH generic fallback protocol (no CAP source exists for CUP) — Header §5 pattern + XPATH_handover.md §13 CUP panel",

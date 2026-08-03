@@ -5,6 +5,17 @@ import { templates } from "@/lib/templates";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, APPROVAL_STATUS_LABELS, t } from "@/lib/i18n";
 
+// Cosmetic only, cycled per category — not a clinical color code.
+const CATEGORY_ACCENTS = ["eosin", "petrol", "hema"] as const;
+function accentFor(index: number): (typeof CATEGORY_ACCENTS)[number] {
+  return CATEGORY_ACCENTS[index % CATEGORY_ACCENTS.length];
+}
+const ACCENT_BADGE: Record<string, string> = {
+  eosin: "bg-eosin/10 text-eosin",
+  petrol: "bg-petrol/10 text-petrol",
+  hema: "bg-hema/10 text-hema",
+};
+
 export default async function TemplatesIndexPage() {
   const session = await auth();
   if (!session?.user) redirect("/sign-in");
@@ -26,43 +37,63 @@ export default async function TemplatesIndexPage() {
       <p className="text-neutral-600 mt-1">{t(STRINGS.templatesBody, locale)}</p>
 
       <div className="mt-6 space-y-3">
-        {[...groups.entries()].map(([category, categoryTemplates]) => (
-          <details key={category} className="group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden" open>
-            <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between hover:bg-petrol/5 transition-colors">
-              <span className="font-semibold text-petrol">{category}</span>
-              <span className="flex items-center gap-2">
-                <span className="text-xs text-neutral-400">
-                  {categoryTemplates.length} {categoryTemplates.length === 1 ? t(STRINGS.templateWord, locale) : t(STRINGS.templatesWord, locale)}
+        {[...groups.entries()].map(([category, categoryTemplates], i) => {
+          const accent = accentFor(i);
+          const initial = category.replace(/[^A-Za-z]/g, "")[0] ?? "?";
+          return (
+            <details key={category} className="group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden" open>
+              <summary className="cursor-pointer list-none px-5 py-4 flex items-center gap-3 hover:bg-petrol/5 transition-colors">
+                <span className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${ACCENT_BADGE[accent]}`}>
+                  {initial}
                 </span>
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180"
-                >
-                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
-                </svg>
-              </span>
-            </summary>
-            <ul className="border-t border-neutral-100 divide-y divide-neutral-100">
-              {categoryTemplates.map((template) => {
-                const statusLabel = t(APPROVAL_STATUS_LABELS[template.approval.status] ?? APPROVAL_STATUS_LABELS.draft, locale);
-                return (
-                  <li key={template.templateId}>
-                    <Link
-                      href={`/dashboard/templates/${template.templateId}`}
-                      className="block px-5 py-3 hover:bg-petrol/5 transition-colors"
-                    >
-                      <span className="font-medium text-petrol">{template.title}</span>
-                      <p className="text-sm text-neutral-500 mt-0.5">
-                        v{template.sourceVersion} · {statusLabel} · {template.sections.length} {t(STRINGS.sectionsWord, locale)}
-                      </p>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </details>
-        ))}
+                <span className="font-semibold text-petrol">{category}</span>
+                <span className="ml-auto flex items-center gap-2">
+                  <span className="text-xs text-neutral-400">
+                    {categoryTemplates.length} {categoryTemplates.length === 1 ? t(STRINGS.templateWord, locale) : t(STRINGS.templatesWord, locale)}
+                  </span>
+                  <svg
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180"
+                  >
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+                  </svg>
+                </span>
+              </summary>
+              <ul className="border-t border-neutral-100 divide-y divide-neutral-100">
+                {categoryTemplates.map((template) => {
+                  const statusLabel = t(APPROVAL_STATUS_LABELS[template.approval.status] ?? APPROVAL_STATUS_LABELS.draft, locale);
+                  return (
+                    <li key={template.templateId}>
+                      <Link
+                        href={`/dashboard/templates/${template.templateId}`}
+                        className="block px-5 py-4 hover:bg-petrol/5 transition-colors"
+                      >
+                        <span className="font-medium text-petrol">{template.title}</span>
+                        <p className="text-sm text-neutral-500 mt-0.5">
+                          v{template.sourceVersion} · {statusLabel} · {template.sections.length} {t(STRINGS.sectionsWord, locale)}
+                        </p>
+                        <p className="text-sm text-neutral-600 mt-1">{template.blurb}</p>
+                        {template.panelPreview && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {template.panelPreview.map((marker) => (
+                              <span
+                                key={marker}
+                                className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${ACCENT_BADGE[accent]}`}
+                              >
+                                {marker}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          );
+        })}
       </div>
     </div>
   );
