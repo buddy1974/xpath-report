@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓░░ ~75% (you are here → M6 signing loop built + E2E-verified; PDF generation pending vendor decision)
+Overall: ▓▓▓▓▓▓▓▓░░ ~78% (you are here → M6 complete: review/sign/archive/PDF, all E2E-verified live)
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
@@ -7,7 +7,7 @@ Overall: ▓▓▓▓▓▓▓▓░░ ~75% (you are here → M6 signing loop b
 [x] M3 Template engine          100%   ← all 6 Phase-1 templates built
 [x] M4 Voice + transcription    95%   ← pipeline verified live, mic-UI unverified
 [x] M5 Structure & auto-fill    90%   ← engine + all templates verified
-[x] M6 Review · validate · assign 85%   ← review/sign/archive loop E2E-verified live; PDF pending vendor gate
+[x] M6 Review · validate · assign 100%   ← review/sign/archive/PDF loop E2E-verified live
 [ ] M7 Hardening + demo          0%
 
 Team provisioning (Cowork execution-order §1 — parallel workstream, not a
@@ -80,7 +80,15 @@ suggestion mis-ranked an unambiguous transcript — Header §5's human
 confirmation already covers it). R-027 logged: no amendment path for
 signed records yet, a real gap outside M6's first-signing-loop scope.
 
-M6 is functionally complete except PDF generation — that's gated on
-the vendor decision, surfaced to Marcel as a concrete recommendation
-(not an open question) per the pre-flagged gate. See next message /
-`docs/decision-log.md` for the recommendation once given.
+**PDF generation built and verified — M6 is now fully complete.**
+Marcel approved the recommendation (`@react-pdf/renderer`, self-hosted
+inside the existing Vercel function — DL-033): no headless Chromium on
+serverless, no third-party rendering vendor seeing clinical report
+content, no second deployment target. `npm audit` after install shows
+only the pre-existing accepted R-007, nothing new. Verified for real:
+fetched `/api/pdf/[recordId]` through a real authenticated session
+against the real signed record from the E2E test — `200`, valid PDF.
+
+Moving into M7 (hardening + demo) next — holding at the Cloudflare DNS
+cutover step for Marcel's explicit go-ahead, per the other pre-flagged
+gate.

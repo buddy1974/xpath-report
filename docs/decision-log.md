@@ -237,3 +237,31 @@ Format: DL-nnn · decision · rationale.
   pathologist's own accession-number entry at sign-out is treated as
   authoritative for now. Cross-checking against a technician-created
   case is a real future feature, deliberately deferred.
+- **DL-033 — PDF worker: `@react-pdf/renderer`, self-hosted inside the
+  existing Vercel Node function — not headless Chromium, not a managed
+  PDF/rendering API. Concrete recommendation presented to Marcel for
+  approval per the pre-flagged M6 gate; approved 2026-08-03.** Rejected
+  alternatives and why: Puppeteer/Playwright + `@sparticuz/chromium` in
+  a Vercel serverless function reuses the existing HTML report layout
+  more directly, but is fragile there in practice — binary size close
+  to platform limits, slow cold starts, ongoing chromium-version
+  maintenance for a one-person team. A managed PDF/headless-browser API
+  (Browserless, PDFShift, DocRaptor, etc.) is fastest to integrate but
+  sends real clinical report content (biomarker results, accession
+  numbers, pathologist identity) to a third-party processor — a real
+  vendor/privacy question this project hasn't needed to open, given G5
+  ("realistic security, not zero-knowledge" — still a real bar, not an
+  invitation to add avoidable third-party exposure). A dedicated PDF
+  worker service on Render/Railway/Fly.io decouples from Vercel's
+  constraints but adds a second deployment target to run/monitor/auth
+  against — unjustified for v1. `@react-pdf/renderer` keeps report data
+  from ever leaving the existing deployment and needs no new infra, at
+  the cost of building the report layout once in PDF-native components
+  (`src/lib/pdf/report-document.tsx`) rather than reusing the HTML view
+  as-is. `/api/pdf/[recordId]` (Node runtime route handler) reuses the
+  same `assertCanReadClinicalRecord` check as the archive detail page
+  and logs the download as a `view_clinical_record` audit entry
+  (`detail.format: "pdf"`) rather than adding a new `audit_action` enum
+  value for one new read path. Verified end to end: real signed record
+  from the M6 browser test, fetched through the real route with a real
+  session, returned `200` with a valid `%PDF-` payload.

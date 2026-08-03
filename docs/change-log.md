@@ -2,6 +2,33 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — M6 PDF generation built (self-hosted, no new infra)
+- Marcel approved the pre-flagged PDF-worker recommendation
+  (`@react-pdf/renderer`, self-hosted — see DL-033 for the full
+  rejected-alternatives reasoning: no headless Chromium on serverless,
+  no third-party rendering vendor, no second deployment target).
+- Installed `@react-pdf/renderer@4.5.1` (exact-pinned). `npm audit`
+  after install shows only the pre-existing, already-accepted R-007
+  (`drizzle-kit`'s bundled `esbuild`, dev-tooling only) — nothing new
+  introduced by this package.
+- Built `src/lib/pdf/report-document.tsx` (PDF layout over
+  `flattenTemplate`, renders only fields with an actual value — the
+  signed record, not the blank template) and `src/app/api/pdf/
+  [recordId]/route.ts` (Node runtime GET handler — same
+  `assertCanReadClinicalRecord` check as the archive detail page,
+  `renderToBuffer`, audited as `view_clinical_record` with
+  `detail.format: "pdf"`). Removed the now-obsolete `PDF_WORKER_URL`
+  env-var gate on the archive page's download link.
+- Verified for real, not just typecheck/build: started a local dev
+  server against real Neon, logged in as the same pathologist who
+  signed the M6 test record, fetched `/api/pdf/[recordId]` through a
+  real authenticated session — `200`, valid `%PDF-` magic bytes,
+  3.8 kB payload.
+- `npx tsc --noEmit` and `npm run build` pass. M6 is now fully
+  complete. Next: M7 hardening + demo, holding at the Cloudflare DNS
+  cutover step for Marcel's explicit go-ahead per the other
+  pre-flagged gate.
+
 ## 2026-08-03 — M6 review · sign · archive loop built and E2E-verified
 - Built the M6 signing loop: `dashboard/review/[draftId]` (flat
   field-per-row editable form over `flattenTemplate`, DL-031),

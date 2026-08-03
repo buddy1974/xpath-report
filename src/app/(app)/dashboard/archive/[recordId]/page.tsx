@@ -56,8 +56,6 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
   };
   const template = getTemplate(content.templateId);
 
-  const pdfConfigured = Boolean(process.env.PDF_WORKER_URL);
-
   return (
     <main className="min-h-screen p-8 max-w-3xl">
       <header className="mb-6">
@@ -67,13 +65,9 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
           signed {row.record.releasedAt.toLocaleString?.() ?? String(row.record.releasedAt)}
         </p>
         <p className="text-sm text-neutral-500">Source template version {content.sourceVersion}</p>
-        {pdfConfigured ? (
-          <a href={`/api/pdf/${row.record.id}`} className="inline-block mt-2 text-sm font-semibold text-petrol underline">
-            Download PDF
-          </a>
-        ) : (
-          <p className="mt-2 text-xs text-neutral-400">PDF generation not yet configured (M6 SIGNAL pending).</p>
-        )}
+        <a href={`/api/pdf/${row.record.id}`} className="inline-block mt-2 text-sm font-semibold text-petrol underline">
+          Download PDF
+        </a>
       </header>
 
       {content.reflexSuggestionsAtSignOut?.length > 0 && (
