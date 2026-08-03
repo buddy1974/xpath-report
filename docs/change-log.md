@@ -2,6 +2,45 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-03 — M6 review · sign · archive loop built and E2E-verified
+- Built the M6 signing loop: `dashboard/review/[draftId]` (flat
+  field-per-row editable form over `flattenTemplate`, DL-031),
+  `dashboard/review/[draftId]/actions.ts` (`saveReview`, `signAndAssign`
+  — look-up-or-create the `cases` row by accession, DL-032, then insert
+  an immutable `clinicalRecords` row, write a `sign_out_report` audit
+  entry, delete the source `report_draft`), and `dashboard/archive` +
+  `dashboard/archive/[recordId]` (pathologist's own signed-record list
+  and detail view, `view_clinical_record` audit on cross-viewer reads).
+- Fixed `flattenTemplate` dropping the `cannotBeDetermined` flag
+  (DL-030) — needed for the review form to express G8's "flag missing
+  info, don't fabricate" requirement. Re-verified 0 duplicate field
+  paths across all 6 templates after the fix.
+- Verified end-to-end against real Neon data via real browser
+  interaction (not just typecheck/build): seeded a real dictation
+  transcript (ER/PR/HER2/Ki-67 biomarker content), logged in as
+  `dev-pathologist-a@xpath.report`, ran suggest → confirm template →
+  auto-fill (correctly filled ER Positive/91-100%/strong, PgR Negative,
+  HER2 IHC Equivocal 2+, Ki-67 25%, and correctly fired the HER2
+  Dual-ISH reflex suggestion) → review page → signed with a test
+  accession → landed on the archive detail page. Then independently
+  confirmed against real Neon (not just the UI): the `clinicalRecords`
+  row, the `sign_out_report` audit row with matching detail, deletion
+  of the source draft, survival of the original dictation, and the new
+  `cases` row all exist and match.
+- Two real findings from this testing, logged rather than fixed
+  reflexively: R-026 (`template-view.tsx` doesn't render `opt.children`,
+  currently inert — no template uses it yet) and R-028 (template
+  suggestion ranked CUP above the correct Breast Biomarker template for
+  an unambiguous biomarker transcript — Header §5's mandatory human
+  confirmation already covers this, but the ranking itself is worse
+  than expected and worth revisiting). Also logged R-027: signed
+  records have no amendment path yet — a real gap, out of scope for
+  M6's first-time signing loop.
+- `npx tsc --noEmit` and `npm run build` pass. M6's signing loop is now
+  functionally complete except PDF generation, which is gated on the
+  vendor decision surfaced to Marcel separately (per the pre-flagged
+  gate, not an open-ended question).
+
 ## 2026-08-03 — Remaining Phase-1 templates built (Colon & Rectum, Prostate, Lymphoma, CUP)
 - Built the last 4 of 6 Phase-1 templates via 4 parallel forked agents
   (each inherits full conversation context — schema, G3 rules, the

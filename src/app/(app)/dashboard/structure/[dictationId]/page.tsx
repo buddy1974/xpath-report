@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
@@ -73,9 +74,14 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
       <h1 className="text-2xl font-semibold">{template.title}</h1>
       <p className="text-sm text-neutral-500 mt-1">
         Auto-filled from your dictation. Fields marked <span className="text-hema font-medium">AI-suggested</span> need
-        your review before this becomes a signed record (Header G1/G8) — review, correction, and sign-out is M6, not
-        yet built. Nothing here is part of the clinical record yet.
+        your review before this becomes a signed record (Header G1/G8). Nothing here is part of the clinical record yet.
       </p>
+      <Link
+        href={`/dashboard/review/${draft.id}`}
+        className="inline-block mt-3 rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold"
+      >
+        Review &amp; sign →
+      </Link>
 
       {data.reflexSuggestions.length > 0 && (
         <div className="mt-4 space-y-2">

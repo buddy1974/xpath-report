@@ -213,3 +213,27 @@ Format: DL-nnn · decision · rationale.
   the file's own header comment, not silently smoothed over — worth
   revisiting only if per-option tiering turns out to matter for more
   templates later.
+- **DL-030 — `flattenTemplate`'s `cannotBeDetermined` handling was
+  fixed to preserve the flag so M6's review/edit form (and G8's "never
+  fabricate — flag missing info, don't fill it" requirement) can
+  actually express "cannot be determined."** Building M6 surfaced that
+  the flag was silently dropped by the M5-era flatten logic. Re-verified
+  the fix caused no regressions: `0` duplicate field paths across all 6
+  templates after the change (same check as DL-027).
+- **DL-031 — M6's review/edit form (`src/app/(app)/dashboard/review/
+  [draftId]/page.tsx`) is a flat, uniform field-per-row editor built on
+  `flattenTemplate`, not a re-implementation of the nested tree UI from
+  `template-view.tsx`.** Every field shape M6 needs (single/multi-select,
+  text/number, "specify" companion values, "cannot be determined") is
+  already one addressable dotted path, so one render function
+  (`FieldEditor`) covers all of them instead of duplicating the
+  recursive section/field tree a second time. Known simplification, not
+  hidden: a selected single-select radio can't be un-selected without
+  JS in this first version — a real but minor rough edge.
+- **DL-032 — Sign-out (`signAndAssign`) look-up-or-create the `cases`
+  row by `(tenantId, accession)` rather than requiring a pre-existing
+  case.** M6's scope is the signing loop, not a full accessioning
+  workflow (that's technician-role territory, not yet built) — so the
+  pathologist's own accession-number entry at sign-out is treated as
+  authoritative for now. Cross-checking against a technician-created
+  case is a real future feature, deliberately deferred.

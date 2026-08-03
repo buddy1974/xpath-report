@@ -183,3 +183,29 @@ Format: R-nnn · risk · current mitigation / status.
   same basis (identical downstream validation/grounding, same JSON
   contract requested of the model) but needs Anthropic account credit
   before a real round-trip can confirm it.
+- **R-026 — `template-view.tsx`'s shared `FieldView`/`SectionView`
+  (used by the M5 structure-preview screen and the M6 archive detail
+  page) doesn't render `opt.children` (fields nested under a specific
+  option), only `field.children`.** Confirmed via grep that no current
+  template actually uses `opt.children`, so this is currently inert —
+  flagged so it isn't silently forgotten if a future template
+  introduces option-nested fields.
+- **R-027 — Signed clinical records have no amendment path.** M6's
+  `signAndAssign` is a one-way action (draft → immutable `clinicalRecords`
+  row, `status: "released"`); the review page's own copy says as much
+  ("It cannot be edited afterward — an amendment would be a new
+  version (not yet built)"). A real correction-after-sign-out workflow
+  (new version, superseding the old one, both retained per G2's
+  immutability requirement) is not yet built. Not a blocker for M6's
+  scope (the first-time signing loop) but a real gap before this can
+  be used on a genuine case.
+- **R-028 — Template-suggestion ranking can rank the wrong template
+  first.** Verified via real M6 E2E testing: an ER/PR/HER2/Ki-67
+  biomarker transcript was top-ranked as "Carcinoma of Unknown Primary
+  (CUP)" (match score 1) instead of "Breast Biomarker Reporting
+  Template." Not a safety issue on its own — Header §5 already requires
+  the pathologist to confirm, never auto-route (DL-025 accepted a
+  simple free heuristic over a paid AI call for exactly this reason) —
+  but the ranking quality is worse than expected for an unambiguous
+  transcript. Worth revisiting `src/lib/templates/suggest.ts`'s scoring
+  once more templates exist and this stops being a one-off.

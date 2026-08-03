@@ -58,15 +58,24 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold">{view.title}</h1>
         <p className="text-neutral-600 mt-1">{view.blurb}</p>
         {role === "pathologist" && (
-          <Link
-            href="/dashboard/dictate"
-            className="mt-6 block rounded-lg border border-neutral-300 p-6 hover:border-petrol"
-          >
-            <span className="font-semibold text-petrol">Dictate</span>
-            <p className="text-sm text-neutral-500 mt-1">
-              Speak a case; get an editable, AI-generated transcript. Private until you save it.
-            </p>
-          </Link>
+          <>
+            <Link
+              href="/dashboard/dictate"
+              className="mt-6 block rounded-lg border border-neutral-300 p-6 hover:border-petrol"
+            >
+              <span className="font-semibold text-petrol">Dictate</span>
+              <p className="text-sm text-neutral-500 mt-1">
+                Speak a case; get an editable, AI-generated transcript. Private until you save it.
+              </p>
+            </Link>
+            <Link
+              href="/dashboard/archive"
+              className="mt-4 block rounded-lg border border-neutral-300 p-6 hover:border-petrol"
+            >
+              <span className="font-semibold text-petrol">Archive</span>
+              <p className="text-sm text-neutral-500 mt-1">Your signed, released reports.</p>
+            </Link>
+          </>
         )}
         <Link
           href="/dashboard/templates"
