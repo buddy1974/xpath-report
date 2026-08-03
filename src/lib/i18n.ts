@@ -163,6 +163,18 @@ export const STRINGS = {
     fr: "Entrez un numéro d'accession avant de signer.",
   },
 
+  // Review form redesign (DL-045, North-Star §8) — accordions + bottom-
+  // sheet pickers for long option lists. Copy is UI chrome only; no
+  // change to what data is collected or how signing works.
+  selectPlaceholder: { en: "Select…", fr: "Sélectionner…" },
+  searchOptionsPlaceholder: { en: "Search options…", fr: "Rechercher des options…" },
+  noOptionsFound: { en: "No options match your search.", fr: "Aucune option ne correspond à votre recherche." },
+  doneButton: { en: "Done", fr: "Terminé" },
+  showOptionalFields: { en: "Show optional fields", fr: "Afficher les champs optionnels" },
+  hideOptionalFields: { en: "Hide optional fields", fr: "Masquer les champs optionnels" },
+  requiredFieldsRemainingSuffix: { en: "required field(s) left", fr: "champ(s) requis restant(s)" },
+  allRequiredComplete: { en: "All required fields entered", fr: "Tous les champs requis sont remplis" },
+
   // Archive pages
   archiveHeading: { en: "Archive", fr: "Archives" },
   archiveBody: {

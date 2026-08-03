@@ -24,6 +24,8 @@ export interface FlatField {
   type: "single-select" | "multi-select" | "text" | "number";
   options?: { key: string; label: string }[];
   sectionTitle: string;
+  /** Unit suffix for numeric values (e.g. "mm", "%") — presentation only. */
+  unit?: string;
 }
 
 export function flattenTemplate(template: TemplateVersion): FlatField[] {
@@ -53,6 +55,7 @@ export function flattenTemplate(template: TemplateVersion): FlatField[] {
         type: field.type,
         options: allOptions,
         sectionTitle,
+        unit: field.unit,
       });
 
       if (field.cannotBeDetermined) {
