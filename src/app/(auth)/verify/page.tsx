@@ -1,6 +1,15 @@
+import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
+import { auth } from "@/auth";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { encrypt, decrypt } from "@/lib/crypto";
 import { TOTP_LOCKOUT_MINUTES } from "@/lib/totp-policy";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
+import { confirmVerifyEnrollment } from "./actions";
 
 export default async function VerifyPage({
   searchParams,
@@ -18,6 +27,61 @@ export default async function VerifyPage({
         : `Too many incorrect codes. Try again in ${TOTP_LOCKOUT_MINUTES} minutes.`,
   };
   const error = params?.error ? ERRORS[params.error] : undefined;
+
+  const session = await auth();
+  const userId = (session?.user as any)?.id as string | undefined;
+  if (!session || !userId) redirect("/sign-in");
+
+  const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const user = rows[0];
+  if (!user) redirect("/sign-in");
+
+  // No active authenticator (e.g. an admin cleared it) — enroll here
+  // instead of dead-ending at a code box with nothing to scan.
+  if (!user.totpEnabled) {
+    let secret: string;
+    if (user.totpSecretEncrypted) {
+      secret = decrypt(user.totpSecretEncrypted);
+    } else {
+      secret = authenticator.generateSecret();
+      await db.update(users).set({ totpSecretEncrypted: encrypt(secret) }).where(eq(users.id, user.id));
+    }
+    const otpauth = authenticator.keyuri(user.email, "X-PATH", secret);
+    const qrDataUrl = await QRCode.toDataURL(otpauth);
+
+    return (
+      <main className="min-h-screen flex items-center justify-center p-8">
+        <div className="w-full max-w-sm text-center space-y-5">
+          <div>
+            <h2 className="text-lg font-semibold">{t(STRINGS.setUp2fa, locale)}</h2>
+            <p className="text-sm text-neutral-600 mt-1">{t(STRINGS.setUp2faExplainer, locale)}</p>
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrDataUrl} alt="TOTP enrollment QR code" className="mx-auto rounded-md border border-neutral-200" />
+          <p className="text-xs text-neutral-400 break-all">
+            {t(STRINGS.manualEntryPrefix, locale)} {secret}
+          </p>
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              {error}
+            </p>
+          )}
+          <form action={confirmVerifyEnrollment} className="space-y-4">
+            <input
+              name="code"
+              inputMode="numeric"
+              maxLength={6}
+              className="w-full text-center tracking-[0.5em] text-lg rounded-md border border-hema px-3 py-2"
+              placeholder="••••••"
+            />
+            <button className="w-full rounded-md bg-petrol py-2.5 text-white text-sm font-semibold">
+              {t(STRINGS.verifyAndFinish, locale)}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center p-8">
