@@ -439,6 +439,26 @@ export const STRINGS = {
   scanSaveButton: { en: "Save to workspace", fr: "Enregistrer dans l'espace de travail" },
   scanSavedConfirm: { en: "Saved", fr: "Enregistré" },
   scanSaveFailed: { en: "Couldn't save — try again.", fr: "Impossible d'enregistrer — réessayez." },
+
+  // Reflex Testing & Special Stains agent preview (DL-052, admin/developer
+  // section only) — a static, non-functional capability preview from Dr.
+  // Ivo's own spec, vision-signaling only, same deliberate G4 exception
+  // already established for the "Coming soon" teasers (DL-042). UI chrome
+  // only (heading/badge/banner/toggle) — the clinical spec content itself
+  // stays English-only, same reasoning as DL-035/R-029 above: translating
+  // it ourselves would be an unreviewed-terminology G8 fabrication risk.
+  reflexPreviewSectionHeading: { en: "Reflex Testing & Special Stains — capability preview", fr: "Tests réflexes et colorations spéciales — aperçu" },
+  reflexPreviewBadge: { en: "PREVIEW — not live", fr: "APERÇU — non actif" },
+  reflexPreviewToggleShow: { en: "Show preview", fr: "Afficher l'aperçu" },
+  reflexPreviewToggleHide: { en: "Hide preview", fr: "Masquer l'aperçu" },
+  reflexPreviewBanner: {
+    en: "PREVIEW ONLY — this is not a live feature. It is not connected to any real case, report, or dictation, and does not evaluate real findings. Shown here as a capability preview of Dr. Ivo's spec, pending local verification/validation and director approval before any clinical use (Header G1/G3/G8).",
+    fr: "APERÇU UNIQUEMENT — ceci n'est pas une fonctionnalité active. Non connecté à un cas, un compte rendu ou une dictée réel, et n'évalue aucune donnée réelle. Affiché ici comme aperçu des capacités prévues par le cahier des charges du Dr Ivo, en attente de vérification/validation locale et d'approbation par la direction avant toute utilisation clinique (Header G1/G3/G8).",
+  },
+  reflexPreviewSourceNote: {
+    en: "Content below is Dr. Ivo's own spec, reproduced as supplied — not paraphrased, not filled in.",
+    fr: "Le contenu ci-dessous provient du cahier des charges du Dr Ivo, reproduit tel que fourni — non paraphrasé, non complété.",
+  },
 } satisfies Record<string, Dict>;
 
 export const ROLE_LABELS: Record<string, Dict> = {

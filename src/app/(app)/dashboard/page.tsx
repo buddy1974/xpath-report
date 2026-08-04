@@ -12,6 +12,7 @@ import { privateWorkspaceItems, clinicalRecords } from "@/db/schema";
 import { getTemplate } from "@/lib/templates";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, VIEW_TITLES, VIEW_BLURBS, t } from "@/lib/i18n";
+import { ReflexTestingPreview } from "@/components/reflex-testing-preview";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -267,6 +268,8 @@ export default async function DashboardPage() {
           </ul>
         </div>
       )}
+
+      {role === "administrator" && <ReflexTestingPreview locale={locale} />}
     </div>
   );
 }
