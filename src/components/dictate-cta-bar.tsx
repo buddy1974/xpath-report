@@ -7,6 +7,8 @@
 //  - /dashboard/dictate itself (redundant — already there)
 //  - /dashboard/review/* (that screen has its own fixed bottom bar,
 //    review-form.tsx:512 — stacking two fixed bottom bars would collide)
+// Safe-area bottom padding added (DL-053) so it clears the home
+// indicator on notched devices instead of rendering flush against it.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { STRINGS, t, type Locale } from "@/lib/i18n";
@@ -17,7 +19,10 @@ export function DictateCtaBar({ locale }: { locale: Locale }) {
   if (hidden) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 py-3 sm:hidden">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-20 border-t border-neutral-200 bg-white/95 backdrop-blur px-4 pt-3 sm:hidden"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+    >
       <Link
         href="/dashboard/dictate"
         className="flex items-center justify-center gap-2 w-full rounded-xl bg-petrol py-3.5 text-white font-semibold shadow-sm hover:bg-petrol-deep transition-colors"

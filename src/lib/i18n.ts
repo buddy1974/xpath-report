@@ -459,6 +459,17 @@ export const STRINGS = {
     en: "Content below is Dr. Ivo's own spec, reproduced as supplied — not paraphrased, not filled in.",
     fr: "Le contenu ci-dessous provient du cahier des charges du Dr Ivo, reproduit tel que fourni — non paraphrasé, non complété.",
   },
+
+  // Mobile IA redesign (DL-053) — top nav replaced by a floating avatar
+  // opening a full-screen user menu, grouped card style (Apple HIG
+  // inset-grouped-list pattern as the general layout logic, existing
+  // design tokens throughout — layout change, not a rebrand).
+  userMenuOpenLabel: { en: "Open menu", fr: "Ouvrir le menu" },
+  userMenuCloseLabel: { en: "Close", fr: "Fermer" },
+  userMenuAccountHeading: { en: "Account", fr: "Compte" },
+  userMenuFeaturesHeading: { en: "Features", fr: "Fonctionnalités" },
+  userMenuSettingsHeading: { en: "Settings", fr: "Paramètres" },
+  userMenuViewProfile: { en: "View profile", fr: "Voir le profil" },
 } satisfies Record<string, Dict>;
 
 export const ROLE_LABELS: Record<string, Dict> = {

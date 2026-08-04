@@ -145,68 +145,92 @@ export default async function DashboardPage() {
           </section>
         )}
 
-        {/* Recent work */}
-        <section className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-petrol">{t(STRINGS.homeRecentWorkHeading, locale)}</h2>
-          {drafts.length === 0 ? (
-            <p className="text-sm text-neutral-500 mt-2">{t(STRINGS.homeRecentWorkEmpty, locale)}</p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {drafts.map((d) => {
-                const data = d.data as { templateId?: string } | null;
-                const template = data?.templateId ? getTemplate(data.templateId) : undefined;
-                return (
-                  <li
-                    key={d.id}
-                    className="rounded-xl border border-neutral-200 p-4 flex items-center justify-between hover:border-petrol/30 hover:shadow-sm transition-all"
-                  >
-                    <span className="text-sm font-medium text-neutral-800">{template?.title ?? "Draft"}</span>
-                    <Link href={`/dashboard/review/${d.id}`} className="text-sm font-semibold text-petrol shrink-0 ml-3">
-                      {t(STRINGS.homeRecentWorkCta, locale)}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+        {/* Recent work — default-open: the most actionable content, kept
+            expanded on first view; still collapsible for compactness on
+            repeat visits (DL-053, HIG-style grouped-list pattern reused
+            from Templates/DL-043 and the Reflex preview/DL-052). */}
+        <details open className="mt-6 group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+          <summary className="cursor-pointer list-none px-6 min-h-[44px] py-4 flex items-center justify-between hover:bg-petrol/5 active:bg-petrol/10 transition-colors">
+            <span className="text-lg font-semibold text-petrol">{t(STRINGS.homeRecentWorkHeading, locale)}</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180 shrink-0">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+            </svg>
+          </summary>
+          <div className="border-t border-neutral-100 px-6 py-5">
+            {drafts.length === 0 ? (
+              <p className="text-sm text-neutral-500">{t(STRINGS.homeRecentWorkEmpty, locale)}</p>
+            ) : (
+              <ul className="space-y-2">
+                {drafts.map((d) => {
+                  const data = d.data as { templateId?: string } | null;
+                  const template = data?.templateId ? getTemplate(data.templateId) : undefined;
+                  return (
+                    <li
+                      key={d.id}
+                      className="rounded-xl border border-neutral-200 p-4 flex items-center justify-between hover:border-petrol/30 hover:shadow-sm active:bg-neutral-50 transition-all"
+                    >
+                      <span className="text-sm font-medium text-neutral-800">{template?.title ?? "Draft"}</span>
+                      <Link href={`/dashboard/review/${d.id}`} className="text-sm font-semibold text-petrol shrink-0 ml-3">
+                        {t(STRINGS.homeRecentWorkCta, locale)}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </details>
 
-        {/* Trends */}
-        <section className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-petrol">{t(STRINGS.homeTrendsHeading, locale)}</h2>
-          <p className="text-sm text-neutral-500 mt-1">{t(STRINGS.homeTrendsBody, locale)}</p>
-          {totalSigned === 0 ? (
-            <p className="text-sm text-neutral-500 mt-4">{t(STRINGS.homeTrendsEmpty, locale)}</p>
-          ) : (
-            <div className="mt-5 flex items-end gap-2 h-24">
-              {weekLabels.map((key) => {
-                const count = bucketed.get(key) ?? 0;
-                const heightPct = Math.max(6, Math.round((count / maxCount) * 100));
-                return (
-                  <div key={key} className="flex-1 flex flex-col items-center justify-end h-full" title={`${key}: ${count}`}>
-                    <div
-                      className={`w-full rounded-t-md ${count > 0 ? "bg-petrol" : "bg-neutral-100"}`}
-                      style={{ height: `${heightPct}%` }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        {/* Trends — default-closed: a nice-to-have stat, not actionable
+            at a glance, collapsed to keep the page compact (DL-053). */}
+        <details className="mt-4 group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+          <summary className="cursor-pointer list-none px-6 min-h-[44px] py-4 flex items-center justify-between hover:bg-petrol/5 active:bg-petrol/10 transition-colors">
+            <span className="text-lg font-semibold text-petrol">{t(STRINGS.homeTrendsHeading, locale)}</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180 shrink-0">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+            </svg>
+          </summary>
+          <div className="border-t border-neutral-100 px-6 py-5">
+            <p className="text-sm text-neutral-500">{t(STRINGS.homeTrendsBody, locale)}</p>
+            {totalSigned === 0 ? (
+              <p className="text-sm text-neutral-500 mt-4">{t(STRINGS.homeTrendsEmpty, locale)}</p>
+            ) : (
+              <div className="mt-5 flex items-end gap-2 h-24">
+                {weekLabels.map((key) => {
+                  const count = bucketed.get(key) ?? 0;
+                  const heightPct = Math.max(6, Math.round((count / maxCount) * 100));
+                  return (
+                    <div key={key} className="flex-1 flex flex-col items-center justify-end h-full" title={`${key}: ${count}`}>
+                      <div
+                        className={`w-full rounded-t-md ${count > 0 ? "bg-petrol" : "bg-neutral-100"}`}
+                        style={{ height: `${heightPct}%` }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </details>
 
-        {/* Learning */}
-        <section className="mt-6">
-          <h2 className="text-lg font-semibold text-petrol px-1">{t(STRINGS.homeLearningHeading, locale)}</h2>
-          <div className="mt-3 grid sm:grid-cols-2 gap-4">
+        {/* Learning — default-closed: educational content, lowest
+            urgency (DL-053). */}
+        <details className="mt-4 group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+          <summary className="cursor-pointer list-none px-6 min-h-[44px] py-4 flex items-center justify-between hover:bg-petrol/5 active:bg-petrol/10 transition-colors">
+            <span className="text-lg font-semibold text-petrol">{t(STRINGS.homeLearningHeading, locale)}</span>
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180 shrink-0">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+            </svg>
+          </summary>
+          <div className="border-t border-neutral-100 px-6 py-5 grid sm:grid-cols-2 gap-4">
             {LEARNING_CARDS.map((card, i) => (
-              <div key={i} className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div key={i} className="rounded-xl border border-neutral-200 bg-white p-5">
                 <p className="font-semibold text-hema text-sm">{t(card.titleKey, locale)}</p>
                 <p className="text-sm text-neutral-600 mt-2 leading-relaxed">{t(card.bodyKey, locale)}</p>
               </div>
             ))}
           </div>
-        </section>
+        </details>
       </div>
     );
   }

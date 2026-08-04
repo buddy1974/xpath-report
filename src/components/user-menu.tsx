@@ -1,0 +1,216 @@
+"use client";
+
+// X-PATH — mobile IA redesign (DL-053): the top nav bar is gone. This
+// floating avatar + full-screen sheet is now the only way to reach
+// profile/features/settings/sign-out from anywhere in the dashboard
+// shell. Pattern reference: Apple Health's profile screen (layout/IA
+// only — existing design tokens throughout, not a rebrand, per Marcel's
+// explicit instruction).
+//
+// Hidden on /dashboard/dictate (that's the one-tap capture screen — a
+// floating control competing for attention during recording is wrong)
+// and /dashboard/review/* (collides with that screen's own fixed
+// bottom bar/flow) — same reasoning as the Dictate CTA bar (DL-051).
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { STRINGS, t, type Locale } from "@/lib/i18n";
+import { setLocaleAction } from "@/lib/i18n-actions";
+import { signOutAction } from "@/app/(app)/dashboard/actions";
+import { Avatar } from "./avatar";
+import { ONBOARDING_STORAGE_KEY } from "./onboarding-checklist";
+
+type Role = "pathologist" | "technician" | "manager" | "administrator";
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="text-[13px] font-semibold uppercase tracking-wide text-neutral-400 px-4 mb-2">{children}</p>;
+}
+
+function CardGroup({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-[14px] bg-white divide-y divide-neutral-100 overflow-hidden shadow-sm">{children}</div>;
+}
+
+function MenuRow({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className="flex items-center justify-between px-4 min-h-[44px] py-3 active:bg-neutral-100 transition-colors"
+    >
+      <span className="text-[15px] text-neutral-800">{label}</span>
+      <span className="text-neutral-300 text-lg">›</span>
+    </Link>
+  );
+}
+
+export function UserMenu({
+  role,
+  locale,
+  name,
+  email,
+  roleLabel,
+}: {
+  role: Role;
+  locale: Locale;
+  name: string;
+  email: string;
+  roleLabel: string;
+}) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const hiddenAvatar = pathname.startsWith("/dashboard/dictate") || pathname.startsWith("/dashboard/review");
+
+  useEffect(() => {
+    if (!open) return;
+    const raf = requestAnimationFrame(() => setMounted(true));
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      cancelAnimationFrame(raf);
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+      setMounted(false);
+    };
+  }, [open]);
+
+  const close = () => setOpen(false);
+
+  const FEATURES =
+    role === "pathologist"
+      ? [
+          { href: "/dashboard", label: t(STRINGS.navHomeTitle, locale) },
+          { href: "/dashboard/dictate", label: t(STRINGS.navDictateTitle, locale) },
+          { href: "/dashboard/workspace", label: t(STRINGS.navWorkspaceTitle, locale) },
+          { href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) },
+          { href: "/dashboard/archive", label: t(STRINGS.navArchiveTitle, locale) },
+        ]
+      : [{ href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) }];
+
+  return (
+    <>
+      {!hiddenAvatar && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={t(STRINGS.userMenuOpenLabel, locale)}
+          className="fixed right-4 z-30 active:scale-95 transition-transform"
+          style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
+        >
+          <Avatar label={name} size={44} />
+        </button>
+      )}
+
+      {open && (
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={t(STRINGS.userMenuOpenLabel, locale)}>
+          <div
+            className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${mounted ? "opacity-100" : "opacity-0"}`}
+            onClick={close}
+          />
+          <div
+            className={`absolute inset-0 bg-neutral-50 overflow-y-auto transition-transform duration-300 ease-out ${
+              mounted ? "translate-y-0" : "translate-y-full"
+            }`}
+            style={{
+              paddingTop: "env(safe-area-inset-top, 0px)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            }}
+          >
+            <div className="px-2 pt-3">
+              <button
+                type="button"
+                onClick={close}
+                aria-label={t(STRINGS.userMenuCloseLabel, locale)}
+                className="w-11 h-11 rounded-full flex items-center justify-center active:bg-neutral-200 transition-colors"
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-neutral-600">
+                  <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center pt-2 pb-8">
+              <Avatar label={name} size={88} />
+              <p className="mt-3 text-xl font-bold text-neutral-900 text-center px-6">{name}</p>
+              <p className="text-sm text-neutral-500">{email}</p>
+            </div>
+
+            <div className="px-4 pb-10 space-y-8 max-w-md mx-auto w-full">
+              <div>
+                <CardGroup>
+                  <MenuRow href="/dashboard/profile" label={t(STRINGS.userMenuViewProfile, locale)} onNavigate={close} />
+                </CardGroup>
+              </div>
+
+              <div>
+                <SectionLabel>{t(STRINGS.userMenuFeaturesHeading, locale)}</SectionLabel>
+                <CardGroup>
+                  {FEATURES.map((f) => (
+                    <MenuRow key={f.href} href={f.href} label={f.label} onNavigate={close} />
+                  ))}
+                </CardGroup>
+              </div>
+
+              <div>
+                <SectionLabel>{t(STRINGS.userMenuSettingsHeading, locale)}</SectionLabel>
+                <CardGroup>
+                  <div className="flex items-center justify-between px-4 min-h-[44px] py-3">
+                    <span className="text-[15px] text-neutral-800">{t(STRINGS.profileLanguageHeading, locale)}</span>
+                    <div className="flex items-center gap-1">
+                      <form action={setLocaleAction.bind(null, "en", pathname)}>
+                        <button
+                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 ${
+                            locale === "en" ? "bg-petrol text-white" : "text-neutral-500"
+                          }`}
+                        >
+                          {t(STRINGS.localeSwitchEn, locale)}
+                        </button>
+                      </form>
+                      <form action={setLocaleAction.bind(null, "fr", pathname)}>
+                        <button
+                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 ${
+                            locale === "fr" ? "bg-petrol text-white" : "text-neutral-500"
+                          }`}
+                        >
+                          {t(STRINGS.localeSwitchFr, locale)}
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                  {role === "pathologist" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+                        close();
+                        window.location.href = "/dashboard/dictate";
+                      }}
+                      className="w-full text-left flex items-center px-4 min-h-[44px] py-3 text-[15px] text-neutral-800 active:bg-neutral-100 transition-colors"
+                    >
+                      {t(STRINGS.helpIconLabel, locale)}
+                    </button>
+                  )}
+                  <form action={signOutAction}>
+                    <button
+                      type="submit"
+                      className="w-full text-left flex items-center px-4 min-h-[44px] py-3 text-[15px] font-semibold text-petrol active:bg-neutral-100 transition-colors"
+                    >
+                      {t(STRINGS.signOut, locale)}
+                    </button>
+                  </form>
+                </CardGroup>
+              </div>
+
+              <p className="text-center text-xs text-neutral-400">{roleLabel}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
