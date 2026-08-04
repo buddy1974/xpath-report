@@ -10,6 +10,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { setLocaleAction } from "@/lib/i18n-actions";
 import { STRINGS, ROLE_LABELS, t } from "@/lib/i18n";
 import { PathologistNav } from "@/components/nav-links";
+import { Avatar } from "@/components/avatar";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -49,6 +50,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <span className="text-xs text-neutral-500 sm:ml-0 ml-auto bg-neutral-100 rounded-full px-2.5 py-1 font-medium">
             {roleLabel}
           </span>
+          <Link href="/dashboard/profile" title={t(STRINGS.navProfileTitle, locale)} className="shrink-0">
+            <Avatar label={session.user.name ?? session.user.email ?? "?"} size={28} />
+          </Link>
           <div className="flex items-center gap-1 text-xs">
             <form action={setLocaleAction.bind(null, "en", "/dashboard")}>
               <button className={locale === "en" ? "font-bold text-petrol" : "text-neutral-400 hover:text-petrol"}>

@@ -103,6 +103,11 @@ export const users = pgTable(
     profileCompletedAt: timestamp("profile_completed_at", { withTimezone: true }),
     department: text("department"),
     phone: text("phone"),
+    // R2 object key for the profile picture, if uploaded — same
+    // tenant/owner-scoped key convention as dictation audio (lib/r2.ts).
+    // Never a public URL; always served through /api/avatar/me so
+    // access stays behind the normal session check.
+    avatarKey: text("avatar_key"),
     isActive: boolean("is_active").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()

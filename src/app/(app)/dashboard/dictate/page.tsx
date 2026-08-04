@@ -13,6 +13,7 @@ import { OnboardingChecklist } from "@/components/onboarding-checklist";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
 import { Recorder } from "./recorder";
+import { OcrScan } from "@/components/ocr-scan";
 
 export default async function DictatePage() {
   const session = await auth();
@@ -46,6 +47,10 @@ export default async function DictatePage() {
       <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <p className="text-sm text-neutral-600 mb-4">{t(STRINGS.capturePrompt, locale)}</p>
         <Recorder locale={locale} />
+      </div>
+
+      <div className="mt-6">
+        <OcrScan locale={locale} />
       </div>
 
       {dictations.length > 0 && (

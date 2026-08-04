@@ -49,3 +49,13 @@ export async function getObjectBytes(key: string): Promise<Buffer> {
   for await (const chunk of res.Body) chunks.push(chunk);
   return Buffer.concat(chunks);
 }
+
+/** Same as getObjectBytes, but also returns the stored content type — used for direct passthrough responses (e.g. avatars). */
+export async function getObjectWithContentType(key: string): Promise<{ bytes: Buffer; contentType: string }> {
+  const cmd = new GetObjectCommand({ Bucket: bucket(), Key: key });
+  const res = await client().send(cmd);
+  const chunks: Uint8Array[] = [];
+  // @ts-expect-error — Body is a Node Readable in the Node runtime.
+  for await (const chunk of res.Body) chunks.push(chunk);
+  return { bytes: Buffer.concat(chunks), contentType: res.ContentType ?? "application/octet-stream" };
+}

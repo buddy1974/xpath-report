@@ -357,6 +357,30 @@ export const STRINGS = {
     fr: "Notes personnelles et références enregistrées — pas encore disponibles, sur la feuille de route.",
   },
   profileLanguageHeading: { en: "Language", fr: "Langue" },
+  avatarChangePhoto: { en: "Change photo", fr: "Changer la photo" },
+  avatarUploading: { en: "Uploading…", fr: "Téléversement…" },
+  avatarUploadFailed: { en: "Upload failed — try a JPEG, PNG, or WebP under 5 MB.", fr: "Échec du téléversement — essayez un JPEG, PNG ou WebP de moins de 5 Mo." },
+
+  // Photo-to-text scan (Cowork addendum) — notes/requisition forms/
+  // labels ONLY, never slide/tissue images (Header G1). Processed
+  // entirely in the browser (Tesseract.js) — the image never leaves
+  // the device.
+  scanHeading: { en: "Scan a note, requisition form, or label", fr: "Numériser une note, un bon de demande ou une étiquette" },
+  scanBody: {
+    en: "Extract text from a photo of your own written notes or a paper document — never a slide or tissue image. Processed on your device; nothing is uploaded.",
+    fr: "Extrayez le texte d'une photo de vos notes manuscrites ou d'un document papier — jamais une lame ou une image de tissu. Traité sur votre appareil ; rien n'est téléversé.",
+  },
+  scanChooseImage: { en: "Choose image", fr: "Choisir une image" },
+  scanProcessing: { en: "Reading text…", fr: "Lecture du texte…" },
+  scanResultLabel: { en: "Extracted text (review and edit before use)", fr: "Texte extrait (à relire et corriger avant utilisation)" },
+  scanCopyButton: { en: "Copy text", fr: "Copier le texte" },
+  scanCopiedConfirm: { en: "Copied", fr: "Copié" },
+  scanNoTextFound: { en: "No text found in that image.", fr: "Aucun texte trouvé dans cette image." },
+  scanNeverAutoInserted: {
+    en: "Never entered into any field automatically — copy and paste it yourself wherever it belongs (Header G1).",
+    fr: "Jamais saisi automatiquement dans un champ — copiez-collez-le vous-même où il doit aller (Header G1).",
+  },
+  scanFailed: { en: "Couldn't read that image — try a clearer photo.", fr: "Impossible de lire cette image — essayez une photo plus nette." },
 
   // Danger-zone urgency flag (North-Star §4.5/§4.8, R-034 half). The
   // pathologist sets/confirms this — the system never infers "urgent"

@@ -12,6 +12,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { setLocaleAction } from "@/lib/i18n-actions";
 import { STRINGS, ROLE_LABELS, t } from "@/lib/i18n";
 import Link from "next/link";
+import { AvatarUpload } from "@/components/avatar-upload";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -32,9 +33,7 @@ export default async function ProfilePage() {
 
       <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-4">
-          <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-eosin to-hema shadow-sm flex items-center justify-center text-white text-xl font-bold shrink-0">
-            {(session.user.name ?? session.user.email ?? "?").slice(0, 1).toUpperCase()}
-          </span>
+          <AvatarUpload label={session.user.name ?? session.user.email ?? "?"} locale={locale} />
           <div className="min-w-0">
             <p className="font-semibold text-lg truncate">{session.user.name ?? session.user.email}</p>
             <p className="text-sm text-neutral-500 truncate">{session.user.email}</p>
