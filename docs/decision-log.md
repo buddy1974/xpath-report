@@ -1035,3 +1035,71 @@ Format: DL-nnn · decision · rationale.
   `/dashboard/dictate` and drafts only in Home's "Recent work."
   Corrected to 60% with that detail, so the milestone tracker reflects
   what's real.
+- **DL-051 — Built Marcel's three design decisions plus the AI-
+  Enhancement clarification from the DL-050 scoping report.**
+  **1. Dictate CTA** (`src/components/dictate-cta-bar.tsx`): a full-
+  width bar fixed to the bottom of the screen (his call, not a FAB),
+  mobile-only (`sm:hidden` — the ask was explicitly "on mobile"; a
+  giant bottom bar on desktop would be unwanted clutter next to the
+  existing top nav's Dictate link). Hidden on `/dashboard/dictate`
+  itself (redundant — already there) and `/dashboard/review/*`
+  (collides with that screen's own fixed bottom bar, `review-form.tsx:512`
+  — stacking two fixed bottom bars would visually break). Wired into
+  the shared dashboard shell with matching bottom padding on `<main>`.
+  **2. Workspace** (`src/app/(app)/dashboard/workspace/page.tsx`, new
+  nav item in `nav-links.tsx`): a dedicated top-level surface listing
+  every dictation/note/report_draft the pathologist owns, most-recent
+  first. Dictate itself is now capture-only — the "your dictations"
+  list that used to sit at the bottom of that page moved here entirely
+  (his explicit framing: "Dictate stays a one-tap capture action;
+  Workspace is where saved items live and get browsed/organized").
+  **3. Icon color**: 5 new additive Tailwind tokens
+  (`categoryRose/Amber/Indigo/Violet/Olive`), deliberately kept
+  separate from the existing semantic tokens (petrol=brand chrome,
+  hema=AI-generated marker, mint=complete, amber/red=attention/
+  critical) so a category color can never be misread as a system
+  state. Replaced the Templates page's old 3-color *cyclic*
+  `accentFor(index)` (DL-043 — assigned by iteration order, so the
+  same category could get a different color depending on registration
+  order) with a fixed `category-colors.ts` map, one real color per CAP
+  category, matching his ask ("every category gets its own distinct
+  color," not the restrained palette cycled).
+  **Clarification — two distinct actions, never combined**: added
+  `saveOcrNote` (`dictate/actions.ts`) and a "Save to workspace" button
+  on `ocr-scan.tsx` alongside the existing Copy button — saving does
+  zero AI processing, matching the same principle already true for
+  dictation capture (stopping a recording already auto-saves as a
+  workspace item; structuring was already a separate, later, human-
+  clicked step via `/dashboard/structure/[id]`). The Workspace list is
+  where the explicit "Send to AI" action lives, one per dictation/note
+  item, distinct from the item simply being listed/saved; an item that
+  already has a report_draft shows "Continue reviewing" instead,
+  pointing at the existing draft, rather than offering to send it
+  again. Confirmed live that `/dashboard/structure/[id]` — already
+  human-gated behind a template-choice screen, never blind-routed —
+  works generically for a saved note with zero changes: it only checks
+  for a non-null `.body`, not the item's `kind` (a finding from the
+  DL-050 scoping pass, verified true in production, not just assumed).
+  **Live-verified end to end on `www.xpath.report`**, not just built —
+  and without touching `test-pathologist`'s password (that account now
+  holds Marcel's own real credential and real test data from his DL-050
+  mobile session; re-rotating it to run a fresh login test would have
+  locked him out of his own account, so verification instead reused
+  the still-authenticated browser session from that same test):
+  Workspace correctly listed his 3 real drafts and 1 real dictation
+  with correct per-kind icons/colors and correct action labels; scanned
+  a real test image, clicked "Save to workspace," confirmed the new
+  note appeared in Workspace with a "Send to AI" action (not "Continue
+  reviewing," since no draft existed for it yet); clicked it through to
+  `/dashboard/structure/[id]` and confirmed real template suggestions
+  generated correctly from the saved note's text (did not confirm a
+  template — that would have created a real draft in his account, which
+  isn't mine to add); confirmed via `getComputedStyle` that the Dictate
+  CTA bar computes `display: none` at desktop width with no
+  unconditional `hidden` class, so it renders correctly below the `sm`
+  breakpoint; confirmed via DOM query that `/dashboard/review/*` has
+  exactly one fixed-bottom-bar element, not two; confirmed all 5
+  Templates categories render visually distinct colors. Deleted the one
+  test artifact (the saved OCR note) afterward so his account holds
+  only his own real data. `npx tsc --noEmit` and `npm run build` both
+  passed before the push.

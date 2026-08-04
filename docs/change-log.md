@@ -2,6 +2,27 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — Dictate CTA bar, Workspace, OCR save, per-category colors (DL-051)
+- Built Marcel's three design decisions from the DL-050 scoping report
+  plus the AI-Enhancement clarification: (1) a full-width Dictate CTA
+  bar fixed to the bottom on mobile, hidden on Dictate itself and on
+  Review (collision with its own fixed bottom bar); (2) a new
+  `/dashboard/workspace` page + nav item aggregating dictations/notes/
+  drafts — Dictate is now capture-only, the old in-page list moved
+  here; (3) a real fixed per-category color palette (5 new Tailwind
+  tokens) on the Templates page, replacing the old 3-color cycle.
+- OCR scan gets a "Save to workspace" button (no AI processing) next
+  to Copy. Each saved item in Workspace shows exactly one of two
+  distinct actions — "Send to AI" or "Continue reviewing" (if already
+  structured) — never combined, per Marcel's explicit clarification.
+- Live-verified on `www.xpath.report` using the existing authenticated
+  test-pathologist session (did not reset that account's password —
+  it now holds Marcel's own real credential from his DL-050 test).
+  Confirmed the Workspace list, the new OCR save action reusing the
+  existing structure route with zero code changes needed, correct
+  responsive CSS on the CTA bar, no fixed-bar collision on Review, and
+  distinct category colors. Test artifact cleaned up afterward.
+
 ## 2026-08-04 — R-036 RESOLVED: real mobile end-to-end test confirms dictation upload works live (DL-050)
 - Marcel fixed the R2 CORS policy (Cloudflare dashboard, no app code
   changed) and ran a real end-to-end test on his own phone with the

@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); only the live Dr. Ivo demo remains)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -10,7 +10,7 @@ auto-suggestion correctly requiring manual confirm (G1). Full detail in
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
-[~] M2 Private workspace        60%   ← corrected from a stale 0%: the data model (`privateWorkspaceItems`, kind: note|draft|reference_file|tip|dictation|report_draft) and G2 owner-only isolation (`assertWorkspaceOwner`) are built and in production use (dictations, drafts). Missing: a single aggregated list view across all kinds — today items only surface piecemeal (dictations on /dashboard/dictate, drafts in Home's "Recent work") — see DL-050 item 4
+[x] M2 Private workspace        90%   ← the aggregated list view flagged as missing (was 60%) is now built: /dashboard/workspace + nav item (DL-051), listing dictations/notes/drafts with a "Send to AI" or "Continue reviewing" action per item. Remaining 10%: reference_file/tip kinds exist in the schema but have no UI producing them yet — not asked for, not built
 [x] M3 Template engine          100%   ← all 6 Phase-1 templates built
 [x] M4 Voice + transcription    100%   ← pipeline + real-browser upload both CONFIRMED WORKING live (R-036 resolved, DL-050)
 [x] M5 Structure & auto-fill    90%   ← engine + all templates verified
@@ -50,6 +50,21 @@ WAITING ON MARCEL:
    default) is fully verified.
 
 LAST UPDATE: 2026-08-04 —
+
+**Dictate CTA bar, Workspace, OCR save, per-category colors, DL-051.**
+Built Marcel's three design decisions from the DL-050 scoping report
+(full-width bottom Dictate CTA bar, dedicated Workspace nav+page, real
+per-category icon colors) plus his AI-Enhancement clarification (OCR
+notes get an explicit "Save to workspace" action, separate from a
+per-item "Send to AI" action in Workspace — never combined). Dictate
+is now capture-only; browsing/organizing saved items moved to the new
+`/dashboard/workspace`. Live-verified using the existing authenticated
+test-pathologist session — did NOT reset that account's password,
+since it now holds Marcel's own real credential from his DL-050 test.
+Confirmed the workspace list against his real data, the OCR-save →
+Send-to-AI flow end to end, correct responsive CSS on the CTA bar, no
+collision with Review's own fixed bottom bar, and distinct per-category
+colors on Templates. Test artifact cleaned up afterward.
 
 **test-pathologist given the same permanent, no-friction treatment as
 dev-administrator, DL-049.** TOTP-exempted (`TOTP_EXEMPT_EMAILS`),
