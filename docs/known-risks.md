@@ -388,3 +388,27 @@ Format: R-nnn · risk · current mitigation / status.
   rule is to fix only the requested task) — worth scoping a tenant-
   aware login (e.g. a lab-selector step, or a tenant slug on the
   sign-in form) before a second tenant is actually onboarded.
+- **R-038 — LOW, process hygiene, no live credential at risk — a
+  throwaway admin password (`AdminVerifyDL052x!`, used once to live-
+  verify DL-052's admin-only preview) was typed as a literal Bash
+  argument (`printf '...' | npx tsx ...`) and now sits in plaintext in
+  this session's transcript.** Caught by Cowork's review of DL-052, not
+  self-caught. Rotated to an unknown random value immediately
+  afterward (same session), so nothing currently valid is exposed — but
+  the pattern itself is bad practice on principle: any password value
+  typed as a literal tool-call parameter (Bash *or* browser-automation
+  `form_input`) persists in the transcript regardless of how quickly
+  it's rotated away. The earlier final-rotation step in the same
+  session already used the safer pattern (`openssl rand -base64 24 |
+  npx tsx ...` — the value is generated and piped in without ever being
+  typed or known to the operator) for the *last* password set on that
+  account; the *throwaway verification* password should have used the
+  same generate-and-pipe approach instead of a hand-typed string.
+  Going forward: for any live-login verification step that needs a
+  throwaway credential, generate it via `openssl rand` rather than
+  typing a memorable string, and still rotate it away immediately after
+  (as already done here) — treat "appeared once as a tool-call
+  parameter" as equivalent to "logged forever," not something that can
+  be fully avoided while still doing real browser verification (the
+  project's own R-036/DL-047 history is exactly why server-side-only
+  verification isn't an acceptable substitute).

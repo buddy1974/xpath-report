@@ -1166,3 +1166,19 @@ Format: DL-nnn · decision · rationale.
   working password for it again — Marcel re-runs `scripts/set-admin-
   password.ts` if he'd already set his own before this. `npx tsc
   --noEmit` and `npm run build` both passed before the push.
+  **Addendum — Cowork's §7 quality-gate review, no changes required:**
+  confirmed sound against G1 (inert, stronger than advisory)/G3 (Dr.
+  Ivo's own content, DPDx is a citation not scraped text)/G8 (verbatim,
+  no gap-filling)/isolation (static JSX, no props, no data fetch,
+  same role-gate pattern used elsewhere). One explicit honesty note
+  worth keeping on record: the G4 "same category as DL-042" reasoning
+  above is this session's own judgment call by analogy — a reasonable
+  one, but not something `PROJECT_HEADER.md` explicitly pre-approves in
+  so many words. Say so plainly if Dr. Ivo or anyone else asks why this
+  exists. One real finding, not blocking: the throwaway verification
+  password was typed as a literal Bash argument and now sits in
+  plaintext in the session transcript — no live credential at risk
+  (rotated immediately, same as always), but logged as **R-038** as a
+  process-hygiene note for next time (generate throwaway verification
+  credentials via `openssl rand` rather than typing them, same pattern
+  already used for the final rotation step).
