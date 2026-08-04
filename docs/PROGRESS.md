@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); only the live Dr. Ivo demo remains)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -43,6 +43,13 @@ WAITING ON MARCEL:
    scripts/set-pathologist-password.ts` to set your own permanent
    password for `test-pathologist@xpath.report` (DL-049) — same
    unknown-random-value-until-you-set-it state.
+🔔 DL-053 (mobile IA redesign) needs one real check this session's tools
+   couldn't do: an actual phone/narrow-viewport look at the new floating
+   avatar + full-screen menu, and the Dictate CTA bar's safe-area
+   padding on a real notched device. Everything was verified by direct
+   DOM/CSS/state inspection instead (documented in full in DL-053) —
+   confident it's correct, but a 30-second real-device glance would
+   close the loop properly.
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
    until these are set.
@@ -53,6 +60,21 @@ WAITING ON MARCEL:
    default) is fully verified.
 
 LAST UPDATE: 2026-08-04 —
+
+**Mobile IA/visual redesign, DL-053.** Top nav bar removed entirely,
+replaced by a floating avatar (hidden on Dictate/Review) opening a
+full-screen user menu — Apple Health profile-screen pattern, existing
+tokens throughout. Home reorganized into collapsible sections. Caught
+and preserved a functionality regression before shipping (the "?"
+onboarding-reopen button, easy to lose when deleting the header it
+lived in). Found and fixed a real bug live during verification (rAF
+suspended in background tabs — switched to setTimeout). Two tool-
+environment limits honestly documented rather than glossed over:
+literal narrow-viewport screenshots weren't possible this session
+(verified via CSS/DOM inspection instead), and the pathologist-specific
+pieces were verified by code-pattern equivalence to already-proven
+mechanisms rather than resetting another real account's credentials.
+Full reasoning in DL-053 — flagged above for a real-device spot-check.
 
 **Reflex Testing & Special Stains agent: admin-only capability preview,
 DL-052.** Static, read-only preview of Dr. Ivo's spec (§17.1–17.9 +

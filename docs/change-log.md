@@ -2,6 +2,30 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — Mobile IA/visual redesign: top nav removed, floating avatar + full-screen user menu (DL-053)
+- Removed the persistent header/top-nav entirely (layout change, not a
+  rebrand — existing tokens throughout), replaced by a floating avatar
+  (hidden on Dictate/Review, same rule as the Dictate CTA bar/DL-051)
+  that opens a full-screen sheet: avatar+name centered, X to close,
+  grouped rounded cards (Account/Features/Settings), modeled on Apple
+  Health's profile screen. Home page reorganized into `<details>`
+  sections (Recent work open by default, Trends/Learning closed),
+  reusing the existing pattern from Templates (DL-043) and the Reflex
+  preview (DL-052). Added `viewport-fit=cover` + safe-area-inset padding
+  on the avatar and the Dictate CTA bar.
+- Caught before shipping: removing the header would have silently
+  dropped the "?" button that reopens the onboarding checklist —
+  migrated that into the new menu instead of losing it.
+- Real bug found and fixed during live verification: the sheet's
+  entrance transition relied on `requestAnimationFrame`, which browsers
+  suspend for backgrounded tabs — switched to `setTimeout`. Confirmed
+  fixed via direct state inspection.
+- Live-verified with two stated tool-environment limits (viewport
+  resize doesn't work in this session; pathologist-specific pieces
+  verified by code-pattern equivalence to already-proven mechanisms
+  rather than resetting another real account's password) — see DL-053
+  for the full reasoning. `npx tsc --noEmit`/`npm run build` pass.
+
 ## 2026-08-04 — Reflex Testing & Special Stains agent: admin-only capability preview (DL-052)
 - Built a static, read-only preview of Dr. Ivo's Reflex Testing &
   Special Stains spec (§17.1–17.9 + module work order) in the admin

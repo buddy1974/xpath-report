@@ -1182,3 +1182,81 @@ Format: DL-nnn · decision · rationale.
   process-hygiene note for next time (generate throwaway verification
   credentials via `openssl rand` rather than typing them, same pattern
   already used for the final rotation step).
+- **DL-053 — Mobile IA/visual redesign: top nav removed entirely,
+  replaced by a floating avatar opening a full-screen user menu
+  (Apple-Health-profile-screen pattern, existing design tokens
+  throughout — layout change, not a rebrand).** Consolidated
+  instruction replacing three earlier separate messages.
+  **Scope confirmed before building** (as explicitly asked): read
+  `layout.tsx`/`nav-links.tsx`/`page.tsx`/`profile/page.tsx` first, then
+  reported back what would change vs. stay before writing any code —
+  removing the header bar entirely (not just the links — no logo strip
+  either, matching the reference literally), building a new `UserMenu`
+  (floating avatar, hidden on `/dashboard/dictate` and `/dashboard/
+  review/*`, same rule as the Dictate CTA bar/DL-051), reorganizing Home
+  into `<details>` sections, adding `viewport-fit=cover` + safe-area
+  padding. Explicit scope boundaries stated up front and held to: no
+  dark theme, `review-form.tsx`'s own bottom bar untouched, HIG
+  typography/tap-feedback/44pt-target rules applied to the *new*
+  components only (not retrofitted across every existing page).
+  **Caught and fixed a real functionality regression before it shipped
+  silently**: removing the header also removed the "?" button that
+  reopens the onboarding checklist (`onboarding-checklist.tsx`) after
+  dismissal — that's a loss of functionality the instruction explicitly
+  said not to cause ("this only changes how navigation is organized and
+  presented, not what exists"). Migrated the same logic into the new
+  menu's Settings group instead of silently dropping it. Deleted
+  `nav-links.tsx`/`help-button.tsx` only after confirming zero remaining
+  imports (fully orphaned by this change, not unrelated cleanup).
+  **A second real bug, found live during verification, not assumed
+  away**: the sheet's slide-up entrance transition never played —
+  `mounted` state (gating `translate-y-full` → `translate-y-0`) never
+  flipped because it was scheduled via `requestAnimationFrame`, which
+  browsers fully suspend for backgrounded/hidden tabs (tied to paint,
+  and hidden tabs don't paint). This session had multiple tabs open for
+  testing, so the tab being exercised was frequently not the
+  OS-foregrounded one — confirmed directly via `document.hidden` at the
+  JS level, not guessed. Fixed by switching to `setTimeout(fn, 10)`,
+  which doesn't have rAF's harder suspension. Re-verified after the fix:
+  the state/class transition now completes correctly (`translate-y-0`
+  confirmed applied) even under the same background-tab conditions —
+  the remaining un-painted visual in that state is a browser rendering-
+  suspension artifact for hidden documents, not a functional defect; a
+  real user's active tab is always visible when they interact with it.
+  **Live-verified, with two honest, stated tool-environment
+  limitations** rather than silently skipping or faking them:
+  (1) `resize_window` does not affect this environment's actual render
+  viewport (confirmed on 3 separate attempts including a fresh tab) —
+  literal 375/390/430px screenshots weren't possible. Verified instead
+  via direct DOM/CSS inspection: `viewport-fit=cover` present, safe-area
+  `calc()` expressions correctly resolve (12px/24px with the 0px
+  fallback on this non-notched test device — would add the real inset
+  on a notched device), and `document.documentElement.scrollWidth ===
+  clientWidth` (no horizontal overflow) — plus a code-level audit
+  confirming no fixed-pixel width anywhere in the new markup that could
+  overflow a narrow viewport (only `max-w-*`, `w-full`, and rem/px
+  values well under 375px).
+  (2) The pathologist-specific pieces (Dictate CTA bar interaction with
+  the new avatar-hide rule; Home's collapsible `<details>` sections)
+  needed a pathologist session to view. Chose NOT to reset
+  `test-pathologist`'s password again for this (same account, same
+  concern DL-051 already reasoned through) or to touch `demo-
+  pathologist`'s TOTP state for a single check (more invasive than a
+  password, even on a seed account) — instead verified by code-pattern
+  equivalence to mechanisms already live-verified in this exact
+  codebase: the hide-on-dictate/review rule is the identical `pathname.
+  startsWith(...)` conditional already proven live in DL-051; the
+  `<details>` collapse pattern is the identical mechanism already
+  proven live in DL-043 (Templates) and DL-052 (Reflex preview).
+  **What WAS live-verified directly, with the existing dev-administrator
+  session** (no new password reset needed — reused the still-valid JWT
+  from DL-052's verification, so no new plaintext credential entered
+  the transcript this time): menu opens (confirmed via DOM state, not
+  just a screenshot), full grouped-card content renders correctly
+  (Account/Features/Settings, correct per-role destination list, no
+  chevron on Language/Sign-out, chevron present on navigation rows), X
+  and backdrop-click both dismiss, row-click navigates to the correct
+  route AND auto-closes the sheet, Profile page still renders correctly
+  unchanged underneath. `npx tsc --noEmit` and `npm run build` both
+  passed before every push (two commits: the redesign itself, then the
+  rAF→setTimeout fix).
