@@ -1022,3 +1022,16 @@ Format: DL-nnn · decision · rationale.
   bar indicator). Both explicitly asked for a feasibility/scope report
   before any implementation — assessed, not built, this session; see
   the reply for the itemized scope and open design questions.
+  **Found and corrected a stale `docs/PROGRESS.md` line while
+  scoping**: M2 "Private workspace" was listed at 0%, but the
+  underlying data model (`privateWorkspaceItems`, `kind: note | draft |
+  reference_file | tip | dictation | report_draft` — `src/db/
+  schema.ts:165`) and its G2 owner-only isolation (`assertWorkspaceOwner`)
+  are already built and in production use for dictations and drafts —
+  verified directly in the schema, not taken on faith from the scoping
+  research. What's actually still missing is narrower: a single
+  aggregated list view across all item kinds (items 2 and 4 of the
+  five UX asks) — today items surface piecemeal, dictations only on
+  `/dashboard/dictate` and drafts only in Home's "Recent work."
+  Corrected to 60% with that detail, so the milestone tracker reflects
+  what's real.

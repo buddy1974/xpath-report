@@ -10,7 +10,7 @@ auto-suggestion correctly requiring manual confirm (G1). Full detail in
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
-[ ] M2 Private workspace         0%   ← named milestone, not yet built as its own surface; directly relevant to the DL-050 workspace-visibility asks, see reply
+[~] M2 Private workspace        60%   ← corrected from a stale 0%: the data model (`privateWorkspaceItems`, kind: note|draft|reference_file|tip|dictation|report_draft) and G2 owner-only isolation (`assertWorkspaceOwner`) are built and in production use (dictations, drafts). Missing: a single aggregated list view across all kinds — today items only surface piecemeal (dictations on /dashboard/dictate, drafts in Home's "Recent work") — see DL-050 item 4
 [x] M3 Template engine          100%   ← all 6 Phase-1 templates built
 [x] M4 Voice + transcription    100%   ← pipeline + real-browser upload both CONFIRMED WORKING live (R-036 resolved, DL-050)
 [x] M5 Structure & auto-fill    90%   ← engine + all templates verified
