@@ -39,6 +39,11 @@ before it happens, not after. Everything else in M5/M6/M7 builds
 straight through.
 
 WAITING ON MARCEL:
+🔔 Run `scripts/set-admin-password.ts` yourself to set your own permanent
+   password for `dev-administrator@xpath.report` (DL-048) — the account's
+   current password is an unknown random value nobody has, set only to
+   prove the mechanism works end-to-end. `npx tsx --env-file=.env.local
+   scripts/set-admin-password.ts`, then sign in for real to confirm.
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
    until these are set.
@@ -49,6 +54,21 @@ WAITING ON MARCEL:
    default) is fully verified.
 
 LAST UPDATE: 2026-08-04 —
+
+**Permanent admin account root cause + reliable password-set script,
+DL-048/R-037.** Marcel's last password set for `dev-administrator@
+xpath.report` hadn't let him log back in. Audited every structural
+cause (forced rotation, session expiry-by-credential-age, TOTP re-lock,
+duplicate email rows across tenants, inactive flag, corrupted hash,
+Turnstile misconfiguration) — all came back clean, none reproduce the
+symptom; most likely a one-off mistyped password in a script that was
+never committed, same failure class as the DL-041 precedent. Built
+`scripts/set-admin-password.ts` (matched by email + role, reasserts the
+account's safe flags on every run), found and fixed two real `readline`
+bugs in it while testing, then live-verified end to end: set a
+throwaway password, signed in for real on `www.xpath.report`, landed on
+`/dashboard` as administrator. Rotated to an unknown random value
+afterward — see the WAITING ON MARCEL item above to set your own.
 
 **Test-pathologist account, avatar upload, note/label OCR scan — and a
 critical finding, DL-047/R-036.** Built a genuine blank-state account

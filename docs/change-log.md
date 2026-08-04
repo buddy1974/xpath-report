@@ -2,6 +2,40 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — Permanent admin account: root-caused a login failure, built a reliable password-set script (DL-048, R-037)
+- Marcel reported the last password he'd set for `dev-administrator@
+  xpath.report` didn't let him log back in, and asked for root cause
+  before a patch. Audited every structural cause that could produce
+  that symptom: no forced password rotation or password-age field
+  exists in the schema; no session expiry tied to credential age; TOTP
+  exemption for this account lives in code (`TOTP_EXEMPT_EMAILS`), not
+  the DB, so it can't drift; the live row is `isActive: true`, not
+  locked, `mustCompleteSetup: false`, with a well-formed bcrypt hash;
+  only one row exists for this email (ruling out a same-email-different-
+  tenant collision, see R-037 below); Cloudflare Turnstile is confirmed
+  unconfigured (no widget renders, and a real login succeeded with no
+  token ever sent). **None of these reproduce the symptom** — the most
+  likely explanation is a one-off mistyped/mismatched password in
+  whatever uncommitted script was used last time (can't be audited
+  after the fact; same failure class as the DL-041 iPhone-retype
+  precedent, not a new defect).
+- Built `scripts/set-admin-password.ts`, matched by email AND
+  `role="administrator"`, reasserting `isActive`/`mustCompleteSetup`/
+  `totpEnabled` on every run. Found and fixed two real `readline` bugs
+  in the script itself while testing it (a confirm-retype second prompt
+  could silently lose its answer or throw, depending on how input
+  arrived) — dropped the confirm step rather than patch around it.
+  Live-verified end to end: set a throwaway test password, signed in
+  for real at `https://www.xpath.report/sign-in`, landed on `/dashboard`
+  with the `administrator` view confirmed on the page. Rotated the
+  account to an unknown random value afterward (never displayed) so
+  Marcel sets his own permanent password next. `npx tsc --noEmit`/
+  `npm run build` pass.
+- **R-037 (LOW, latent)**: found during the audit — `authorize()` looks
+  up login by email alone, but email is only unique *within* a tenant,
+  not globally. No second tenant exists yet, so nothing reproduces it
+  today; worth a tenant-aware login before one is onboarded.
+
 ## 2026-08-04 — Test-pathologist account, avatar upload, note/label OCR scan — CRITICAL finding: R2 CORS likely blocks real dictation upload (DL-047, R-036)
 - Built a genuine blank-state `test-pathologist@xpath.report` account
   for Marcel's own hands-on walkthrough (real QR TOTP enrollment, not

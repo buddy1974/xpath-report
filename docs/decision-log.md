@@ -869,3 +869,95 @@ Format: DL-nnn · decision · rationale.
   ranked #1) and opened correctly on the review screen. Test dictation/
   draft and the test avatar were cleaned up afterward so the account
   stays genuinely blank-slate for Marcel's own first walkthrough.
+- **DL-048 — `dev-administrator@xpath.report` confirmed as a permanent,
+  standing admin account (not a rotating dev fixture); root-caused a
+  prior login failure; built and live-verified a reliable password-set
+  script.** Marcel reported that the last password he'd set for this
+  account didn't let him log back in and asked for root cause, not just
+  a patch.
+  **Audited every structural cause that could produce that symptom —
+  all came back clean:**
+  (a) no forced password rotation or password-age field exists anywhere
+  in the schema (`src/db/schema.ts` `users` table has no such column) —
+  there is nothing in the codebase that could silently expire a
+  password;
+  (b) session strategy is JWT with no expiry tied to credential age —
+  `src/auth.config.ts` sets no such logic; a session simply lasts until
+  Auth.js's default JWT lifetime;
+  (c) TOTP is exempted for this exact email via `TOTP_EXEMPT_EMAILS` in
+  `src/auth.config.ts` (DL-038) — a hardcoded, git-tracked array, not a
+  DB flag, so it cannot drift or reset on its own the way a DB-stored
+  flag could;
+  (d) queried the live row directly: `isActive: true`, `totpEnabled:
+  false`, `totpFailedAttempts: 0`, `totpLockedUntil: null`,
+  `mustCompleteSetup: false`, `passwordHash` a well-formed `$2a$10$`/
+  60-char bcrypt hash — nothing here would reject a correct login;
+  (e) checked for the one real latent risk in `src/auth.ts`'s
+  `authorize()` — it queries `users` by email with `.limit(1)` and no
+  tenant filter, and `users.email` is only unique *within* a tenant
+  (`users_email_tenant_idx`), not globally, so a second row with the
+  same email under a different tenant could silently be the one checked
+  at login (Postgres row order is unspecified without `ORDER BY`).
+  Confirmed only one row exists for this email today, so this did not
+  cause the reported failure — but it is a real latent gap once a
+  second tenant exists (G1), noted in `docs/known-risks.md`, not fixed
+  here (out of scope for this task, no second tenant exists yet to
+  trigger it);
+  (f) checked Cloudflare Turnstile (`src/lib/turnstile.ts`), since a
+  secret key configured server-side without the matching site key
+  configured client-side would silently fail every login regardless of
+  password (widget never renders → no token ever sent → server sees
+  `!token` → rejects). `docs/PROGRESS.md` already listed this SIGNAL as
+  still open/unfilled, and confirmed live: the sign-in page's DOM
+  renders no Turnstile widget, and (see below) a real login succeeded
+  with no token ever submitted — ruling this out directly, not just by
+  inference from docs that could have gone stale.
+  **Conclusion: no code or schema defect reproduces the symptom.** The
+  most likely explanation is a one-off human/process error — a
+  mistyped or mismatched password value — in whatever uncommitted
+  script was used the last time (neither this session nor the repo has
+  a record of exactly what that script did; it was never committed, so
+  its exact logic can't be audited after the fact). This matches the
+  precedent already on record in DL-041 (a generated password rejected
+  on Marcel's iPhone, traced to a manual-retype mismatch, not a DB
+  defect) — the same class of failure, not a new one.
+  **Built `scripts/set-admin-password.ts`**, the permanent, reusable,
+  reliable path requested: a local-only script matched by BOTH email
+  AND `role="administrator"` (defense in depth against the tenant-
+  scoping gap in (e) above, so it can never touch the wrong row even if
+  a duplicate email ever exists later), bcrypt-hashes the typed
+  password, writes it, and reasserts `isActive: true`, `mustCompleteSetup:
+  false`, `totpEnabled: false` on every run so a stray DB edit elsewhere
+  can never silently lock this account out again. Chose a single local
+  script over an in-app "reset password" screen: a real in-app reset
+  flow needs email delivery (magic link/token) to be safe, which needs
+  its own SIGNAL for an email provider Marcel hasn't set up — disproportionate
+  scope for one standing internal admin account, and the local-script
+  pattern already has two solid precedents on record (DL-037/041).
+  **Two real bugs found and fixed in the script itself before handing
+  it off, both caught by testing it, not shipping on faith:** an
+  original two-question (password + confirm-retype) design silently
+  lost the confirm-retype answer, or threw `ERR_USE_AFTER_CLOSE`,
+  depending on how the input arrived — a genuine Node `readline` gotcha
+  (a fresh `createInterface` per question can lose buffered stdin data;
+  and readline auto-closes as soon as the input stream signals end,
+  which races a second sequential `question()` when multiple lines
+  arrive in one burst rather than as live keystrokes). Fixed by dropping
+  the confirm-retype step entirely in favor of a single prompt — removes
+  the whole class of fragility rather than patching around it, and
+  mistype protection instead comes from the mandatory live-login-test
+  step the script's own output points to.
+  **Live-verified end to end, not just committed**: ran the finished
+  script locally against production with a throwaway test password,
+  confirmed the DB row updated correctly, then signed in for real at
+  `https://www.xpath.report/sign-in` with that exact password — landed
+  directly on `/dashboard` with no `/verify` or `/claim-account`
+  redirect, page content confirmed the `administrator` view ("Administration
+  — Users, roles and audit"). No Turnstile token was ever submitted and
+  login still succeeded, independently confirming (f) above. Rotated
+  the account to a fresh unknown random value afterward (`openssl rand
+  -base64 24` piped directly into the script, never displayed or
+  logged) so no one — including this session — holds a working
+  password for a permanent admin account; Marcel runs `scripts/set-
+  admin-password.ts` himself next to set his own chosen, permanent
+  value. `npx tsc --noEmit` and `npm run build` both passed.

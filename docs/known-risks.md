@@ -363,3 +363,20 @@ Format: R-nnn · risk · current mitigation / status.
   loop as "verified live" for a real user, even though the underlying
   transcription pipeline itself (Whisper call, structuring, reflex) is
   thoroughly verified via server-side script tests.
+- **R-037 — LOW PRIORITY, latent until a second tenant exists:
+  `src/auth.ts`'s Credentials `authorize()` looks up a login by email
+  alone (`.limit(1)`, no tenant filter), but `users.email` is only
+  unique *within* a tenant (`users_email_tenant_idx` in
+  `src/db/schema.ts`), not globally.** Found during the DL-048 root-
+  cause audit of a reported admin login failure (ruled out as the
+  cause this time — confirmed only one row exists for
+  `dev-administrator@xpath.report` today). If a second tenant is ever
+  onboarded (G1 explicitly requires the app be built multi-tenant from
+  the foundation) and its email space ever collides with an existing
+  user's email in a different tenant, which row `authorize()` checks
+  the password against is whichever Postgres returns first with no
+  `ORDER BY` — unspecified, not deterministic. Not fixed now (no second
+  tenant exists yet, so nothing reproduces it, and Header's AI coding
+  rule is to fix only the requested task) — worth scoping a tenant-
+  aware login (e.g. a lab-selector step, or a tenant slug on the
+  sign-in form) before a second tenant is actually onboarded.
