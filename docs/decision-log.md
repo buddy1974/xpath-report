@@ -681,3 +681,98 @@ Format: DL-nnn · decision · rationale.
   Test dictation/draft deleted afterward; dev-pathologist-b's
   password/TOTP secret were rotated for this session (established
   pattern for this dev/test fixture) and not persisted anywhere.
+- **DL-046 — North-Star full rollout items 1-5: Home/Summary, Profile,
+  Templates polish, seeded demo pathologist, danger-zone urgency flag.**
+  Relayed as a standing go-ahead ("this is the standing instruction, not
+  a repeat") after the prior session had explicitly stopped after the
+  shell + review-screen styling pass to wait for sign-off. Flagged two
+  real discrepancies before building anything: the relayed message cited
+  `docs/UX_NORTHSTAR.md`, which does not exist (`docs/ux-north-star.md`
+  is the real file — same filename-mismatch pattern already caught twice
+  this session in the original document and in an earlier relay); and
+  the claim that sign-off "already happened" had no direct confirmation
+  in this conversation, only the relayed message's own assertion — a
+  real concern given the immediately preceding exchange had just
+  confirmed an actual cross-project contamination incident (an unrelated
+  project's instructions pasted into this session by mistake). Surfaced
+  both via `AskUserQuestion` rather than proceeding or refusing outright;
+  received direct confirmation to go ahead with all 5 items.
+  **1. Home/Summary** (`/dashboard`, North-Star §4.1): the capture UI
+  moved back to its own route, `/dashboard/dictate` (undoing DL-043's
+  collapse of the two), so `/dashboard` could become a real card-stack
+  summary instead of a wrapper around the recorder — greeting, a
+  recommendation line (real pending-draft count), a "Needs attention"
+  danger-zone alert card (real data, see item 5), recent work (real
+  in-progress drafts), an activity trend chart (real signed-record
+  counts bucketed by week, last 8 weeks, own data only — no fabricated
+  numbers, an empty chart shows honestly if nothing's been signed), and
+  4 learning cards. Two of the cards are factual pathology basics
+  (HER2 testing purpose, the three components of Nottingham grading)
+  written in-house at plain textbook level with no invented citations,
+  consistent with G8; the other two are app-usage tips ("cannot be
+  determined" and reading AI-suggested fields) with zero medical-content
+  risk. `src/components/nav-links.tsx` (new) gives the nav real
+  active-route highlighting via `usePathname` — the previous version
+  always statically highlighted "Dictate" regardless of the actual page,
+  a simplification that stopped being defensible once there were 5 nav
+  items including a distinct Home landing.
+  **2. Profile / My Space** (`/dashboard/profile`, §4.2): identity, role,
+  real tenant/lab name, a privacy panel using the real G2 framing, and
+  links to what actually exists — Archive, Templates. Explicitly did
+  NOT fabricate links to personal notes/saved references, which DL-034
+  already deferred; said so honestly in the UI instead of pretending the
+  feature exists.
+  **3. Templates browse polish** (§4.3): heading size and card
+  hover-shadow brought in line with the review screen's language
+  (grouping/icons/blurbs already existed since DL-043/044).
+  **4. Seeded demo pathologist** (§5, `scripts/seed-demo-pathologist.ts`
+  + `scripts/wipe-demo-pathologist.ts`): a fictional account
+  (`demo-pathologist@xpath.report`, "Dr. Amara Kessler (DEMO)" — display
+  name unmistakably marked everywhere it renders) with fake sample
+  dictations, one in-progress draft, and one fully worked breast/HER2
+  case run through the REAL structuring engine (a real OpenAI call) and
+  REAL reflex engine — not fabricated field values. **Found and fixed a
+  real bug while building this, logged as R-035**: the first script run
+  extracted only 1 of ~9 expected fields; traced to the demo transcript
+  being written as a hard-wrapped multi-line template literal, which
+  embeds literal `\n` characters mid-phrase — `validateAndGround`'s
+  literal substring match then correctly rejected 9 of 10 well-grounded
+  model values because the quote's whitespace didn't match the source's.
+  Not an engine bug (the strict match is deliberate G8 behavior); fixed
+  by writing the transcript as one unbroken line. Re-ran: 9 fields
+  extracted, 1 reflex suggestion (HER2 2+ → Dual-ISH), matching what a
+  real pathologist dictation would produce. The case is signed, flagged
+  urgent (severity "attention", real advisory note), and its PDF fetches
+  successfully. Idempotent (safe to re-run — wipes its own prior demo
+  data first) and easy to remove entirely via the wipe script; password
+  and TOTP secret generated fresh each run and only ever printed to the
+  terminal, never committed.
+  **5. Danger-zone urgency flag** (§4.5/§4.8, the other half of R-034):
+  pathologist-set only — nothing infers "urgent" from field values
+  (Header G1/G8). Stored in the existing jsonb `data`/`content` payload
+  on `report_draft`/`clinical_records` (`urgentFlag: { urgent, severity,
+  note }`) — no schema migration. UI: a checkbox + severity toggle
+  (Attention/Critical) + short free-text note on the review screen,
+  rendered as a persistent banner that lives outside the accordion
+  section list entirely (so "survives section collapse" is true by
+  construction, not by special-casing); the flag carries through
+  `signAndAssign` into the clinical record and renders on the archive
+  detail page too; Home's "Needs attention" card queries the
+  pathologist's own flagged drafts and signed records for real and links
+  straight to them. R-034's other half (CONDITIONAL-field auto-hiding)
+  remains explicitly out of scope, unchanged from DL-045's reasoning.
+  `npx tsc --noEmit` and `npm run build` passed after every item.
+  **Live-verified end to end on `www.xpath.report`**, not just built:
+  signed in as the seeded demo pathologist — Home showed the real
+  recommendation line, the real amber "Needs attention" alert linking to
+  the flagged HER2 record, the real recent-work card, a real one-bar
+  trend chart, and all 4 learning cards; Profile showed the real name/
+  role/lab and honest "not built yet" note; the archive detail page for
+  the demo case showed the urgent banner, the real HER2 reflex
+  suggestion, and a real grounding-quote badge; fetched
+  `/api/pdf/[recordId]` directly — `200`, valid `%PDF-` bytes, 4044
+  bytes; opened the in-progress draft's review screen and exercised the
+  urgent-flag checkbox live (banner appeared/updated immediately,
+  severity toggle and note field rendered correctly). Vercel runtime
+  errors in the hour after deploy: only the pre-existing benign
+  `Buffer()` deprecation warning — no new errors.

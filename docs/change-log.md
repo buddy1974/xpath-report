@@ -2,6 +2,43 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — North-Star full rollout: Home, Profile, Templates polish, seeded demo pathologist, danger-zone flag (DL-046)
+- Confirmed directly with Marcel before building: the relayed go-ahead
+  cited a file (`docs/UX_NORTHSTAR.md`) that doesn't exist (real file:
+  `docs/ux-north-star.md`), and claimed sign-off had "already happened"
+  with no direct confirmation in this conversation — a real concern
+  right after this same session confirmed an actual cross-project
+  contamination incident. Flagged both via a direct question rather
+  than assuming; received explicit confirmation to proceed with all 5
+  items.
+- **Home/Summary** (`/dashboard`): capture UI moved back to its own
+  route, `/dashboard/dictate`, so Home could become a real card-stack
+  summary — recommendation line, a "Needs attention" danger-zone alert
+  card, recent work, a real activity trend chart (last 8 weeks, own
+  signed-record counts only), and 4 learning cards (2 factual pathology
+  basics written in-house at textbook level, 2 app-usage tips). Nav
+  gained real active-route highlighting.
+- **Profile / My Space** (`/dashboard/profile`): identity, role, lab, a
+  real G2 privacy panel, links to what actually exists — no fabricated
+  links to personal notes/references.
+- **Templates browse**: heading/card styling brought in line with the
+  review screen.
+- **Seeded demo pathologist**: a fictional account with fake sample
+  cases, plus one fully worked breast/HER2 case run through the real
+  structuring and reflex engines (not fabricated values) — signed,
+  flagged urgent, with a working PDF. Found and fixed a real bug while
+  building this: a hard-wrapped transcript string broke the grounding-
+  quote match and silently dropped 9 of 10 correct values — logged as
+  R-035. Idempotent, easy to wipe (`scripts/wipe-demo-pathologist.ts`).
+- **Danger-zone urgency flag**: pathologist-set only, never inferred.
+  Stored in the existing jsonb payload (no migration). Persistent
+  banner on the review screen, carried into the archive record, and
+  surfaced on Home's alert card from real flagged data.
+- `npx tsc --noEmit` and `npm run build` passed throughout. Live-
+  verified every item on `www.xpath.report` as the seeded demo
+  pathologist and via direct DB/API checks (see `docs/decision-log.md`
+  DL-046 for full evidence). No new Vercel runtime errors.
+
 ## 2026-08-04 — Visual design pass: North-Star §2 tokens on app shell + review screen (STOP gate)
 - Scoped, gated task: apply the North-Star §2 design language (palette,
   card/button language) to the app shell and exactly ONE reference

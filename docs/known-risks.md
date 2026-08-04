@@ -295,3 +295,30 @@ Format: R-nnn · risk · current mitigation / status.
   high grade) were not built — auto-inferring urgency from field values
   would be an uncredentialed clinical inference (Header G1/G8). Both need
   real design/data-modeling work, not a fast follow inside a UI task.
+  **Update (DL-046): the danger-zone-banner half is now built** — a
+  pathologist-set urgency flag (severity + note), never inferred. The
+  CONDITIONAL-field auto-hiding half remains open, unchanged.
+- **R-035 — `structureTranscript`'s grounding-quote match is a literal
+  substring check, so a transcript containing embedded newlines
+  mid-phrase silently drops otherwise-correct, well-grounded model
+  values.** Found live while building DL-046's demo seed script: a
+  hard-wrapped multi-line JS template literal for the transcript
+  produced a string with `\n` in the middle of several phrases (e.g.
+  "ninety percent\nof tumor cells"); the model's returned quote used a
+  normal space at that point ("ninety percent of tumor cells"), so
+  `normalizedTranscript.includes(quote.toLowerCase())` failed and the
+  field was rejected — 9 of 10 real, correctly-extracted values were
+  silently dropped this way in one run. Not a code bug in
+  `validateAndGround` itself (rejecting a quote that doesn't literally
+  appear is the correct, deliberate G8 anti-fabrication behavior) — but
+  a real fragility: any real transcript source that normalizes/wraps
+  whitespace differently than the model's quote (copy-pasted multi-line
+  text, some PDF-to-text tools, certain editors) could hit the same
+  silent-rejection failure mode against a perfectly good extraction.
+  Mitigated in the demo script by writing the transcript as one
+  unbroken line; not yet mitigated in the production path (Whisper
+  transcription output, which doesn't hard-wrap, is the actual live
+  source, so this is lower-priority than it would be for pasted text —
+  but worth a real fix, e.g. normalizing whitespace on both sides of the
+  comparison, if a future source of transcript text (manual paste,
+  non-Whisper import) is ever added).

@@ -8,7 +8,7 @@ Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live
 [x] M4 Voice + transcription    95%   ← pipeline verified live, mic-UI unverified
 [x] M5 Structure & auto-fill    90%   ← engine + all templates verified
 [x] M6 Review · validate · assign 100%   ← review/sign/archive/PDF loop E2E-verified live
-[x] M7 Hardening + demo         95%   ← DNS live, redeployed, re-verified live on xpath.report; Dr. Ivo demo itself remains
+[x] M7 Hardening + demo         97%   ← DNS live, redeployed, re-verified live on xpath.report; seeded demo pathologist account now ready (DL-046) — Dr. Ivo demo itself still remains
 
 Team provisioning (Cowork execution-order §1 — parallel workstream, not a
 numbered milestone): built and verified end-to-end, both locally and live.
@@ -34,6 +34,26 @@ WAITING ON MARCEL:
    default) is fully verified.
 
 LAST UPDATE: 2026-08-04 —
+
+**North-Star full rollout, DL-046 — Home, Profile, Templates polish,
+seeded demo pathologist, danger-zone flag.** Confirmed directly before
+building (the relayed go-ahead cited a nonexistent filename and claimed
+sign-off that had no direct confirmation in this conversation — flagged
+rather than assumed, especially right after a real cross-project
+contamination incident was confirmed earlier the same session).
+`/dashboard` is now a real Home/Summary screen (capture UI moved to its
+own `/dashboard/dictate` route); `/dashboard/profile` is new; Templates
+browse got a matching visual pass; a seeded demo pathologist account
+(`demo-pathologist@xpath.report`) now exists with one fully worked
+breast/HER2 case run through the real structuring + reflex engines,
+signed, flagged urgent, PDF verified — ready for the Dr. Ivo demo
+(`scripts/seed-demo-pathologist.ts` / `wipe-demo-pathologist.ts`); a
+real pathologist-set danger-zone urgency flag now exists (R-034's other
+half), persistent banner on review + archive, real alerts on Home. A
+real bug was found and fixed while building the demo script (transcript
+line-wrapping broke grounding-quote matching — R-035, not an engine
+bug). `npx tsc --noEmit`/`npm run build` pass; every item live-verified
+on `www.xpath.report`. Full evidence in `docs/decision-log.md` DL-046.
 
 **Visual design pass — app shell + ONE reference screen, STOPPED for
 sign-off as instructed.** Applied North-Star §2 design tokens (additive
