@@ -1103,3 +1103,66 @@ Format: DL-nnn · decision · rationale.
   test artifact (the saved OCR note) afterward so his account holds
   only his own real data. `npx tsc --noEmit` and `npm run build` both
   passed before the push.
+- **DL-052 — Reflex Testing & Special Stains agent: a static capability
+  preview, admin-only, built from Dr. Ivo's own spec (§17.1–17.9 +
+  module work order), never wired to real data.** This one had a real
+  process gap surface before any code was written: the first version of
+  this instruction referenced a source file (`claude/dr-ivo-reflex-
+  testing-special-stains-spec.md`) that turned out to live only in
+  Cowork's own project store, not this machine or this repo — confirmed
+  by an exhaustive local search (repo, `~/.claude/`, a full home-
+  directory search) that found nothing. Refused to build against
+  invented placeholder content and said so directly rather than
+  guessing; Marcel/Cowork corrected course and pasted the actual §17
+  content verbatim in a follow-up message. No code was written until
+  real content existed to build from (Header G8).
+  **Independently re-verified the guardrail question, not just
+  accepted Cowork's own crosscheck verdict**: re-read `PROJECT_HEADER.md`
+  directly. G1 (advisory, AI content marked) — the preview evaluates
+  nothing, so it's stronger than G1 requires, not just compliant. G3
+  (logic only, never copy CAP/WHO/AJCC text, director-approved before
+  clinical use) — this is Dr. Ivo's own authored spec, not CAP/WHO/AJCC
+  text, and explicitly not in clinical use. G4 (scope discipline, resist
+  widening Phase 1) — the one genuine tension: is a rich preview of a
+  Phase-2 feature (per `XPATH_handover.md`'s own phasing) itself a G4
+  violation? Resolved by precedent already accepted in this exact
+  codebase: the "Coming soon" teasers block (DL-042) is explicitly
+  documented in `i18n.ts` as "a deliberate G4 exception, marketing/
+  vision-signaling only" — this preview is the same category of thing,
+  richer content, same non-functional status. G8 (never fabricate) —
+  addressed directly by using the verbatim content and not paraphrasing,
+  filling gaps, or adding stains/categories/examples beyond what was
+  supplied.
+  **Built**: `src/components/reflex-testing-preview.tsx` — 100% static
+  JSX, zero DB reads, zero AI calls, not reachable from any case/report/
+  dictation flow. Two independent, deliberate non-live signals, per
+  Marcel's explicit ask that this be "visually unambiguous... not just
+  enforced by routing" since it'll be shown to Dr. Ivo as real
+  capability: (1) a "PREVIEW — not live" badge next to the section
+  heading, visible even when the section is collapsed; (2) a persistent,
+  non-dismissible banner that renders every time the content is shown —
+  there's no way to see the clinical content without it appearing
+  alongside it. Uses the same `<details open>`/`<summary>` toggle
+  pattern already established on the Templates page (DL-043) rather
+  than inventing new interaction mechanics — expanded by default, a
+  "Show/Hide preview" toggle, not a click-to-reveal or fake-activation
+  gate, matching Marcel's explicit correction on the design. Gated to
+  `role === "administrator"` only, wired into `dashboard/page.tsx`
+  right after the existing DL-042 teasers block — same admin/developer-
+  section framing, no new route, no nav changes. Content stays English-
+  only, same reasoning as DL-035/R-029 for template content: translating
+  unreviewed medical terminology ourselves is a G8 fabrication risk, not
+  a translation task — only the UI chrome (heading/badge/banner/toggle
+  labels) is bilingual.
+  **Live-verified on `www.xpath.report`**, not just built: needed an
+  administrator session, and didn't know whether Marcel had already run
+  his own `set-admin-password.ts` since DL-048 — reset it to a
+  throwaway password long enough to verify, confirmed the full content
+  renders correctly (all 9 subsections + the core-requirement paragraph,
+  faithful to the supplied text), confirmed the toggle collapses to just
+  the header row with the "PREVIEW — NOT LIVE" badge still visible, then
+  immediately rotated the account back to a fresh unknown random value
+  (same `openssl rand -base64 24` pattern as DL-048) so no one holds a
+  working password for it again — Marcel re-runs `scripts/set-admin-
+  password.ts` if he'd already set his own before this. `npx tsc
+  --noEmit` and `npm run build` both passed before the push.

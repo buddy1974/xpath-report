@@ -2,6 +2,30 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — Reflex Testing & Special Stains agent: admin-only capability preview (DL-052)
+- Built a static, read-only preview of Dr. Ivo's Reflex Testing &
+  Special Stains spec (§17.1–17.9 + module work order) in the admin
+  section — zero DB reads, zero AI calls, not reachable from any real
+  case/report/dictation flow. Same deliberate G4 vision-signaling
+  exception already accepted for the "Coming soon" teasers (DL-042).
+- Two independent non-live signals per Marcel's explicit ask: a
+  "PREVIEW — not live" badge visible even when collapsed, and a
+  persistent, non-dismissible banner shown with the content every time
+  — not just enforced by routing, since this will be shown to Dr. Ivo
+  as real capability. Expanded by default with a "Show/Hide preview"
+  toggle (his explicit correction — not a click-to-reveal/activation
+  gate), reusing the existing `<details>` pattern from the Templates
+  page rather than inventing new interaction mechanics.
+- **Real process gap caught before writing any code**: the instruction
+  first referenced a spec file that turned out to live only in Cowork's
+  own project store, not this repo or machine — confirmed by exhaustive
+  local search, then flagged directly rather than guessing at content.
+  Marcel/Cowork corrected course and pasted the real §17 content
+  verbatim; only built from that, not paraphrased or filled in.
+- Live-verified as administrator on `www.xpath.report` — full content
+  renders correctly, toggle collapses/expands correctly, badge stays
+  visible when collapsed. `npx tsc --noEmit`/`npm run build` pass.
+
 ## 2026-08-04 — Dictate CTA bar, Workspace, OCR save, per-category colors (DL-051)
 - Built Marcel's three design decisions from the DL-050 scoping report
   plus the AI-Enhancement clarification: (1) a full-width Dictate CTA

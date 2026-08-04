@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); only the live Dr. Ivo demo remains)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -36,6 +36,9 @@ WAITING ON MARCEL:
    current password is an unknown random value nobody has, set only to
    prove the mechanism works end-to-end. `npx tsx --env-file=.env.local
    scripts/set-admin-password.ts`, then sign in for real to confirm.
+   (Reset a second time to verify DL-052's admin-only preview, then
+   rotated back to a fresh unknown value again — if you'd already set
+   your own password between DL-048 and now, run the script once more.)
 🔔 Same for the pathologist lens: run `npx tsx --env-file=.env.local
    scripts/set-pathologist-password.ts` to set your own permanent
    password for `test-pathologist@xpath.report` (DL-049) — same
@@ -50,6 +53,22 @@ WAITING ON MARCEL:
    default) is fully verified.
 
 LAST UPDATE: 2026-08-04 —
+
+**Reflex Testing & Special Stains agent: admin-only capability preview,
+DL-052.** Static, read-only preview of Dr. Ivo's spec (§17.1–17.9 +
+module work order) in the admin section — zero DB reads, zero AI calls,
+never reachable from any real case/report/dictation flow. Same G4
+vision-signaling exception already accepted for the "Coming soon"
+teasers (DL-042). Two independent non-live signals: a "PREVIEW — not
+live" badge visible even collapsed, and a persistent, non-dismissible
+banner shown with the content — not just enforced by routing, since
+this goes in front of Dr. Ivo. Expanded by default with a "Show/Hide"
+toggle, not a click-to-reveal/activation gate. A real process gap was
+caught before any code was written: the instruction first pointed at a
+spec file that turned out to live only in Cowork's own project store,
+not this repo — flagged directly instead of guessing, then built once
+the real content was pasted verbatim. Live-verified as administrator;
+content and toggle both confirmed correct.
 
 **Dictate CTA bar, Workspace, OCR save, per-category colors, DL-051.**
 Built Marcel's three design decisions from the DL-050 scoping report
