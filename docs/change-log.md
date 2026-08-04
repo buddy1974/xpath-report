@@ -2,6 +2,25 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — test-pathologist given the same permanent, no-friction treatment as dev-administrator (DL-049)
+- Extended the DL-048 pattern to a second account, on explicit
+  instruction: `test-pathologist@xpath.report` is Marcel's own account
+  for testing the pathologist lens, not a shared/rotating fixture.
+- Added it to `TOTP_EXEMPT_EMAILS` in `src/auth.config.ts` alongside
+  `dev-administrator@xpath.report` (still not a default for anyone
+  else). `mustCompleteSetup: false` was already correct from
+  provisioning (DL-047).
+- Built `scripts/set-pathologist-password.ts`, matched by email AND
+  `role="pathologist"`, same design as `scripts/set-admin-password.ts`
+  (single prompt, reasserts the account's safe flags on every run).
+- Live-verified end to end: pushed the TOTP-exemption change and
+  waited for it to deploy (it's a code path, not a DB flag), then ran
+  the script with a throwaway password and signed in for real at
+  `www.xpath.report` — landed on `/dashboard` with no TOTP prompt, page
+  content confirmed the pathologist Home view, clearly distinct from
+  the administrator view. Rotated to an unknown random value afterward
+  so Marcel sets his own. `npx tsc --noEmit`/`npm run build` pass.
+
 ## 2026-08-04 — Permanent admin account: root-caused a login failure, built a reliable password-set script (DL-048, R-037)
 - Marcel reported the last password he'd set for `dev-administrator@
   xpath.report` didn't let him log back in, and asked for root cause

@@ -44,6 +44,10 @@ WAITING ON MARCEL:
    current password is an unknown random value nobody has, set only to
    prove the mechanism works end-to-end. `npx tsx --env-file=.env.local
    scripts/set-admin-password.ts`, then sign in for real to confirm.
+🔔 Same for the pathologist lens: run `npx tsx --env-file=.env.local
+   scripts/set-pathologist-password.ts` to set your own permanent
+   password for `test-pathologist@xpath.report` (DL-049) — same
+   unknown-random-value-until-you-set-it state.
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
    until these are set.
@@ -54,6 +58,16 @@ WAITING ON MARCEL:
    default) is fully verified.
 
 LAST UPDATE: 2026-08-04 —
+
+**test-pathologist given the same permanent, no-friction treatment as
+dev-administrator, DL-049.** TOTP-exempted (`TOTP_EXEMPT_EMAILS`),
+`mustCompleteSetup` already false, and a matching `scripts/set-
+pathologist-password.ts` script built the same way as DL-048's admin
+version. Deployed the exemption first, then live-verified: signed in
+for real with a throwaway password, landed on `/dashboard` with no
+TOTP prompt, page content confirmed the pathologist Home view (not
+admin). Rotated to an unknown value afterward — see WAITING ON MARCEL
+above.
 
 **Permanent admin account root cause + reliable password-set script,
 DL-048/R-037.** Marcel's last password set for `dev-administrator@

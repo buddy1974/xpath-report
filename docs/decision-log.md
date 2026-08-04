@@ -961,3 +961,40 @@ Format: DL-nnn · decision · rationale.
   password for a permanent admin account; Marcel runs `scripts/set-
   admin-password.ts` himself next to set his own chosen, permanent
   value. `npx tsc --noEmit` and `npm run build` both passed.
+- **DL-049 — `test-pathologist@xpath.report` given the same permanent,
+  no-friction treatment as `dev-administrator` (DL-048).** This is
+  Marcel's own account for testing the pathologist lens, not a shared/
+  rotating fixture — explicit instruction to extend the DL-048 pattern,
+  not invent a new one.
+  Added `test-pathologist@xpath.report` to `TOTP_EXEMPT_EMAILS` in
+  `src/auth.config.ts` alongside `dev-administrator@xpath.report` (same
+  code-level, git-tracked exemption — DL-038's mechanism, now used for
+  a second account, still not a default for anyone else). Confirmed
+  `mustCompleteSetup: false` was already correct on the live row from
+  provisioning (DL-047) — nothing to change there.
+  Built `scripts/set-pathologist-password.ts`, a near-identical sibling
+  of `scripts/set-admin-password.ts`: matched by email AND
+  `role="pathologist"` (same defense-in-depth reasoning — can never
+  touch the wrong row even under a future email collision across
+  tenants, R-037), single prompt (no confirm-retype, same reasoning as
+  DL-048's fix), reasserts `isActive`/`mustCompleteSetup`/`totpEnabled`
+  on every run. Kept as a separate small script rather than
+  parameterizing `set-admin-password.ts` by role — the script's name
+  should say what it does, and duplicating ~60 lines is cheaper than a
+  shared-module abstraction for two call sites.
+  **Live-verified end to end, not just committed**: pushed the TOTP-
+  exemption change first and waited for Vercel to deploy it (the
+  exemption is a code path, not a DB flag — a live login test run
+  before deploy would have hit `/verify` regardless of the script
+  working correctly), then ran the script with a throwaway test
+  password, confirmed the DB row updated, and signed in for real at
+  `https://www.xpath.report/sign-in`. Landed directly on `/dashboard`
+  with no TOTP prompt — page content confirmed the pathologist Home
+  view ("Welcome back, Test Pathologist", worklist, G2 privacy panel,
+  learning cards), clearly distinct from the administrator view DL-048
+  confirmed for the other account, ruling out a role mix-up. Rotated
+  the account to a fresh unknown random value afterward (`openssl rand
+  -base64 24` piped directly into the script, never displayed or
+  logged), same as DL-048 — Marcel runs `scripts/set-pathologist-
+  password.ts` himself next to set his own chosen, permanent value.
+  `npx tsc --noEmit` and `npm run build` both passed before each push.
