@@ -9,7 +9,7 @@ import { auth } from "@/auth";
 import { getLocale } from "@/lib/i18n-server";
 import { setLocaleAction } from "@/lib/i18n-actions";
 import { STRINGS, ROLE_LABELS, t } from "@/lib/i18n";
-import { HelpButton } from "@/components/help-button";
+import { PathologistNav } from "@/components/nav-links";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -31,29 +31,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <span className="font-bold tracking-tight text-[15px]">X-PATH</span>
           </Link>
 
-          {role === "pathologist" && (
-            <nav className="flex items-center gap-1 text-sm">
-              <Link
-                href="/dashboard"
-                className="min-h-[40px] flex items-center px-3.5 rounded-full font-semibold text-petrol bg-petrol/8 hover:bg-petrol/12 transition-colors"
-              >
-                {t(STRINGS.navDictateTitle, locale)}
-              </Link>
-              <Link
-                href="/dashboard/templates"
-                className="min-h-[40px] flex items-center px-3.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
-              >
-                {t(STRINGS.navTemplatesTitle, locale)}
-              </Link>
-              <Link
-                href="/dashboard/archive"
-                className="min-h-[40px] flex items-center px-3.5 rounded-full font-medium text-neutral-500 hover:text-petrol hover:bg-petrol/5 transition-colors"
-              >
-                {t(STRINGS.navArchiveTitle, locale)}
-              </Link>
-              <HelpButton locale={locale} />
-            </nav>
-          )}
+          {role === "pathologist" && <PathologistNav locale={locale} />}
           {role !== "pathologist" && (
             <nav className="flex items-center gap-1 text-sm">
               <Link

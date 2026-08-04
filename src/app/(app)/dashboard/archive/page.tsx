@@ -72,7 +72,7 @@ export default async function ArchivePage({
           <h2 className="font-semibold text-petrol">{t(STRINGS.archiveEmptyTitle, locale)}</h2>
           <p className="text-sm text-neutral-500 mt-1 max-w-sm mx-auto">{t(STRINGS.archiveEmptyBody, locale)}</p>
           <Link
-            href="/dashboard"
+            href="/dashboard/dictate"
             className="inline-block mt-4 rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold shadow-sm hover:bg-petrol-deep transition-colors"
           >
             {t(STRINGS.archiveEmptyCta, locale)}

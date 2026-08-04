@@ -32,16 +32,20 @@ export default async function TemplatesIndexPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold">{t(STRINGS.templatesHeading, locale)}</h1>
-      <p className="text-neutral-600 mt-1">{t(STRINGS.templatesBody, locale)}</p>
+    <div className="max-w-3xl">
+      <h1 className="text-3xl font-bold tracking-tight">{t(STRINGS.templatesHeading, locale)}</h1>
+      <p className="text-neutral-600 mt-1.5">{t(STRINGS.templatesBody, locale)}</p>
 
       <div className="mt-6 space-y-3">
         {[...groups.entries()].map(([category, categoryTemplates], i) => {
           const accent = accentFor(i);
           const initial = category.replace(/[^A-Za-z]/g, "")[0] ?? "?";
           return (
-            <details key={category} className="group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden" open>
+            <details
+              key={category}
+              className="group rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+              open
+            >
               <summary className="cursor-pointer list-none px-5 py-4 flex items-center gap-3 hover:bg-petrol/5 transition-colors">
                 <span className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${ACCENT_BADGE[accent]}`}>
                   {initial}

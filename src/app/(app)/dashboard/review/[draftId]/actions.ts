@@ -35,6 +35,25 @@ async function requireActor(): Promise<Actor> {
   return { id: userId, tenantId: (session as any).tenantId, role: (session as any).role };
 }
 
+// Danger-zone urgency flag (North-Star §4.5/§4.8, R-034 half) — the
+// pathologist sets/confirms this explicitly; nothing here infers
+// "urgent" from field values (Header G1/G8). Stored in the same jsonb
+// payload as everything else on the draft/record, no schema migration.
+export interface UrgentFlag {
+  urgent: boolean;
+  severity: "attention" | "critical";
+  note: string;
+}
+
+function parseUrgentFlag(formData: FormData): UrgentFlag | null {
+  const urgent = formData.get("urgentFlag") === "on";
+  if (!urgent) return null;
+  const severityRaw = String(formData.get("urgentSeverity") ?? "attention");
+  const severity = severityRaw === "critical" ? "critical" : "attention";
+  const note = String(formData.get("urgentNote") ?? "").trim();
+  return { urgent: true, severity, note };
+}
+
 function parseFieldValues(formData: FormData, fields: FlatField[]): Record<string, string | string[]> {
   const values: Record<string, string | string[]> = {};
   for (const f of fields) {
@@ -68,6 +87,7 @@ export async function saveReview(draftId: string, formData: FormData) {
   const actor = await requireActor();
   const { draft, fields } = await loadDraftAndFields(draftId, actor);
   const fieldValues = parseFieldValues(formData, fields);
+  const urgentFlag = parseUrgentFlag(formData);
 
   await db
     .update(privateWorkspaceItems)
@@ -75,7 +95,7 @@ export async function saveReview(draftId: string, formData: FormData) {
       // A save from the full review form means the pathologist looked at
       // the whole draft, not just one field — every value is now
       // human-reviewed, not still "AI-suggested, unverified" (Header G1).
-      data: { ...(draft.data as object), fieldValues, aiFieldPaths: [] },
+      data: { ...(draft.data as object), fieldValues, aiFieldPaths: [], urgentFlag },
       updatedAt: new Date(),
     })
     .where(eq(privateWorkspaceItems.id, draftId));
@@ -88,6 +108,7 @@ export async function signAndAssign(draftId: string, formData: FormData) {
   const actor = await requireActor();
   const { draft, template, fields } = await loadDraftAndFields(draftId, actor);
   const fieldValues = parseFieldValues(formData, fields);
+  const urgentFlag = parseUrgentFlag(formData);
 
   const accession = String(formData.get("accession") ?? "").trim();
   if (!accession) {
@@ -138,6 +159,7 @@ export async function signAndAssign(draftId: string, formData: FormData) {
         // visible in the permanent record, not just the ephemeral draft.
         quotes: draftData.quotes ?? {},
         reflexSuggestionsAtSignOut: draftData.reflexSuggestions ?? [],
+        urgentFlag,
         dictationId: draftData.dictationId ?? null,
       },
     })

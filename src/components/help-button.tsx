@@ -13,7 +13,7 @@ export function HelpButton({ locale }: { locale: Locale }) {
       aria-label={t(STRINGS.helpIconLabel, locale)}
       onClick={() => {
         localStorage.removeItem(ONBOARDING_STORAGE_KEY);
-        window.location.href = "/dashboard";
+        window.location.href = "/dashboard/dictate";
       }}
       className="w-6 h-6 rounded-full border border-petrol/30 text-petrol text-xs font-bold flex items-center justify-center hover:bg-petrol/10 transition-colors shrink-0"
     >

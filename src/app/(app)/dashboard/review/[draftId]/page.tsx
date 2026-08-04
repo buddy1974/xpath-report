@@ -48,6 +48,7 @@ export default async function ReviewPage({
     aiFieldPaths: string[];
     quotes?: Record<string, string>;
     reflexSuggestions: { title: string; detail: string }[];
+    urgentFlag?: { urgent: boolean; severity: "attention" | "critical"; note: string } | null;
   };
   const template = getTemplate(data.templateId);
   if (!template) notFound();
@@ -72,6 +73,7 @@ export default async function ReviewPage({
       aiFieldPaths={data.aiFieldPaths ?? []}
       quotes={data.quotes ?? {}}
       reflexSuggestions={data.reflexSuggestions ?? []}
+      initialUrgentFlag={data.urgentFlag}
       saveAction={saveAction}
       signAction={signAction}
       locale={locale}

@@ -26,7 +26,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
     <div className="max-w-3xl">
       <p className="text-xs font-bold tracking-widest uppercase text-petrol">{template.category}</p>
       <header className="mt-1 mb-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">{template.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{template.title}</h1>
         <p className="text-sm text-neutral-500 mt-1">
           {t(STRINGS.templateSourcePrefix, locale)} {template.sourceProtocolName} · v{template.sourceVersion} ·{" "}
           {t(STRINGS.templatePosted, locale)} {template.sourcePostingDate}

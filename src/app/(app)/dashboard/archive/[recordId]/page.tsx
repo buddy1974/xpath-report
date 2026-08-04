@@ -57,6 +57,7 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
     fieldValues: Record<string, string | string[]>;
     quotes?: Record<string, string>;
     reflexSuggestionsAtSignOut: { title: string; detail: string }[];
+    urgentFlag?: { urgent: boolean; severity: "attention" | "critical"; note: string } | null;
   };
   const template = getTemplate(content.templateId);
   const statusLabel = t(RECORD_STATUS_LABELS[row.record.status] ?? RECORD_STATUS_LABELS.released, locale);
@@ -82,6 +83,23 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
           {t(STRINGS.downloadPdf, locale)}
         </a>
       </header>
+
+      {content.urgentFlag?.urgent && (
+        <div
+          className={`mb-4 rounded-xl border p-4 ${
+            content.urgentFlag.severity === "critical" ? "border-red-300 bg-red-50" : "border-amber-300 bg-amber-50"
+          }`}
+        >
+          <p className={`font-semibold text-sm ${content.urgentFlag.severity === "critical" ? "text-red-800" : "text-amber-800"}`}>
+            {t(STRINGS.urgentFlagBannerPrefix, locale)}{" "}
+            {t(
+              content.urgentFlag.severity === "critical" ? STRINGS.urgentFlagSeverityCritical : STRINGS.urgentFlagSeverityAttention,
+              locale,
+            )}
+            {content.urgentFlag.note ? ` — ${content.urgentFlag.note}` : ""}
+          </p>
+        </div>
+      )}
 
       {content.reflexSuggestionsAtSignOut?.length > 0 && (
         <div className="mb-4 space-y-2">

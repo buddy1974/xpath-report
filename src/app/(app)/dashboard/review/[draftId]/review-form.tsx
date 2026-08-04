@@ -246,6 +246,7 @@ export function ReviewForm({
   aiFieldPaths,
   quotes,
   reflexSuggestions,
+  initialUrgentFlag,
   saveAction,
   signAction,
   locale,
@@ -258,6 +259,7 @@ export function ReviewForm({
   aiFieldPaths: string[];
   quotes: Record<string, string>;
   reflexSuggestions: { title: string; detail: string }[];
+  initialUrgentFlag?: { urgent: boolean; severity: "attention" | "critical"; note: string } | null;
   saveAction: (formData: FormData) => void;
   signAction: (formData: FormData) => void;
   locale: Locale;
@@ -266,6 +268,9 @@ export function ReviewForm({
 }) {
   const [values, setValues] = useState<Values>(initialValues);
   const [showOptional, setShowOptional] = useState<Record<string, boolean>>({});
+  const [urgentFlagged, setUrgentFlagged] = useState(initialUrgentFlag?.urgent ?? false);
+  const [urgentSeverity, setUrgentSeverity] = useState<"attention" | "critical">(initialUrgentFlag?.severity ?? "attention");
+  const [urgentNote, setUrgentNote] = useState(initialUrgentFlag?.note ?? "");
   const signRef = useRef<HTMLDivElement>(null);
   const aiPaths = useMemo(() => new Set(aiFieldPaths), [aiFieldPaths]);
 
@@ -330,6 +335,23 @@ export function ReviewForm({
         )}
       </div>
 
+      {/* Danger-zone banner — persists regardless of section collapse
+          state since it lives outside the accordion list entirely.
+          Advisory: the pathologist set this, nothing here infers it. */}
+      {urgentFlagged && (
+        <div
+          className={`mt-4 rounded-xl border p-4 ${
+            urgentSeverity === "critical" ? "border-red-300 bg-red-50" : "border-amber-300 bg-amber-50"
+          }`}
+        >
+          <p className={`font-semibold text-sm ${urgentSeverity === "critical" ? "text-red-800" : "text-amber-800"}`}>
+            {t(STRINGS.urgentFlagBannerPrefix, locale)}{" "}
+            {t(urgentSeverity === "critical" ? STRINGS.urgentFlagSeverityCritical : STRINGS.urgentFlagSeverityAttention, locale)}
+            {urgentNote ? ` — ${urgentNote}` : ""}
+          </p>
+        </div>
+      )}
+
       {reflexSuggestions.length > 0 && (
         <div className="mt-4 space-y-2">
           {reflexSuggestions.map((r, i) => (
@@ -342,6 +364,59 @@ export function ReviewForm({
       )}
 
       <form className="mt-6 space-y-4">
+        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <label className="flex items-center gap-2.5 min-h-[44px]">
+            <input
+              type="checkbox"
+              name="urgentFlag"
+              checked={urgentFlagged}
+              onChange={(e) => setUrgentFlagged(e.target.checked)}
+              className="w-4 h-4 accent-red-600"
+            />
+            <span className="font-semibold text-sm">{t(STRINGS.urgentFlagCheckboxLabel, locale)}</span>
+          </label>
+          {urgentFlagged && (
+            <div className="mt-3 space-y-3 pl-6">
+              <div>
+                <p className="text-xs font-semibold text-neutral-500 mb-1.5">{t(STRINGS.urgentFlagSeverityLabel, locale)}</p>
+                <div className="inline-flex rounded-lg border border-neutral-300 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setUrgentSeverity("attention")}
+                    className={`px-3.5 py-2 text-sm font-medium min-h-[40px] transition-colors ${
+                      urgentSeverity === "attention" ? "bg-amber-500 text-white" : "bg-white text-neutral-600 hover:bg-neutral-50"
+                    }`}
+                  >
+                    {t(STRINGS.urgentFlagSeverityAttention, locale)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUrgentSeverity("critical")}
+                    className={`px-3.5 py-2 text-sm font-medium min-h-[40px] transition-colors ${
+                      urgentSeverity === "critical" ? "bg-red-600 text-white" : "bg-white text-neutral-600 hover:bg-neutral-50"
+                    }`}
+                  >
+                    {t(STRINGS.urgentFlagSeverityCritical, locale)}
+                  </button>
+                </div>
+                <input type="hidden" name="urgentSeverity" value={urgentSeverity} />
+              </div>
+              <label className="block">
+                <span className="text-xs font-semibold text-neutral-500 mb-1.5 block">{t(STRINGS.urgentFlagNoteLabel, locale)}</span>
+                <input
+                  type="text"
+                  name="urgentNote"
+                  value={urgentNote}
+                  onChange={(e) => setUrgentNote(e.target.value)}
+                  placeholder={t(STRINGS.urgentFlagNotePlaceholder, locale)}
+                  className="w-full max-w-md rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-petrol focus:ring-1 focus:ring-petrol/30 outline-none"
+                />
+              </label>
+              <p className="text-xs text-neutral-400">{t(STRINGS.urgentFlagAdvisoryNote, locale)}</p>
+            </div>
+          )}
+        </div>
+
         {bySection.map(([sectionTitle, fields]) => {
           const visibleFields = fields.filter((f) => !allCompanionPaths.has(f.path));
           const primaryFields = visibleFields.filter((f) => f.tier !== "non-core");

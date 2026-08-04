@@ -175,6 +175,60 @@ export const STRINGS = {
   requiredFieldsRemainingSuffix: { en: "required field(s) left", fr: "champ(s) requis restant(s)" },
   allRequiredComplete: { en: "All required fields entered", fr: "Tous les champs requis sont remplis" },
 
+  // Home / Summary screen (North-Star §4.1). Nav gains a dedicated
+  // "Home" link now that /dashboard/dictate is its own route again.
+  navHomeTitle: { en: "Home", fr: "Accueil" },
+  navProfileTitle: { en: "Profile", fr: "Profil" },
+  homeGreetingPrefix: { en: "Welcome back,", fr: "Bon retour," },
+  homeRecentWorkHeading: { en: "Recent work", fr: "Travaux récents" },
+  homeRecentWorkEmpty: {
+    en: "No drafts in progress. Start your next case from Dictate.",
+    fr: "Aucun brouillon en cours. Commencez votre prochain cas depuis Dicter.",
+  },
+  homeRecentWorkCta: { en: "Continue →", fr: "Continuer →" },
+  homeRecommendationDraftsSuffix: {
+    en: "draft(s) pending validation.",
+    fr: "brouillon(s) en attente de validation.",
+  },
+  homeRecommendationAllClear: {
+    en: "Nothing pending — you're caught up.",
+    fr: "Rien en attente — vous êtes à jour.",
+  },
+  homeTrendsHeading: { en: "Your reporting activity", fr: "Votre activité de compte rendu" },
+  homeTrendsBody: {
+    en: "Signed reports per week, last 8 weeks — your own activity only.",
+    fr: "Comptes rendus signés par semaine, 8 dernières semaines — votre activité uniquement.",
+  },
+  homeTrendsEmpty: {
+    en: "No signed reports yet — your activity will appear here.",
+    fr: "Aucun compte rendu signé pour l'instant — votre activité apparaîtra ici.",
+  },
+  homeLearningHeading: { en: "Learning", fr: "Apprentissage" },
+  homeAlertsHeading: { en: "Needs attention", fr: "Nécessite votre attention" },
+  homeLearnHer2Title: { en: "Why HER2 status matters", fr: "Pourquoi le statut HER2 est important" },
+  homeLearnHer2Body: {
+    en: "HER2 (human epidermal growth factor receptor 2) is a biomarker tested in breast cancer. Overexpression or gene amplification identifies tumors that may respond to HER2-targeted therapy. IHC scores 0/1+ are negative, 3+ is positive, and 2+ (equivocal) reflexes to ISH for a definitive result — the same logic this platform's biomarker template and reflex suggestion follow.",
+    fr: "HER2 (récepteur 2 du facteur de croissance épidermique humain) est un biomarqueur testé dans le cancer du sein. Une surexpression ou amplification génique identifie les tumeurs pouvant répondre à une thérapie ciblée anti-HER2. Les scores IHC 0/1+ sont négatifs, 3+ est positif, et 2+ (équivoque) déclenche un test ISH pour un résultat définitif — la même logique que suit le modèle biomarqueur et la suggestion réflexe de cette plateforme.",
+  },
+  homeLearnGradeTitle: { en: "Understanding Nottingham grade", fr: "Comprendre le grade de Nottingham" },
+  homeLearnGradeBody: {
+    en: "The Nottingham Histologic Score grades invasive breast carcinoma from three components — tubule/gland formation, nuclear pleomorphism, and mitotic count — each scored 1 to 3 and summed (3–9) into an overall grade I (well differentiated) to III (poorly differentiated).",
+    fr: "Le score histologique de Nottingham évalue le carcinome mammaire invasif selon trois composantes — formation de tubules/glandes, pléomorphisme nucléaire et compte mitotique — chacune notée de 1 à 3 et additionnée (3–9) en un grade global I (bien différencié) à III (peu différencié).",
+  },
+  homeLearnCannotDetermineTitle: {
+    en: "What \"cannot be determined\" means here",
+    fr: "Ce que signifie « ne peut pas être déterminé »",
+  },
+  homeLearnCannotDetermineBody: {
+    en: "Every field in a template has an honest escape hatch. Choosing \"cannot be determined\" and explaining why is a real, complete answer — never leave a field to a guess, and never let the AI fill one in without a real quote to back it (Header G8).",
+    fr: "Chaque champ d'un modèle dispose d'une échappatoire honnête. Choisir « ne peut pas être déterminé » et expliquer pourquoi est une réponse réelle et complète — ne devinez jamais un champ, et ne laissez jamais l'IA en remplir un sans citation réelle à l'appui (Header G8).",
+  },
+  homeLearnAiSuggestedTitle: { en: "Reading AI-suggested fields", fr: "Lire les champs suggérés par l'IA" },
+  homeLearnAiSuggestedBody: {
+    en: "A purple \"AI-suggested\" badge and its grounding quote show exactly where a value came from in your transcript. Nothing is entered into the clinical record until you review and sign — the platform structures, you interpret (Header G1).",
+    fr: "Un badge violet « suggéré par l'IA » et sa citation source indiquent exactement d'où provient une valeur dans votre transcription. Rien n'entre dans le dossier clinique tant que vous n'avez pas relu et signé — la plateforme structure, vous interprétez (Header G1).",
+  },
+
   // Archive pages
   archiveHeading: { en: "Archive", fr: "Archives" },
   archiveBody: {
@@ -285,6 +339,45 @@ export const STRINGS = {
     en: "Private & encrypted at rest — access is restricted to you alone in code, not even the lab or an administrator can open this (Header G2)",
     fr: "Privé et chiffré au repos — l'accès est réservé à vous seul dans le code ; ni le laboratoire ni un administrateur ne peuvent l'ouvrir (Header G2)",
   },
+
+  // Profile / My Space (North-Star §4.2)
+  profileHeading: { en: "Profile", fr: "Profil" },
+  profileLabWord: { en: "Lab", fr: "Laboratoire" },
+  profilePrivacyPanelTitle: { en: "Your private space", fr: "Votre espace privé" },
+  profilePrivacyPanelBody: {
+    en: "Your data is encrypted at rest and access-controlled in code — no one else, including the lab owner or an administrator, can open your workspace. Only a signed, released report leaves this space and enters the audited clinical record (Header G2).",
+    fr: "Vos données sont chiffrées au repos et l'accès est contrôlé dans le code — personne d'autre, y compris le propriétaire du laboratoire ou un administrateur, ne peut ouvrir votre espace. Seul un compte rendu signé et publié quitte cet espace pour entrer dans le dossier clinique audité (Header G2).",
+  },
+  profileMySpaceHeading: { en: "My space", fr: "Mon espace" },
+  profileArchiveLink: { en: "My archive", fr: "Mes archives" },
+  profileArchiveBlurb: { en: "Your signed, released reports.", fr: "Vos comptes rendus signés et publiés." },
+  profileTemplatesLink: { en: "Templates", fr: "Modèles" },
+  profileNotesComingSoon: {
+    en: "Personal notes and saved references — not built yet, on the roadmap.",
+    fr: "Notes personnelles et références enregistrées — pas encore disponibles, sur la feuille de route.",
+  },
+  profileLanguageHeading: { en: "Language", fr: "Langue" },
+
+  // Danger-zone urgency flag (North-Star §4.5/§4.8, R-034 half). The
+  // pathologist sets/confirms this — the system never infers "urgent"
+  // on its own (Header G1/G8).
+  urgentFlagHeading: { en: "Flag this case", fr: "Signaler ce cas" },
+  urgentFlagCheckboxLabel: {
+    en: "Mark this case as urgent for clinician attention",
+    fr: "Marquer ce cas comme urgent pour l'attention du clinicien",
+  },
+  urgentFlagSeverityLabel: { en: "Severity", fr: "Gravité" },
+  urgentFlagSeverityAttention: { en: "Attention", fr: "Attention" },
+  urgentFlagSeverityCritical: { en: "Critical", fr: "Critique" },
+  urgentFlagNoteLabel: { en: "Why (e.g. positive margin, high grade)", fr: "Pourquoi (ex. marge positive, grade élevé)" },
+  urgentFlagNotePlaceholder: { en: "Short note for the clinician", fr: "Note brève pour le clinicien" },
+  urgentFlagBannerPrefix: { en: "Urgent —", fr: "Urgent —" },
+  urgentFlagAdvisoryNote: {
+    en: "Advisory only — you set this flag; it is never inferred automatically (Header G1/G8).",
+    fr: "Indicatif uniquement — vous définissez ce signalement ; il n'est jamais déduit automatiquement (Header G1/G8).",
+  },
+  homeAlertsEmpty: { en: "Nothing flagged urgent right now.", fr: "Rien de signalé comme urgent pour le moment." },
+  homeAlertsCaseWord: { en: "case", fr: "cas" },
 } satisfies Record<string, Dict>;
 
 export const ROLE_LABELS: Record<string, Dict> = {
