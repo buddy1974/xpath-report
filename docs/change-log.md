@@ -2,6 +2,21 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — R-036 RESOLVED: real mobile end-to-end test confirms dictation upload works live (DL-050)
+- Marcel fixed the R2 CORS policy (Cloudflare dashboard, no app code
+  changed) and ran a real end-to-end test on his own phone with the
+  `test-pathologist` account: dictation audio upload, transcription,
+  and save-to-workspace all worked live for the first time. Also
+  confirmed: profile-picture upload, and template auto-suggestion
+  correctly requiring manual confirm (G1). `docs/known-risks.md` R-036
+  marked resolved.
+- An earlier concern (transcript/OCR text looking merged) is voided —
+  that was Marcel manually copy-pasting to test, not a bug.
+- From the live test, five scoped UX asks and a lower-priority visual
+  polish pass were raised, both explicitly requesting a feasibility/
+  scope report before implementation — assessed this session, not yet
+  built. See DL-050 and the session reply for the itemized breakdown.
+
 ## 2026-08-04 — test-pathologist given the same permanent, no-friction treatment as dev-administrator (DL-049)
 - Extended the DL-048 pattern to a second account, on explicit
   instruction: `test-pathologist@xpath.report` is Marcel's own account

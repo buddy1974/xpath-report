@@ -1,29 +1,21 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; only the live Dr. Ivo demo remains)
 
-🔴 **CRITICAL, READ FIRST — R-036: the R2 bucket's CORS policy very
-likely blocks real dictation-audio upload for any real pathologist
-using an actual browser.** Confirmed live (DL-047) with a real presigned
-PUT from an authenticated browser tab — `Failed to fetch`, CORS
-preflight `403`. The transcription/structuring pipeline itself is
-thoroughly verified (many real OpenAI calls this session), but the
-*upload step in front of it* has never been proven to work from a real
-browser before now — earlier verification (M4/DL-021/R-019) used a
-server-side script that bypasses browser CORS entirely. **Needs
-Marcel's Cloudflare dashboard (R2 → bucket → Settings → CORS Policy) —
-not fixable from application code.** Treat this as the top priority
-before any real pathologist, including the seeded demo account or the
-new test-pathologist account, is asked to dictate through the actual
-recorder UI. Full detail in `docs/known-risks.md` R-036.
+✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
+real end-to-end mobile test (`test-pathologist` account): dictation
+audio upload, transcription, and save-to-workspace all worked live for
+the first time.** Also confirmed: profile-picture upload, template
+auto-suggestion correctly requiring manual confirm (G1). Full detail in
+`docs/known-risks.md` R-036 (kept for the historical record).
 
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
-[ ] M2 Private workspace         0%
+[ ] M2 Private workspace         0%   ← named milestone, not yet built as its own surface; directly relevant to the DL-050 workspace-visibility asks, see reply
 [x] M3 Template engine          100%   ← all 6 Phase-1 templates built
-[x] M4 Voice + transcription    95%   ← pipeline verified live server-side; real-browser upload now CONFIRMED BROKEN, see R-036 above
+[x] M4 Voice + transcription    100%   ← pipeline + real-browser upload both CONFIRMED WORKING live (R-036 resolved, DL-050)
 [x] M5 Structure & auto-fill    90%   ← engine + all templates verified
 [x] M6 Review · validate · assign 100%   ← review/sign/archive/PDF loop E2E-verified live
-[x] M7 Hardening + demo         97%   ← DNS live, redeployed, re-verified live on xpath.report; seeded demo pathologist + test-pathologist accounts now ready (DL-046/047) — R-036 should be fixed before the Dr. Ivo demo, since the demo's own "record a real case" moment would hit it
+[x] M7 Hardening + demo         100%   ← DNS live, redeployed, re-verified live on xpath.report; seeded demo pathologist + test-pathologist accounts confirmed working end-to-end on a real device (DL-046/047/050)
 
 Team provisioning (Cowork execution-order §1 — parallel workstream, not a
 numbered milestone): built and verified end-to-end, both locally and live.

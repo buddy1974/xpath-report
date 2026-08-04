@@ -998,3 +998,27 @@ Format: DL-nnn · decision · rationale.
   logged), same as DL-048 — Marcel runs `scripts/set-pathologist-
   password.ts` himself next to set his own chosen, permanent value.
   `npx tsc --noEmit` and `npm run build` both passed before each push.
+- **DL-050 — R-036 resolved: Marcel fixed the R2 CORS policy and ran a
+  real end-to-end mobile test (`test-pathologist` account) confirming
+  dictation upload, transcription, and save-to-workspace all work live
+  for the first time.** Also confirmed working in the same test:
+  profile-picture upload, and template auto-suggestion correctly
+  requiring manual confirm rather than auto-routing (G1 compliant).
+  One earlier concern is voided: merged-looking transcript/OCR text
+  Marcel saw was him manually copy-pasting between the two to test, not
+  a system bug — no code change needed. `docs/known-risks.md` R-036
+  marked resolved with the fix attributed correctly (Cloudflare
+  dashboard change, not an application-code fix — no code in this repo
+  changed for this resolution). From this live test, Marcel raised five
+  scoped UX asks (Dictate as a dominant mobile CTA, an OCR "Save to
+  workspace" action, an explicit "AI Enhancement" step instead of
+  auto-structuring, a persistently-reachable private workspace, and a
+  persistent AI-caution near every AI-generated output/field — with
+  real garbled-transcript examples: "tubule formation" → "tubal
+  formation," "fibrocystic change" → "pharaocytic change," "HER2
+  immunohistochemistry" → "HER to immune histo chemistry") plus a lower-
+  priority Apple-Health-style visual polish pass (card typography,
+  padding, section headers, per-category icon color, pill-shaped tab-
+  bar indicator). Both explicitly asked for a feasibility/scope report
+  before any implementation — assessed, not built, this session; see
+  the reply for the itemized scope and open design questions.

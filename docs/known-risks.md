@@ -322,9 +322,17 @@ Format: R-nnn · risk · current mitigation / status.
   but worth a real fix, e.g. normalizing whitespace on both sides of the
   comparison, if a future source of transcript text (manual paste,
   non-Whisper import) is ever added).
-- **R-036 — CRITICAL, HIGH PRIORITY — the R2 bucket's CORS policy rejects
+- **R-036 — RESOLVED (2026-08-04) — the R2 bucket's CORS policy rejected
   every direct browser-to-R2 presigned upload, confirmed for BOTH the
-  new avatar-upload feature AND the dictation-audio path itself.**
+  avatar-upload feature AND the dictation-audio path itself.**
+  **Resolution: Marcel fixed the R2 bucket's CORS policy in the
+  Cloudflare dashboard, then ran a real end-to-end test on his own
+  mobile device with the `test-pathologist` account — dictation audio
+  upload, transcription, and save-to-workspace all worked live for the
+  first time.** Also confirmed working in the same live test: profile
+  picture upload, and template auto-suggestion (correctly requiring
+  manual confirm, not auto-routing — G1 compliant). Left below for the
+  historical record of what the failure was and how it was found.
   Found live (DL-047) building the profile-picture upload: a real
   browser `fetch()` PUT to a real presigned URL failed with `Failed to
   fetch` after the browser's CORS preflight `OPTIONS` request came back
