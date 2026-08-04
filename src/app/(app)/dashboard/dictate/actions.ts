@@ -82,3 +82,28 @@ export async function saveTranscriptEdit(itemId: string, text: string) {
   assertWorkspaceOwner(actor, item);
   await db.update(privateWorkspaceItems).set({ body: text, updatedAt: new Date() }).where(eq(privateWorkspaceItems.id, itemId));
 }
+
+/**
+ * Saves a photo-to-text scan result (notes/requisition forms/labels) as
+ * its own workspace item — kind "note", distinct from a dictation.
+ * Deliberately does no AI processing of any kind: this only stores text
+ * the pathologist already reviewed on-device (Tesseract.js, ocr-scan.tsx).
+ * Sending a saved note to AI structuring is a separate, later, explicit
+ * action from the Workspace list (Header G1 — see DL-051).
+ */
+export async function saveOcrNote(text: string) {
+  const actor = await requireActor();
+  const trimmed = text.trim();
+  if (!trimmed) throw new Error("Nothing to save");
+
+  const id = randomUUID();
+  await db.insert(privateWorkspaceItems).values({
+    id,
+    tenantId: actor.tenantId,
+    ownerId: actor.id,
+    kind: "note",
+    title: `Scanned note — ${new Date().toISOString()}`,
+    body: trimmed,
+  });
+  return { itemId: id };
+}

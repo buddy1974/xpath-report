@@ -11,6 +11,7 @@ import { setLocaleAction } from "@/lib/i18n-actions";
 import { STRINGS, ROLE_LABELS, t } from "@/lib/i18n";
 import { PathologistNav } from "@/components/nav-links";
 import { Avatar } from "@/components/avatar";
+import { DictateCtaBar } from "@/components/dictate-cta-bar";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -80,7 +81,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">{children}</main>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-8">{children}</main>
+
+      {role === "pathologist" && <DictateCtaBar locale={locale} />}
     </div>
   );
 }

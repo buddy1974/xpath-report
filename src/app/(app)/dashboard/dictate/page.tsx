@@ -2,12 +2,13 @@
 // route). /dashboard is now the Home/Summary screen (§4.1); the capture
 // loop lives here so Home can stay a real summary, not a wrapper around
 // the recorder. Onboarding checklist + capture prompt moved with it.
+// DL-051: Dictate stays a one-tap capture action (Marcel's explicit
+// decision) — the list of past dictations/notes/drafts moved to its own
+// Workspace screen, linked below, rather than living at the bottom of
+// this page as before.
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { and, desc, eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { db } from "@/db";
-import { privateWorkspaceItems } from "@/db/schema";
 import { PrivacyIndicator } from "@/components/privacy-indicator";
 import { OnboardingChecklist } from "@/components/onboarding-checklist";
 import { getLocale } from "@/lib/i18n-server";
@@ -21,15 +22,7 @@ export default async function DictatePage() {
   if ((session as any).totpVerified !== true) redirect("/verify");
   if ((session as any).role !== "pathologist") redirect("/dashboard");
 
-  const userId = (session.user as any).id as string;
   const locale = await getLocale();
-
-  const dictations = await db
-    .select()
-    .from(privateWorkspaceItems)
-    .where(and(eq(privateWorkspaceItems.ownerId, userId), eq(privateWorkspaceItems.kind, "dictation")))
-    .orderBy(desc(privateWorkspaceItems.updatedAt))
-    .limit(20);
 
   return (
     <div>
@@ -53,26 +46,13 @@ export default async function DictatePage() {
         <OcrScan locale={locale} />
       </div>
 
-      {dictations.length > 0 && (
-        <div className="mt-10 max-w-xl">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">{t(STRINGS.yourDictations, locale)}</h2>
-          <ul className="mt-3 space-y-2">
-            {dictations.map((d) => (
-              <li
-                key={d.id}
-                className="rounded-xl border border-neutral-200 bg-white p-4 flex items-center justify-between shadow-sm hover:shadow-md hover:border-petrol/30 transition-all"
-              >
-                <span className="text-sm text-neutral-600 truncate max-w-xs">
-                  {d.body ? d.body : t(STRINGS.notTranscribedPlaceholder, locale)}
-                </span>
-                <Link href={`/dashboard/structure/${d.id}`} className="text-sm font-semibold text-petrol shrink-0 ml-3">
-                  {t(STRINGS.structureLink, locale)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <Link
+        href="/dashboard/workspace"
+        className="mt-10 flex items-center justify-between rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-petrol/30 transition-all max-w-xl"
+      >
+        <span className="text-sm text-neutral-600">{t(STRINGS.workspaceBody, locale)}</span>
+        <span className="text-sm font-semibold text-petrol shrink-0 ml-3">{t(STRINGS.navWorkspaceTitle, locale)} →</span>
+      </Link>
     </div>
   );
 }

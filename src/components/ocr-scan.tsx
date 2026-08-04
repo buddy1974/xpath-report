@@ -32,21 +32,32 @@
  * button — never written into any form field automatically (Header G1:
  * the pathologist reviews and chooses where it goes, same principle as
  * AI-suggested template fields always requiring human confirmation).
+ *
+ * A separate "Save to workspace" button (DL-051) stores the reviewed
+ * text as its own private-workspace item (kind "note"), distinct from
+ * Copy — organizing/referencing a note later is a different action from
+ * pasting it into an active report, and saving here does no AI
+ * processing at all (the note only reaches AI structuring later, as its
+ * own explicit step from the Workspace list — Header G1).
  */
 import { useRef, useState } from "react";
 import { STRINGS, t, type Locale } from "@/lib/i18n";
+import { saveOcrNote } from "@/app/(app)/dashboard/dictate/actions";
 
 type Phase = "idle" | "processing" | "done" | "error";
+type SavePhase = "idle" | "saving" | "saved" | "error";
 
 export function OcrScan({ locale = "en" }: { locale?: Locale }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [text, setText] = useState("");
   const [copied, setCopied] = useState(false);
+  const [savePhase, setSavePhase] = useState<SavePhase>("idle");
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
     setPhase("processing");
     setCopied(false);
+    setSavePhase("idle");
     try {
       const { createWorker } = await import("tesseract.js");
       const worker = await createWorker("eng");
@@ -94,7 +105,7 @@ export function OcrScan({ locale = "en" }: { locale?: Locale }) {
                 rows={6}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-petrol focus:ring-1 focus:ring-petrol/30 outline-none"
               />
-              <div className="mt-2 flex items-center gap-3">
+              <div className="mt-2 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={() => {
@@ -105,8 +116,25 @@ export function OcrScan({ locale = "en" }: { locale?: Locale }) {
                 >
                   {copied ? t(STRINGS.scanCopiedConfirm, locale) : t(STRINGS.scanCopyButton, locale)}
                 </button>
-                <p className="text-xs text-neutral-400">{t(STRINGS.scanNeverAutoInserted, locale)}</p>
+                <button
+                  type="button"
+                  disabled={savePhase === "saving"}
+                  onClick={async () => {
+                    setSavePhase("saving");
+                    try {
+                      await saveOcrNote(text);
+                      setSavePhase("saved");
+                    } catch {
+                      setSavePhase("error");
+                    }
+                  }}
+                  className="rounded-lg border border-petrol text-petrol px-3.5 py-2 text-sm font-semibold hover:bg-petrol/5 transition-colors min-h-[40px] disabled:opacity-50"
+                >
+                  {savePhase === "saved" ? t(STRINGS.scanSavedConfirm, locale) : t(STRINGS.scanSaveButton, locale)}
+                </button>
               </div>
+              {savePhase === "error" && <p className="text-xs text-red-600 mt-1.5">{t(STRINGS.scanSaveFailed, locale)}</p>}
+              <p className="text-xs text-neutral-400 mt-1.5">{t(STRINGS.scanNeverAutoInserted, locale)}</p>
             </>
           ) : (
             <p className="text-sm text-neutral-500">{t(STRINGS.scanNoTextFound, locale)}</p>

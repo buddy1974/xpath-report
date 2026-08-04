@@ -95,9 +95,6 @@ export const STRINGS = {
     en: "Private to you until you save it — no one else, including the lab, can see this (Header G2).",
     fr: "Privé, réservé à vous, jusqu'à l'enregistrement — personne d'autre, y compris le laboratoire, ne peut voir ceci (Header G2).",
   },
-  yourDictations: { en: "Your dictations", fr: "Vos dictées" },
-  structureLink: { en: "Structure →", fr: "Structurer →" },
-  notTranscribedPlaceholder: { en: "(not transcribed)", fr: "(non transcrit)" },
 
   // Recorder (client component)
   languageLabel: { en: "Language", fr: "Langue" },
@@ -402,6 +399,46 @@ export const STRINGS = {
   },
   homeAlertsEmpty: { en: "Nothing flagged urgent right now.", fr: "Rien de signalé comme urgent pour le moment." },
   homeAlertsCaseWord: { en: "case", fr: "cas" },
+
+  // Dictate CTA bar (DL-051) — persistent, always-reachable primary
+  // action, fixed to the bottom of the screen on every page except
+  // Dictate itself (redundant there) and Review/Sign (collides with
+  // that screen's own fixed bottom bar).
+  dictateCtaBarLabel: { en: "Start dictation", fr: "Démarrer une dictée" },
+
+  // Workspace (DL-051) — the persistent, always-reachable home for
+  // everything captured but not yet turned into a report (dictations,
+  // OCR'd notes, in-progress drafts). Header G2: owner-only, same as
+  // everything else in the private workspace.
+  navWorkspaceTitle: { en: "Workspace", fr: "Espace de travail" },
+  workspaceHeading: { en: "Workspace", fr: "Espace de travail" },
+  workspaceBody: {
+    en: "Everything you've captured but not yet turned into a report — dictations, scanned notes, and drafts in progress. Private to you (Header G2).",
+    fr: "Tout ce que vous avez capturé mais pas encore transformé en compte rendu — dictées, notes numérisées et brouillons en cours. Privé, réservé à vous (Header G2).",
+  },
+  workspaceEmpty: {
+    en: "Nothing here yet. Start a dictation or scan a note to see it appear here.",
+    fr: "Rien ici pour l'instant. Démarrez une dictée ou numérisez une note pour la voir apparaître ici.",
+  },
+  workspaceKindDictation: { en: "Dictation", fr: "Dictée" },
+  workspaceKindNote: { en: "Scanned note", fr: "Note numérisée" },
+  workspaceKindDraft: { en: "Draft", fr: "Brouillon" },
+  workspaceSendToAi: { en: "Send to AI →", fr: "Envoyer à l'IA →" },
+  workspaceContinueReviewing: { en: "Continue reviewing →", fr: "Poursuivre la relecture →" },
+  workspaceNotTranscribedYet: { en: "Not transcribed yet", fr: "Pas encore transcrit" },
+  workspaceEmptyBody: { en: "(empty note)", fr: "(note vide)" },
+  workspaceSendToAiExplainer: {
+    en: "Saving never structures a report by itself — you choose when to send an item to AI structuring (Header G1).",
+    fr: "L'enregistrement seul ne structure jamais de compte rendu — vous choisissez quand envoyer un élément à la structuration par IA (Header G1).",
+  },
+
+  // OCR "Save to workspace" (DL-051) — distinct from Copy: stores the
+  // scanned text as its own workspace item, no AI processing involved
+  // in saving itself (Header G1 — AI structuring is a separate, later,
+  // explicit action from Workspace).
+  scanSaveButton: { en: "Save to workspace", fr: "Enregistrer dans l'espace de travail" },
+  scanSavedConfirm: { en: "Saved", fr: "Enregistré" },
+  scanSaveFailed: { en: "Couldn't save — try again.", fr: "Impossible d'enregistrer — réessayez." },
 } satisfies Record<string, Dict>;
 
 export const ROLE_LABELS: Record<string, Dict> = {

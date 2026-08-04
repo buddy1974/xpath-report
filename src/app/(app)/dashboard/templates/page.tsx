@@ -2,18 +2,20 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { templates } from "@/lib/templates";
+import { accentForCategory } from "@/lib/templates/category-colors";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, APPROVAL_STATUS_LABELS, t } from "@/lib/i18n";
 
-// Cosmetic only, cycled per category — not a clinical color code.
-const CATEGORY_ACCENTS = ["eosin", "petrol", "hema"] as const;
-function accentFor(index: number): (typeof CATEGORY_ACCENTS)[number] {
-  return CATEGORY_ACCENTS[index % CATEGORY_ACCENTS.length];
-}
+// Fixed per-category color (DL-051) — cosmetic only, not a clinical
+// color code. Full literal class strings so Tailwind's scanner picks
+// them up (dynamic `bg-${accent}` interpolation would not).
 const ACCENT_BADGE: Record<string, string> = {
-  eosin: "bg-eosin/10 text-eosin",
+  categoryRose: "bg-categoryRose/10 text-categoryRose",
+  categoryAmber: "bg-categoryAmber/10 text-categoryAmber",
+  categoryIndigo: "bg-categoryIndigo/10 text-categoryIndigo",
+  categoryViolet: "bg-categoryViolet/10 text-categoryViolet",
+  categoryOlive: "bg-categoryOlive/10 text-categoryOlive",
   petrol: "bg-petrol/10 text-petrol",
-  hema: "bg-hema/10 text-hema",
 };
 
 export default async function TemplatesIndexPage() {
@@ -37,8 +39,8 @@ export default async function TemplatesIndexPage() {
       <p className="text-neutral-600 mt-1.5">{t(STRINGS.templatesBody, locale)}</p>
 
       <div className="mt-6 space-y-3">
-        {[...groups.entries()].map(([category, categoryTemplates], i) => {
-          const accent = accentFor(i);
+        {[...groups.entries()].map(([category, categoryTemplates]) => {
+          const accent = accentForCategory(category);
           const initial = category.replace(/[^A-Za-z]/g, "")[0] ?? "?";
           return (
             <details

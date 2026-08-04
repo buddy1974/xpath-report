@@ -32,7 +32,12 @@ export function PathologistNav({ locale }: { locale: Locale }) {
       <NavLink
         href="/dashboard/dictate"
         label={t(STRINGS.navDictateTitle, locale)}
-        active={pathname.startsWith("/dashboard/dictate") || pathname.startsWith("/dashboard/structure")}
+        active={pathname.startsWith("/dashboard/dictate")}
+      />
+      <NavLink
+        href="/dashboard/workspace"
+        label={t(STRINGS.navWorkspaceTitle, locale)}
+        active={pathname.startsWith("/dashboard/workspace") || pathname.startsWith("/dashboard/structure")}
       />
       <NavLink
         href="/dashboard/templates"
