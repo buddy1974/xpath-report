@@ -1,14 +1,29 @@
 # X-PATH — PROGRESS
 Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; only the live Dr. Ivo demo remains)
 
+🔴 **CRITICAL, READ FIRST — R-036: the R2 bucket's CORS policy very
+likely blocks real dictation-audio upload for any real pathologist
+using an actual browser.** Confirmed live (DL-047) with a real presigned
+PUT from an authenticated browser tab — `Failed to fetch`, CORS
+preflight `403`. The transcription/structuring pipeline itself is
+thoroughly verified (many real OpenAI calls this session), but the
+*upload step in front of it* has never been proven to work from a real
+browser before now — earlier verification (M4/DL-021/R-019) used a
+server-side script that bypasses browser CORS entirely. **Needs
+Marcel's Cloudflare dashboard (R2 → bucket → Settings → CORS Policy) —
+not fixable from application code.** Treat this as the top priority
+before any real pathologist, including the seeded demo account or the
+new test-pathologist account, is asked to dictate through the actual
+recorder UI. Full detail in `docs/known-risks.md` R-036.
+
 [x] M0 Foundation              100%
 [x] M1 Login live               100%
 [ ] M2 Private workspace         0%
 [x] M3 Template engine          100%   ← all 6 Phase-1 templates built
-[x] M4 Voice + transcription    95%   ← pipeline verified live, mic-UI unverified
+[x] M4 Voice + transcription    95%   ← pipeline verified live server-side; real-browser upload now CONFIRMED BROKEN, see R-036 above
 [x] M5 Structure & auto-fill    90%   ← engine + all templates verified
 [x] M6 Review · validate · assign 100%   ← review/sign/archive/PDF loop E2E-verified live
-[x] M7 Hardening + demo         97%   ← DNS live, redeployed, re-verified live on xpath.report; seeded demo pathologist account now ready (DL-046) — Dr. Ivo demo itself still remains
+[x] M7 Hardening + demo         97%   ← DNS live, redeployed, re-verified live on xpath.report; seeded demo pathologist + test-pathologist accounts now ready (DL-046/047) — R-036 should be fixed before the Dr. Ivo demo, since the demo's own "record a real case" moment would hit it
 
 Team provisioning (Cowork execution-order §1 — parallel workstream, not a
 numbered milestone): built and verified end-to-end, both locally and live.
@@ -34,6 +49,26 @@ WAITING ON MARCEL:
    default) is fully verified.
 
 LAST UPDATE: 2026-08-04 —
+
+**Test-pathologist account, avatar upload, note/label OCR scan — and a
+critical finding, DL-047/R-036.** Built a genuine blank-state account
+for Marcel's own walkthrough (real QR TOTP enrollment), profile-picture
+upload, and a client-side photo-to-text scan (Tesseract.js, structurally
+incapable of interpreting images, never the same path as transcription/
+structuring — stays inside G1). While live-testing avatar upload, found
+that R2's CORS policy rejects a direct browser-to-R2 presigned PUT
+(`403` on preflight) — fixed avatar upload by proxying it through a
+Server Action instead. **Then confirmed the identical failure affects
+the real dictation-audio upload path**, which had only ever been
+verified via a server-side script that bypasses browser CORS — meaning
+the core capture loop is very likely broken for any real pathologist
+using a real browser today. See the 🔴 banner above and
+`docs/known-risks.md` R-036 — this needs Marcel's Cloudflare dashboard,
+not application code. Everything else live-verified end to end: TOTP
+enrollment, OCR (correct 4-line extraction from a test image), avatar
+upload (after the fix), and a seeded dictation through the real
+structuring pipeline to the review screen. Test data cleaned up so the
+new account stays blank-slate.
 
 **North-Star full rollout, DL-046 — Home, Profile, Templates polish,
 seeded demo pathologist, danger-zone flag.** Confirmed directly before

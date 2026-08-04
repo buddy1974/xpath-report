@@ -322,3 +322,44 @@ Format: R-nnn · risk · current mitigation / status.
   but worth a real fix, e.g. normalizing whitespace on both sides of the
   comparison, if a future source of transcript text (manual paste,
   non-Whisper import) is ever added).
+- **R-036 — CRITICAL, HIGH PRIORITY — the R2 bucket's CORS policy rejects
+  every direct browser-to-R2 presigned upload, confirmed for BOTH the
+  new avatar-upload feature AND the dictation-audio path itself.**
+  Found live (DL-047) building the profile-picture upload: a real
+  browser `fetch()` PUT to a real presigned URL failed with `Failed to
+  fetch` after the browser's CORS preflight `OPTIONS` request came back
+  `403`. Fixed avatar upload by routing it through a Server Action
+  (server-side R2 PUT, no browser CORS involved) — but then tested
+  whether the same failure hits the actual dictation-recorder upload
+  path (`src/app/(app)/dashboard/dictate/actions.ts:createCapture` +
+  `recorder.tsx`'s direct-to-R2 `fetch` PUT), which has used this exact
+  presigned-URL pattern since M4 and was previously only ever verified
+  via a server-side script (DL-021/R-019's pipeline test bypasses
+  browser CORS entirely) — **never with a real browser**, because no
+  real microphone has been available in this session's browser
+  automation (see the old M4/mic-UI gap this replaces, previously
+  logged only as an unverified checklist line in `docs/PROGRESS.md`,
+  never as a numbered risk). Generated a real presigned URL for an
+  `audio/webm` object key and issued the identical `fetch` PUT from an
+  authenticated real browser tab: **same failure** (`Failed to fetch`).
+  This means **any real pathologist attempting to dictate a case
+  through the actual browser UI today would hit an upload failure at
+  the "Start recording" → stop → upload step** — the core capture loop,
+  the single most important user-facing feature in the product, is
+  very likely broken in production for real users, not just for the
+  new avatar feature. No tool available in this session exposes R2
+  CORS configuration (`r2_bucket_get` returns no `cors` field; there is
+  no dedicated CORS-policy MCP tool) — this needs Marcel's Cloudflare
+  dashboard (R2 → bucket → Settings → CORS Policy: allow `PUT`/`GET` +
+  `OPTIONS` from `https://www.xpath.report` and `https://xpath.report`,
+  with `Content-Type` and the `x-amz-*` checksum headers the AWS SDK
+  v3 client attaches by default) — a likely 2-minute fix once done, but
+  not something fixable from application code. **Recommend treating
+  this as the single highest-priority open item before any real
+  pathologist (including the seeded demo account or the new
+  test-pathologist account) is asked to dictate through the actual
+  browser recorder.** Until CORS is fixed or confirmed working with a
+  real browser + real microphone, do not treat the dictation capture
+  loop as "verified live" for a real user, even though the underlying
+  transcription pipeline itself (Whisper call, structuring, reflex) is
+  thoroughly verified via server-side script tests.

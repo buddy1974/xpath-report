@@ -776,3 +776,96 @@ Format: DL-nnn · decision · rationale.
   severity toggle and note field rendered correctly). Vercel runtime
   errors in the hour after deploy: only the pre-existing benign
   `Buffer()` deprecation warning — no new errors.
+- **DL-047 — Genuine test-pathologist account, profile-picture upload,
+  photo-to-text scan for notes/requisition forms/labels. Relayed via
+  Cowork with its own explicit, well-reasoned G1 scoping for the OCR
+  feature — confirmed the reasoning holds rather than assuming it, and
+  found a real, previously-unknown production bug along the way.**
+  **1. Test-pathologist account** (`scripts/provision-test-pathologist.ts`):
+  a genuine blank-state account, `test-pathologist@xpath.report`,
+  separate from `dev-*` fixtures and the seeded demo account, for
+  Marcel's own hands-on walkthrough. `mustCompleteSetup: false` (the
+  email is already real, not a placeholder needing the claim-wizard's
+  swap step) but `totpEnabled: false`, so the first sign-in lands on
+  `/verify` and shows the real QR enrollment screen — not pre-exempted,
+  same first-time flow a real pathologist gets (DL-039).
+  **2. Profile picture upload**: `users.avatarKey` (migration 0004,
+  additive nullable column, applied to production — verified via
+  `information_schema.columns`). `src/components/avatar.tsx` (falls
+  back to the existing gradient-initial badge on a 404, no need to
+  thread `avatarKey` through the JWT/session) wired into Profile and a
+  new header-nav avatar slot linking to Profile.
+  **3. Photo-to-text scan** (`src/components/ocr-scan.tsx`, on the
+  Dictate screen): explicit architecture choice for the G1 boundary
+  the relayed instruction itself drew (notes/requisition forms/labels
+  only, never slide/tissue images) — Tesseract.js, a dedicated
+  character-recognition engine with no image-captioning/scene-
+  description capability at all, so it is structurally incapable of
+  "interpreting" a photo the way a general vision-capable LLM could,
+  even if someone pointed it at a slide by mistake; deliberately NOT
+  built on the same OpenAI/Anthropic path used for transcription/
+  structuring, to keep OCR and image interpretation as structurally
+  separate capabilities, not just a policy promise. Runs entirely
+  client-side, dynamically imported (confirmed via build output:
+  `/dashboard/dictate`'s own bundle stayed at 2.64 kB, the ~2MB engine
+  never loads for pathologists who don't use the feature). The photo
+  itself never leaves the device or touches R2/any server of ours and
+  is discarded after extraction — precisely: Tesseract's own generic
+  engine/language-model files (no user data, fixed for every install)
+  load from its default CDN on first use, a real network request, just
+  never one carrying the photo (corrected an initial overclaim in the
+  code comment that said "no external API call happens at all," which
+  wasn't quite accurate). Extracted text renders in a plain editable
+  textarea with a copy button — never written into any field
+  automatically (Header G1, same principle as AI-suggested template
+  fields always requiring human confirmation).
+  **Real bug found and fixed during live verification — CRITICAL,
+  logged as R-036**: testing the profile-picture upload live, the
+  direct browser-to-R2 presigned PUT failed with `Failed to fetch`;
+  network inspection showed the browser's CORS preflight `OPTIONS`
+  request to R2 came back `403`. Fixed avatar upload by routing it
+  through a Server Action that reads the file into a `Buffer` and does
+  a server-side R2 `PutObjectCommand` (`src/lib/r2.ts`'s new
+  `putObject` helper) instead of a direct browser PUT — avatar images
+  are small (<5MB), so proxying through a Vercel function is a
+  reasonable, scoped exception to the direct-to-R2 pattern, which
+  stays unchanged for audio (a real reason: avoiding Vercel's request-
+  body/time limits on longer dictations, DL-021). **Then deliberately
+  tested whether the same failure hits the actual dictation-recorder
+  upload path** (unchanged since M4, previously verified only via a
+  server-side script that bypasses browser CORS entirely — DL-021/
+  R-019 — never with a real browser, since no real microphone has been
+  available in this session): generated a real presigned URL for an
+  `audio/webm` object key and issued the identical `fetch` PUT from an
+  authenticated real browser tab. **Same failure.** This means the R2
+  bucket's CORS policy very likely blocks the actual dictation-capture
+  upload for any real pathologist using a real browser today — not
+  just the new avatar feature. No tool available in this session
+  exposes R2 CORS configuration (`r2_bucket_get` returns no `cors`
+  field, no dedicated CORS-policy MCP tool exists) — this needs
+  Marcel's Cloudflare dashboard directly (R2 → bucket → Settings →
+  CORS Policy), not something fixable from application code. Did NOT
+  attempt to work around this for audio myself, unlike the avatar fix:
+  proxying potentially-long audio recordings through a Vercel function
+  risks trading one failure mode (CORS) for another (body-size/timeout
+  limits) without Marcel's input on which tradeoff he wants — flagged
+  clearly instead, per R-036, as the single highest-priority open item
+  before treating the dictation capture loop as demo-ready for a real
+  user. `npx tsc --noEmit` and `npm run build` passed after every
+  change; `npm audit` after adding `tesseract.js`: only the pre-
+  existing accepted R-007 finding, nothing new.
+  **Live-verified end to end on `www.xpath.report`**, not just built:
+  full TOTP QR enrollment walkthrough on the new test-pathologist
+  account (real secret, real computed code, landed on `/dashboard` with
+  no pre-exemption); avatar upload failed with the CORS bug, then
+  succeeded after the fix (both the Profile page and the header-nav
+  avatar slot updated to the uploaded image); the OCR scan correctly
+  extracted all 4 lines of text from a real synthetic requisition-form
+  test image ("REQUISITION FORM / Specimen: Colon biopsy / Accession:
+  TEST-0099 / Clinical history: rule out malignancy"), with the copy
+  button and G1 advisory note both rendering; a seeded dictation for
+  the new account ran through the real template-suggestion + real
+  OpenAI structuring pipeline (Prostate — Needle Biopsy correctly
+  ranked #1) and opened correctly on the review screen. Test dictation/
+  draft and the test avatar were cleaned up afterward so the account
+  stays genuinely blank-slate for Marcel's own first walkthrough.

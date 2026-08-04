@@ -2,6 +2,35 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-04 — Test-pathologist account, avatar upload, note/label OCR scan — CRITICAL finding: R2 CORS likely blocks real dictation upload (DL-047, R-036)
+- Built a genuine blank-state `test-pathologist@xpath.report` account
+  for Marcel's own hands-on walkthrough (real QR TOTP enrollment, not
+  pre-exempted), profile-picture upload (new `avatarKey` column,
+  migration applied to production), and a client-side photo-to-text
+  scan for notes/requisition forms/labels (Tesseract.js — a dedicated
+  OCR engine with no image-interpretation capability, deliberately kept
+  off the OpenAI/Anthropic path; the photo never leaves the browser).
+- **Found live: the R2 bucket's CORS policy rejects the browser's
+  preflight `OPTIONS` request for a direct presigned PUT (`403`).**
+  Fixed avatar upload by routing it through a Server Action (server-
+  side R2 PUT) instead. **Then confirmed the identical failure hits the
+  real dictation-audio upload path** — the core capture loop, unchanged
+  since M4 and previously verified only via a server-side script that
+  bypasses browser CORS, never with a real browser. **This means a real
+  pathologist attempting to dictate through the actual browser UI today
+  very likely cannot** — logged as R-036, the single highest-priority
+  open item now. Needs Marcel's Cloudflare R2 dashboard (CORS Policy
+  settings) — not fixable from application code, and not worked around
+  for audio the way it was for avatars, since proxying long recordings
+  through a Vercel function trades one failure mode for another without
+  his input on the tradeoff.
+- Live-verified end to end: TOTP enrollment, avatar upload (failed,
+  then fixed), OCR scan (correctly extracted 4 lines from a real test
+  image), and a seeded dictation ran through the real structuring
+  pipeline to the review screen. Test data cleaned up afterward so the
+  account stays blank-slate. `npx tsc --noEmit`/`npm run build` pass;
+  `npm audit` shows nothing new from `tesseract.js`.
+
 ## 2026-08-04 — North-Star full rollout: Home, Profile, Templates polish, seeded demo pathologist, danger-zone flag (DL-046)
 - Confirmed directly with Marcel before building: the relayed go-ahead
   cited a file (`docs/UX_NORTHSTAR.md`) that doesn't exist (real file:
