@@ -12,11 +12,15 @@
  */
 import type { NextAuthConfig } from "next-auth";
 
-// DL-038: Marcel's explicit, direct instruction — TOTP fully removed for
-// this one administrator account (password-only login). Not a default and
-// not a pattern to extend; every other account still requires 2FA via
-// /api/auth/verify-totp. See docs/decision-log.md.
-const TOTP_EXEMPT_EMAILS = ["dev-administrator@xpath.report"];
+// DL-038/DL-049: Marcel's explicit, direct instruction — TOTP fully removed
+// for these two specific accounts he uses himself for testing (password-only
+// login), not a default and not a pattern to extend to any other account;
+// every other account still requires 2FA via /api/auth/verify-totp. See
+// docs/decision-log.md.
+const TOTP_EXEMPT_EMAILS = [
+  "dev-administrator@xpath.report",
+  "test-pathologist@xpath.report",
+];
 
 export const authConfig = {
   session: { strategy: "jwt" },
