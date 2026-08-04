@@ -18,9 +18,15 @@
  *
  * Runs entirely in the browser (dynamically imported so the ~2MB
  * engine never loads for pathologists who don't use this feature) —
- * the photo never leaves the device, never touches R2 or any server,
- * and is discarded once text extraction finishes. No external API
- * call happens at all, so there is nothing to pseudonymize.
+ * the photo itself never leaves the device, never touches R2 or any
+ * server of ours, and is discarded once text extraction finishes.
+ * Precisely: Tesseract.js's own generic engine/language-model files
+ * (no patient/user data, same fixed assets for every install) load
+ * from its default CDN the first time this feature is used in a
+ * session, same as any client-side library fetched at runtime — that
+ * is a real network request, just never one carrying the photo or its
+ * contents. Nothing patient-identifying is ever transmitted, so there
+ * is nothing to pseudonymize.
  *
  * Extracted text is shown in a plain editable textarea with a copy
  * button — never written into any form field automatically (Header G1:
