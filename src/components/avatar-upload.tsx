@@ -1,11 +1,12 @@
 "use client";
 
-// X-PATH — profile picture upload: presign -> direct-to-R2 PUT -> save
-// key, same shape as the dictation recorder's upload flow. Refreshes
-// the Avatar preview by bumping a cache-busting query param rather than
-// a full page reload.
+// X-PATH — profile picture upload: FormData -> Server Action -> server-
+// side R2 PUT (see profile/actions.ts:uploadAvatar for why this isn't a
+// direct browser-to-R2 presigned PUT — R-036). Refreshes the Avatar
+// preview by bumping a cache-busting query param rather than a full
+// page reload.
 import { useState } from "react";
-import { presignAvatarUpload, saveAvatarKey } from "@/app/(app)/dashboard/profile/actions";
+import { uploadAvatar } from "@/app/(app)/dashboard/profile/actions";
 import { Avatar } from "./avatar";
 import { STRINGS, t, type Locale } from "@/lib/i18n";
 
@@ -25,10 +26,9 @@ export function AvatarUpload({ label, locale = "en" }: { label: string; locale?:
     }
     setBusy(true);
     try {
-      const { key, uploadUrl } = await presignAvatarUpload(file.type);
-      const putRes = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-      if (!putRes.ok) throw new Error("upload failed");
-      await saveAvatarKey(key);
+      const formData = new FormData();
+      formData.set("avatar", file);
+      await uploadAvatar(formData);
       setRefreshKey((k) => k + 1);
     } catch {
       setError(t(STRINGS.avatarUploadFailed, locale));

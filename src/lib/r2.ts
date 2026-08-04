@@ -40,6 +40,23 @@ export async function presignUpload(key: string, contentType: string): Promise<s
   return getSignedUrl(client(), cmd, { expiresIn: 300 });
 }
 
+/**
+ * Server-side upload — for small files where a direct browser-to-R2 PUT
+ * would need CORS configured on the bucket (found live, DL-047: the R2
+ * bucket's CORS policy rejects the browser's preflight OPTIONS request
+ * with a 403, so a presigned direct-PUT fails outside of a script/
+ * server context that skips the browser's CORS check entirely — this
+ * is a Cloudflare-dashboard configuration gap, not something fixable
+ * from application code; see docs/known-risks.md R-036). Avatar images
+ * are small enough (<5MB) that routing them through a Vercel function
+ * is a reasonable exception to the "avoid Vercel body-size limits"
+ * rationale that governs the direct-to-R2 pattern used for audio.
+ */
+export async function putObject(key: string, body: Buffer, contentType: string): Promise<void> {
+  const cmd = new PutObjectCommand({ Bucket: bucket(), Key: key, Body: body, ContentType: contentType });
+  await client().send(cmd);
+}
+
 /** Server-side download — used to forward audio bytes to Whisper. */
 export async function getObjectBytes(key: string): Promise<Buffer> {
   const cmd = new GetObjectCommand({ Bucket: bucket(), Key: key });
