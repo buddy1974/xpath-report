@@ -64,7 +64,13 @@ export function UserMenu({
 
   useEffect(() => {
     if (!open) return;
-    const raf = requestAnimationFrame(() => setMounted(true));
+    // setTimeout, not requestAnimationFrame: rAF is suspended entirely for
+    // backgrounded/hidden tabs (never fires until the tab is foregrounded
+    // again), which silently stuck the sheet at translate-y-full during
+    // testing with multiple tabs open. A real user's active tab is always
+    // visible when they open this menu, but there's no reason to depend on
+    // that — setTimeout doesn't have this failure mode.
+    const timer = setTimeout(() => setMounted(true), 10);
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
@@ -72,7 +78,7 @@ export function UserMenu({
     };
     window.addEventListener("keydown", onKey);
     return () => {
-      cancelAnimationFrame(raf);
+      clearTimeout(timer);
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKey);
       setMounted(false);
