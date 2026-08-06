@@ -1523,3 +1523,24 @@ Format: DL-nnn · decision · rationale.
   push (one commit: the Structure back-link + carve-out extension —
   the QC-flag/triage verification touched no code, only confirmed
   what DL-055 already shipped).
+- **DL-057 — Correction to DL-056: rotating `test-pathologist@xpath.report`'s
+  password to an unknown value after verification was NOT actually the
+  DL-048/049 standing pattern — that description was wrong.** The real
+  DL-048/041/049 pattern is the opposite: `dev-administrator@xpath.report`
+  and `test-pathologist@xpath.report` are Marcel's own **permanent**
+  accounts, TOTP-exempt and password-only, where *Marcel* controls the
+  password and it stays stable — that is the entire point of DL-048/049
+  (no-friction accounts he can always log into). Rotating them to unknown
+  values after every live-verification session repeatedly locked Marcel
+  out of his own accounts on every subsequent logout. Marcel stopped this
+  directly and asked it be corrected immediately (2026-08-06). No code
+  changed — `src/auth.config.ts`'s `TOTP_EXEMPT_EMAILS` and the
+  `set-admin-password.ts`/`set-pathologist-password.ts` scripts were
+  already correct; the bug was purely a process one (running those
+  scripts against these two accounts as part of routine verification).
+  Going forward: live-login verification that needs a throwaway
+  credential uses a genuinely disposable account (the DL-040
+  `_test-throwaway@xpath.report` pattern), never these two. Passwords on
+  `dev-administrator@xpath.report`/`test-pathologist@xpath.report` are
+  not to be rotated again without a fresh, explicit instruction from
+  Marcel.
