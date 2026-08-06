@@ -33,17 +33,23 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
     ...template.sections.map((s) => `template.${template.templateId}.section.${s.key}.title`),
   ];
   const overrides = await getContentOverrides(tenantId, overrideKeys);
-  const effectiveTitle = overrides[`template.${template.templateId}.title`]?.value ?? template.title;
-  const effectiveSections = template.sections.map((s) => ({
-    ...s,
-    title: overrides[`template.${template.templateId}.section.${s.key}.title`]?.value ?? s.title,
-  }));
+  const titleOverride = overrides[`template.${template.templateId}.title`];
+  const effectiveTitle = titleOverride?.value ?? template.title;
+  const effectiveSections = template.sections.map((s) => {
+    const sectionOverride = overrides[`template.${template.templateId}.section.${s.key}.title`];
+    return { ...s, title: sectionOverride?.value ?? s.title, directorNote: sectionOverride?.directorNote ?? null };
+  });
 
   return (
     <div className="max-w-3xl">
       <p className="text-xs font-bold tracking-widest uppercase text-petrol">{template.category}</p>
       <header className="mt-1 mb-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h1 className="text-3xl font-bold tracking-tight">{effectiveTitle}</h1>
+        {titleOverride?.directorNote && (
+          <p className="text-sm text-hema mt-1.5 italic">
+            {t(STRINGS.directorNotePrefix, locale)} {titleOverride.directorNote}
+          </p>
+        )}
         <p className="text-sm text-neutral-500 mt-1">
           {t(STRINGS.templateSourcePrefix, locale)} {template.sourceProtocolName} · v{template.sourceVersion} ·{" "}
           {t(STRINGS.templatePosted, locale)} {template.sourcePostingDate}
@@ -63,7 +69,14 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
       </header>
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         {effectiveSections.map((s) => (
-          <SectionView key={s.key} section={s} locale={locale} />
+          <div key={s.key}>
+            {s.directorNote && (
+              <p className="text-sm text-hema mb-2 italic">
+                {t(STRINGS.directorNotePrefix, locale)} {s.directorNote}
+              </p>
+            )}
+            <SectionView section={s} locale={locale} />
+          </div>
         ))}
       </div>
     </div>
