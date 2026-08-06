@@ -11,6 +11,7 @@ import { PrivacyIndicator } from "@/components/privacy-indicator";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
 import { confirmTemplateAction, findDraftForDictation } from "./actions";
+import { TranscriptEditor } from "./transcript-editor";
 
 export default async function StructurePage({ params }: { params: Promise<{ dictationId: string }> }) {
   const session = await auth();
@@ -45,12 +46,7 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
         <div className="mt-3">
           <PrivacyIndicator locale={locale} />
         </div>
-        <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-4 text-sm text-neutral-600 whitespace-pre-wrap shadow-sm">
-          <p className="font-semibold text-xs uppercase tracking-wide text-neutral-400 mb-1">
-            {t(STRINGS.transcriptSectionLabel, locale)}
-          </p>
-          {dictation.body}
-        </div>
+        <TranscriptEditor dictationId={dictationId} initialText={dictation.body} locale={locale} />
         <div className="mt-6 space-y-2">
           {suggestions.length === 0 && <p className="text-sm text-neutral-500">{t(STRINGS.noTemplatesAvailable, locale)}</p>}
           {suggestions.map((s) => (

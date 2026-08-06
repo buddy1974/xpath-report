@@ -56,6 +56,25 @@ export async function createCapture(language: "en" | "fr", contentType: string) 
   return { itemId: id, uploadUrl };
 }
 
+/**
+ * Re-presigns an upload URL for an EXISTING capture (DL-055, offline
+ * queue). presignUpload's URLs expire in 5 minutes (r2.ts) — far too
+ * short for a queue that may retry much later than the original
+ * attempt. Idempotent and safe to call repeatedly: it never touches the
+ * DB row, only re-signs the same already-assigned R2 key, so retrying
+ * an upload never creates a duplicate workspace item.
+ */
+export async function getUploadUrl(itemId: string, contentType: string) {
+  const actor = await requireActor();
+  const rows = await db.select().from(privateWorkspaceItems).where(eq(privateWorkspaceItems.id, itemId)).limit(1);
+  const item = rows[0];
+  if (!item) throw new Error("Capture not found");
+  assertWorkspaceOwner(actor, item);
+  if (!item.fileRef) throw new Error("Capture has no assigned storage key");
+  const uploadUrl = await presignUpload(item.fileRef, contentType);
+  return { uploadUrl };
+}
+
 /** Downloads the uploaded audio from R2 and transcribes it via Whisper. */
 export async function transcribeCapture(itemId: string) {
   const actor = await requireActor();

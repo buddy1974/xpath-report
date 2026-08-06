@@ -1,33 +1,41 @@
 "use client";
 
 /**
- * X-PATH — dictation recorder (M4)
+ * X-PATH — dictation recorder (M4, rebuilt offline-first DL-055)
  * ------------------------------------------------------------------
- * Record -> upload direct to R2 (presigned URL, not through the
- * serverless function) -> transcribe -> pathologist reviews/edits ->
- * save to the private workspace. Transcript is always shown as
- * AI-generated and editable before saving (Header G1/G8 — AI content
- * visibly marked, human validates, never silently trusted).
+ * Stopping a recording writes the audio to the local offline queue
+ * (IndexedDB) IMMEDIATELY and shows "saved" — it never blocks on, or
+ * risks losing data to, a network call (the single highest-priority
+ * item from the offline-first research: X-PATH's real environment is
+ * mobile data in Cameroon, not hospital-grade connectivity).
+ *
+ * Upload + transcription now happen entirely in the background
+ * (lib/offline-queue.ts) — this is a deliberate behavior change from
+ * the earlier version, which blocked on upload/transcribe in the same
+ * screen and let the pathologist review/edit the transcript right
+ * there. That review step now happens later, from the Workspace list,
+ * once the item has actually synced (kind: "dictation", already
+ * transcribed) — the pathologist can walk away right after stopping
+ * the recording and come back whenever the transcript is ready,
+ * online or not, in this session or a later one. Transcript
+ * editing itself is unchanged (still always shown as AI-generated and
+ * editable before saving — Header G1/G8).
  */
 import { useRef, useState } from "react";
-import { createCapture, transcribeCapture, saveTranscriptEdit } from "./actions";
+import { enqueueDictation } from "@/lib/offline-queue";
 import { STRINGS, t, type Locale } from "@/lib/i18n";
 
-type Phase = "idle" | "recording" | "uploading" | "transcribing" | "editing" | "saved" | "error";
+type Phase = "idle" | "recording" | "saved" | "error";
 
 export function Recorder({ locale = "en" }: { locale?: Locale }) {
   const [language, setLanguage] = useState<"en" | "fr">("en");
   const [phase, setPhase] = useState<Phase>("idle");
-  const [transcript, setTranscript] = useState("");
-  const [itemId, setItemId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   async function startRecording() {
     setError(null);
-    setTranscript("");
-    setItemId(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
@@ -54,36 +62,23 @@ export function Recorder({ locale = "en" }: { locale?: Locale }) {
   }
 
   async function handleStopped(mimeType: string) {
-    setPhase("uploading");
+    // Optimistic: write to the local queue and show "saved" immediately.
+    // No network call in this function at all — enqueueDictation only
+    // touches IndexedDB; upload/transcribe happen in the background.
+    const blob = new Blob(chunksRef.current, { type: mimeType });
     try {
-      const blob = new Blob(chunksRef.current, { type: mimeType });
-      const { itemId: newItemId, uploadUrl } = await createCapture(language, mimeType);
-      setItemId(newItemId);
-
-      const putRes = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": mimeType },
-        body: blob,
-      });
-      if (!putRes.ok) throw new Error(t(STRINGS.uploadFailed, locale));
-
-      setPhase("transcribing");
-      const { text } = await transcribeCapture(newItemId);
-      setTranscript(text);
-      setPhase("editing");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t(STRINGS.somethingWentWrong, locale));
+      await enqueueDictation(blob, mimeType, language);
+      setPhase("saved");
+    } catch {
+      // IndexedDB itself failing (private-browsing storage limits, etc.)
+      // is the one real "can't save at all" case — everything past this
+      // point is a background concern, not a blocking one.
+      setError(t(STRINGS.somethingWentWrong, locale));
       setPhase("error");
     }
   }
 
-  async function save() {
-    if (!itemId) return;
-    await saveTranscriptEdit(itemId, transcript);
-    setPhase("saved");
-  }
-
-  const busy = phase === "recording" || phase === "uploading" || phase === "transcribing";
+  const busy = phase === "recording";
 
   return (
     <div className="max-w-xl">
@@ -101,42 +96,26 @@ export function Recorder({ locale = "en" }: { locale?: Locale }) {
       </label>
 
       {(phase === "idle" || phase === "error" || phase === "saved") && (
-        <button onClick={startRecording} className="rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold">
+        <button onClick={startRecording} className="rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold min-h-[44px]">
           {phase === "saved" ? t(STRINGS.recordAnother, locale) : t(STRINGS.startRecording, locale)}
         </button>
       )}
 
       {phase === "recording" && (
-        <button onClick={stopRecording} className="rounded-md bg-red-600 px-4 py-2 text-white text-sm font-semibold">
+        <button onClick={stopRecording} className="rounded-md bg-red-600 px-4 py-2 text-white text-sm font-semibold min-h-[44px]">
           {t(STRINGS.stopRecording, locale)}
         </button>
       )}
 
-      {(phase === "uploading" || phase === "transcribing") && (
-        <p className="text-sm text-neutral-500">
-          {phase === "uploading" ? t(STRINGS.uploadingStatus, locale) : t(STRINGS.transcribingStatus, locale)}
-        </p>
-      )}
-
       {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
 
-      {(phase === "editing" || phase === "saved") && (
-        <div className="mt-4">
-          <label className="block text-sm font-semibold mb-1">
-            {t(STRINGS.transcriptLabel, locale)}{" "}
-            <span className="text-neutral-400 font-normal">{t(STRINGS.transcriptAiNote, locale)}</span>
-          </label>
-          <textarea
-            value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            rows={10}
-            className="w-full border border-neutral-300 rounded-md p-3 text-sm"
-          />
-          <button onClick={save} className="mt-2 rounded-md bg-petrol px-4 py-2 text-white text-sm font-semibold">
-            {t(STRINGS.saveButton, locale)}
-          </button>
-          {phase === "saved" && <span className="ml-3 text-sm text-green-700">{t(STRINGS.savedToWorkspace, locale)}</span>}
-        </div>
+      {phase === "saved" && (
+        <p className="mt-3 text-sm text-mint font-medium flex items-center gap-1.5">
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0">
+            <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+          </svg>
+          {t(STRINGS.savedToWorkspace, locale)}
+        </p>
       )}
     </div>
   );

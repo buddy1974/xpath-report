@@ -39,10 +39,14 @@
  * pasting it into an active report, and saving here does no AI
  * processing at all (the note only reaches AI structuring later, as its
  * own explicit step from the Workspace list — Header G1).
+ *
+ * DL-055: Save goes through the offline queue (lib/offline-queue.ts),
+ * not a direct server call — instant, optimistic, never blocked on or
+ * lost to a network gap, same as dictation capture.
  */
 import { useRef, useState } from "react";
 import { STRINGS, t, type Locale } from "@/lib/i18n";
-import { saveOcrNote } from "@/app/(app)/dashboard/dictate/actions";
+import { enqueueNote } from "@/lib/offline-queue";
 
 type Phase = "idle" | "processing" | "done" | "error";
 type SavePhase = "idle" | "saving" | "saved" | "error";
@@ -122,7 +126,7 @@ export function OcrScan({ locale = "en" }: { locale?: Locale }) {
                   onClick={async () => {
                     setSavePhase("saving");
                     try {
-                      await saveOcrNote(text);
+                      await enqueueNote(text);
                       setSavePhase("saved");
                     } catch {
                       setSavePhase("error");

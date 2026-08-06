@@ -551,6 +551,20 @@ export const STRINGS = {
   contentVersionLabel: { en: "version", fr: "version" },
   contentDefaultBadge: { en: "default (unedited)", fr: "par défaut (non modifié)" },
   directorNotePrefix: { en: "Director's note:", fr: "Note de la direction :" },
+
+  // DL-055 — offline-first capture queue. Plain-language only, never
+  // raw HTTP/network errors (Header: pathologist-facing, not developer-
+  // facing status text).
+  syncBannerQueuedSuffix: { en: "item(s) queued — editing offline", fr: "élément(s) en attente — modification hors ligne" },
+  syncBannerSyncingSuffix: { en: "item(s) syncing…", fr: "élément(s) en cours de synchronisation…" },
+  syncForceSyncButton: { en: "Sync now", fr: "Synchroniser" },
+  syncItemStatusQueued: { en: "Waiting to sync", fr: "En attente de synchronisation" },
+  syncItemStatusSyncing: { en: "Syncing…", fr: "Synchronisation…" },
+  syncItemStatusFailed: { en: "Couldn't sync", fr: "Échec de la synchronisation" },
+  syncItemRetryButton: { en: "Retry", fr: "Réessayer" },
+  syncPendingSectionHeading: { en: "Not yet synced", fr: "Pas encore synchronisé" },
+  syncKindDictation: { en: "Dictation (recording)", fr: "Dictée (enregistrement)" },
+  syncKindNote: { en: "Scanned note", fr: "Note numérisée" },
 } satisfies Record<string, Dict>;
 
 export const ROLE_LABELS: Record<string, Dict> = {
