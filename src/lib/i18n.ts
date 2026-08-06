@@ -655,6 +655,15 @@ export const STRINGS = {
   settingsFontSizeLarge: { en: "Large", fr: "Grand" },
   settingsFontSizeXLarge: { en: "Extra large", fr: "Très grand" },
   settingsHighContrastLabel: { en: "High contrast", fr: "Contraste élevé" },
+
+  // Installable PWA pass.
+  installAppLabel: { en: "Install app", fr: "Installer l'application" },
+  iosInstallHintTitle: { en: "Install X-PATH on your Home Screen", fr: "Installer X-PATH sur votre écran d'accueil" },
+  iosInstallHintBody: {
+    en: "Tap the Share icon, then \"Add to Home Screen\" — X-PATH opens faster and full-screen, like a real app.",
+    fr: "Appuyez sur l'icône Partager, puis « Sur l'écran d'accueil » — X-PATH s'ouvre plus vite et en plein écran, comme une vraie application.",
+  },
+  iosInstallHintDismiss: { en: "Got it", fr: "Compris" },
 } satisfies Record<string, Dict>;
 
 export const ROLE_LABELS: Record<string, Dict> = {

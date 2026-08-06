@@ -90,14 +90,14 @@ export default async function ProfilePage() {
         <div className="mt-3 flex items-center gap-2 text-sm">
           <form action={setLocaleAction.bind(null, "en", "/dashboard/profile")}>
             <button
-              className={`px-3.5 py-2 rounded-full font-semibold transition-colors ${locale === "en" ? "bg-petrol text-white" : "text-neutral-500 hover:bg-neutral-100"}`}
+              className={`px-3.5 py-2 rounded-full font-semibold transition-colors min-h-[44px] ${locale === "en" ? "bg-petrol text-white" : "text-neutral-500 hover:bg-neutral-100"}`}
             >
               {t(STRINGS.localeSwitchEn, locale)}
             </button>
           </form>
           <form action={setLocaleAction.bind(null, "fr", "/dashboard/profile")}>
             <button
-              className={`px-3.5 py-2 rounded-full font-semibold transition-colors ${locale === "fr" ? "bg-petrol text-white" : "text-neutral-500 hover:bg-neutral-100"}`}
+              className={`px-3.5 py-2 rounded-full font-semibold transition-colors min-h-[44px] ${locale === "fr" ? "bg-petrol text-white" : "text-neutral-500 hover:bg-neutral-100"}`}
             >
               {t(STRINGS.localeSwitchFr, locale)}
             </button>

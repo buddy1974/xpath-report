@@ -148,7 +148,10 @@ export default async function ReagentsPage({ searchParams }: { searchParams?: Pr
               <button type="submit" className="rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold hover:bg-petrol-deep transition-colors min-h-[44px]">
                 {t(STRINGS.reagentSaveButton, locale)}
               </button>
-              <Link href="/dashboard/reagents" className="text-sm text-neutral-500 hover:text-petrol">
+              <Link
+                href="/dashboard/reagents"
+                className="text-sm text-neutral-500 hover:text-petrol inline-flex items-center min-h-[44px]"
+              >
                 {t(STRINGS.announcementDetailBackLink, locale)}
               </Link>
             </div>
@@ -194,7 +197,10 @@ export default async function ReagentsPage({ searchParams }: { searchParams?: Pr
               <button type="submit" className="rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold hover:bg-petrol-deep transition-colors min-h-[44px]">
                 {t(STRINGS.reagentSaveButton, locale)}
               </button>
-              <Link href="/dashboard/reagents" className="text-sm text-neutral-500 hover:text-petrol">
+              <Link
+                href="/dashboard/reagents"
+                className="text-sm text-neutral-500 hover:text-petrol inline-flex items-center min-h-[44px]"
+              >
                 {t(STRINGS.announcementDetailBackLink, locale)}
               </Link>
             </div>
@@ -230,7 +236,10 @@ export default async function ReagentsPage({ searchParams }: { searchParams?: Pr
               <button type="submit" className="rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold hover:bg-petrol-deep transition-colors min-h-[44px]">
                 {t(STRINGS.reagentSaveButton, locale)}
               </button>
-              <Link href="/dashboard/reagents" className="text-sm text-neutral-500 hover:text-petrol">
+              <Link
+                href="/dashboard/reagents"
+                className="text-sm text-neutral-500 hover:text-petrol inline-flex items-center min-h-[44px]"
+              >
                 {t(STRINGS.announcementDetailBackLink, locale)}
               </Link>
             </div>

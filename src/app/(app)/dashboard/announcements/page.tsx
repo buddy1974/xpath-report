@@ -165,7 +165,10 @@ export default async function AnnouncementsAdminPage({
             {t(STRINGS.announcementSaveButton, locale)}
           </button>
           {editing && (
-            <Link href="/dashboard/announcements" className="ml-3 text-sm text-neutral-500 hover:text-petrol">
+            <Link
+              href="/dashboard/announcements"
+              className="ml-3 text-sm text-neutral-500 hover:text-petrol inline-flex items-center min-h-[44px]"
+            >
               {t(STRINGS.announcementNewButton, locale)}
             </Link>
           )}
@@ -201,12 +204,18 @@ export default async function AnnouncementsAdminPage({
                   <p className="text-sm font-medium text-neutral-800 truncate mt-1">{a.title}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <Link href={`/dashboard/announcements?edit=${a.id}`} className="text-sm font-semibold text-petrol">
+                  <Link
+                    href={`/dashboard/announcements?edit=${a.id}`}
+                    className="text-sm font-semibold text-petrol inline-flex items-center min-h-[44px]"
+                  >
                     {t(STRINGS.announcementEditLink, locale)}
                   </Link>
                   {a.status === "published" && (
                     <form action={unpublishAnnouncement.bind(null, a.id)}>
-                      <button type="submit" className="text-sm font-semibold text-neutral-500 hover:text-red-600">
+                      <button
+                        type="submit"
+                        className="text-sm font-semibold text-neutral-500 hover:text-red-600 inline-flex items-center min-h-[44px]"
+                      >
                         {t(STRINGS.announcementUnpublishButton, locale)}
                       </button>
                     </form>

@@ -122,7 +122,10 @@ export default async function ContentAdminPage({ searchParams }: { searchParams?
               >
                 {t(STRINGS.contentSaveButton, locale)}
               </button>
-              <Link href="/dashboard/content" className="text-sm text-neutral-500 hover:text-petrol">
+              <Link
+                href="/dashboard/content"
+                className="text-sm text-neutral-500 hover:text-petrol inline-flex items-center min-h-[44px]"
+              >
                 {t(STRINGS.announcementDetailBackLink, locale)}
               </Link>
             </div>
@@ -144,7 +147,10 @@ export default async function ContentAdminPage({ searchParams }: { searchParams?
                       {!hasOverride && (
                         <span className="text-[11px] text-neutral-400">{t(STRINGS.contentDefaultBadge, locale)}</span>
                       )}
-                      <Link href={`/dashboard/content?edit=${encodeURIComponent(entry.key)}`} className="text-sm font-semibold text-petrol">
+                      <Link
+                        href={`/dashboard/content?edit=${encodeURIComponent(entry.key)}`}
+                        className="text-sm font-semibold text-petrol inline-flex items-center min-h-[44px]"
+                      >
                         {t(STRINGS.contentEditLink, locale)}
                       </Link>
                     </div>

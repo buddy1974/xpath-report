@@ -119,7 +119,10 @@ export default async function AccountsAdminPage({
               >
                 {t(STRINGS.accountSaveButton, locale)}
               </button>
-              <Link href="/dashboard/accounts" className="text-sm text-neutral-500 hover:text-petrol">
+              <Link
+                href="/dashboard/accounts"
+                className="text-sm text-neutral-500 hover:text-petrol inline-flex items-center min-h-[44px]"
+              >
                 {t(STRINGS.announcementDetailBackLink, locale)}
               </Link>
             </div>
@@ -145,12 +148,15 @@ export default async function AccountsAdminPage({
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0 text-sm">
-                <Link href={`/dashboard/accounts?edit=${u.id}`} className="font-semibold text-petrol">
+                <Link
+                  href={`/dashboard/accounts?edit=${u.id}`}
+                  className="font-semibold text-petrol inline-flex items-center min-h-[44px]"
+                >
                   {t(STRINGS.accountEditLink, locale)}
                 </Link>
                 {u.status === "active" && (
                   <form action={changeAccountStatus.bind(null, u.id, "suspend")}>
-                    <button type="submit" className="text-neutral-500 hover:text-amber-700">
+                    <button type="submit" className="text-neutral-500 hover:text-amber-700 inline-flex items-center min-h-[44px]">
                       {t(STRINGS.accountSuspendButton, locale)}
                     </button>
                   </form>
@@ -159,7 +165,7 @@ export default async function AccountsAdminPage({
                   <form action={changeAccountStatus.bind(null, u.id, "block")}>
                     <ConfirmSubmitButton
                       confirmMessage={t(STRINGS.accountConfirmBlock, locale)}
-                      className="text-neutral-500 hover:text-red-700"
+                      className="text-neutral-500 hover:text-red-700 inline-flex items-center min-h-[44px]"
                     >
                       {t(STRINGS.accountBlockButton, locale)}
                     </ConfirmSubmitButton>
@@ -167,7 +173,7 @@ export default async function AccountsAdminPage({
                 )}
                 {(u.status === "suspended" || u.status === "blocked") && (
                   <form action={changeAccountStatus.bind(null, u.id, "reactivate")}>
-                    <button type="submit" className="text-neutral-500 hover:text-mint">
+                    <button type="submit" className="text-neutral-500 hover:text-mint inline-flex items-center min-h-[44px]">
                       {t(STRINGS.accountReactivateButton, locale)}
                     </button>
                   </form>
@@ -176,7 +182,7 @@ export default async function AccountsAdminPage({
                   <form action={changeAccountStatus.bind(null, u.id, "deactivate")}>
                     <ConfirmSubmitButton
                       confirmMessage={t(STRINGS.accountConfirmDeactivate, locale)}
-                      className="text-neutral-500 hover:text-red-700"
+                      className="text-neutral-500 hover:text-red-700 inline-flex items-center min-h-[44px]"
                     >
                       {t(STRINGS.accountDeactivateButton, locale)}
                     </ConfirmSubmitButton>

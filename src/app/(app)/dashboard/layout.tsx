@@ -21,6 +21,7 @@ import { DictateCtaBar } from "@/components/dictate-cta-bar";
 import { AnnouncementTicker } from "@/components/announcement-ticker";
 import { SyncStatusBanner } from "@/components/sync-status-banner";
 import { OfflineQueueInit } from "@/components/offline-queue-init";
+import { IosInstallHint } from "@/components/ios-install-hint";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -60,6 +61,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.5rem)" }}
       >
         <AnnouncementTicker items={activeAnnouncements} locale={locale} />
+        <IosInstallHint locale={locale} />
         {role === "pathologist" && <SyncStatusBanner locale={locale} />}
         {children}
       </main>

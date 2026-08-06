@@ -62,7 +62,7 @@ export default async function ArchivePage({
       {q && rows.length === 0 && (
         <p className="mt-6 text-sm text-neutral-500">
           {t(STRINGS.noSearchMatchPrefix, locale)} &quot;{q}&quot;.{" "}
-          <Link href="/dashboard/archive" className="text-petrol underline">
+          <Link href="/dashboard/archive" className="text-petrol underline inline-flex items-center min-h-[44px]">
             {t(STRINGS.clearSearch, locale)}
           </Link>
         </p>
@@ -73,7 +73,7 @@ export default async function ArchivePage({
           <p className="text-sm text-neutral-500 mt-1 max-w-sm mx-auto">{t(STRINGS.archiveEmptyBody, locale)}</p>
           <Link
             href="/dashboard/dictate"
-            className="inline-block mt-4 rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold shadow-sm hover:bg-petrol-deep transition-colors"
+            className="inline-flex items-center mt-4 rounded-lg bg-petrol px-4 py-2 text-white text-sm font-semibold shadow-sm hover:bg-petrol-deep transition-colors min-h-[44px]"
           >
             {t(STRINGS.archiveEmptyCta, locale)}
           </Link>

@@ -102,7 +102,10 @@ export function MultiSelectSheet({
                 );
               })}
             </div>
-            <div className="p-3 border-t border-neutral-200">
+            <div
+              className="p-3 border-t border-neutral-200"
+              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
+            >
               <button
                 type="button"
                 onClick={() => setOpen(false)}

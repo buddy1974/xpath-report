@@ -37,7 +37,7 @@ export default async function AnnouncementDetailPage({ params }: { params: Promi
 
   return (
     <div className="max-w-2xl">
-      <a href="/dashboard" className="text-sm font-semibold text-petrol">
+      <a href="/dashboard" className="text-sm font-semibold text-petrol inline-flex items-center min-h-[44px]">
         {t(STRINGS.announcementDetailBackLink, locale)}
       </a>
       <div className={`mt-4 rounded-2xl border p-6 shadow-sm ${CATEGORY_STYLE[item.category]}`}>

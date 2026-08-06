@@ -27,6 +27,7 @@ import {
   applyFontSize,
   applyHighContrast,
 } from "@/lib/accessibility";
+import { usePwaInstall } from "@/lib/use-pwa-install";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -71,6 +72,7 @@ export function UserMenu({
   const [mounted, setMounted] = useState(false);
   const [fontSize, setFontSize] = useState<FontSize>("normal");
   const [highContrast, setHighContrast] = useState(false);
+  const { canInstall, promptInstall } = usePwaInstall();
 
   // R-039 follow-up: Structure now has its own back link
   // (structure/page.tsx), so it's safe to extend the standing
@@ -208,7 +210,7 @@ export function UserMenu({
                     <div className="flex items-center gap-1">
                       <form action={setLocaleAction.bind(null, "en", pathname)}>
                         <button
-                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 ${
+                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 min-h-[44px] min-w-[44px] ${
                             locale === "en" ? "bg-petrol text-white" : "text-neutral-500"
                           }`}
                         >
@@ -217,7 +219,7 @@ export function UserMenu({
                       </form>
                       <form action={setLocaleAction.bind(null, "fr", pathname)}>
                         <button
-                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 ${
+                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 min-h-[44px] min-w-[44px] ${
                             locale === "fr" ? "bg-petrol text-white" : "text-neutral-500"
                           }`}
                         >
@@ -237,7 +239,7 @@ export function UserMenu({
                             setFontSize(size);
                             applyFontSize(size);
                           }}
-                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 ${
+                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 min-h-[44px] ${
                             fontSize === size ? "bg-petrol text-white" : "text-neutral-500"
                           }`}
                         >
@@ -270,6 +272,15 @@ export function UserMenu({
                       />
                     </button>
                   </div>
+                  {canInstall && (
+                    <button
+                      type="button"
+                      onClick={promptInstall}
+                      className="w-full text-left flex items-center px-4 min-h-[44px] py-3 text-[15px] text-neutral-800 active:bg-neutral-100 transition-colors"
+                    >
+                      {t(STRINGS.installAppLabel, locale)}
+                    </button>
+                  )}
                   {role === "pathologist" && (
                     <button
                       type="button"

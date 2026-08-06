@@ -78,7 +78,7 @@ export default async function ArchiveRecordPage({ params }: { params: Promise<{ 
         </p>
         <a
           href={`/api/pdf/${row.record.id}`}
-          className="inline-flex items-center gap-1.5 mt-3 rounded-lg bg-petrol px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-petrol-deep transition-colors"
+          className="inline-flex items-center gap-1.5 mt-3 rounded-lg bg-petrol px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-petrol-deep transition-colors min-h-[44px]"
         >
           {t(STRINGS.downloadPdf, locale)}
         </a>
