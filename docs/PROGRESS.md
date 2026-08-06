@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); only the live Dr. Ivo demo remains)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -50,6 +50,12 @@ WAITING ON MARCEL:
    DOM/CSS/state inspection instead (documented in full in DL-053) —
    confident it's correct, but a 30-second real-device glance would
    close the loop properly.
+🔔 DL-054's content-editing UI has no revert/delete action yet — once an
+   admin overrides a template title/blurb/section-title or a Reflex
+   preview section, going back to the original default requires
+   knowing (or re-typing) the exact original text. A real, stated gap,
+   not built this session; worth a small follow-up (a "Revert to
+   default" button that just deletes the `editableContent` row).
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
    until these are set.
@@ -59,7 +65,27 @@ WAITING ON MARCEL:
    verified end to end with a real response. Not blocking — OpenAI (the
    default) is fully verified.
 
-LAST UPDATE: 2026-08-04 —
+LAST UPDATE: 2026-08-06 —
+
+**Three super-admin features, DL-054: admin-editable content, full
+account management, announcements/news ticker.** All gated by the
+existing administrator role — no new permission flags. Scope confirmed
+for all three before building, including two questions asked directly
+rather than guessed (director's-note visibility, account-status data
+model — both confirmed with Marcel). Generic `editableContent` table
+applied to the Reflex Testing preview and template titles/blurbs/
+section titles (not the full nested field tree — templates are static
+files, not DB rows, and that's a bigger rework, stated clearly). New
+`status` enum for accounts (active/suspended/blocked/deactivated) —
+`isActive`/`authorize()` untouched. Announcements: single-role
+broadcast, EN/FR direct authorship, emergency sorts first, same hide-
+on-dictate/review carve-out as the Dictate CTA bar/avatar. Real gap
+found and fixed live: director's note wasn't rendering on template
+overrides, only the Reflex preview — fixed, re-verified. Live-verified
+end to end: a real suspend→reactivate round trip with audit
+confirmation, a real published emergency announcement, a real
+template-title edit propagating correctly with its director's note
+now showing. Test data cleaned up afterward.
 
 **Mobile IA/visual redesign, DL-053.** Top nav bar removed entirely,
 replaced by a floating avatar (hidden on Dictate/Review) opening a

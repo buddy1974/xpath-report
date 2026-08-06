@@ -1260,3 +1260,96 @@ Format: DL-nnn · decision · rationale.
   unchanged underneath. `npx tsc --noEmit` and `npm run build` both
   passed before every push (two commits: the redesign itself, then the
   rAF→setTimeout fix).
+- **DL-054 — Three super-admin features: admin-editable default
+  content, full account management, announcements/news ticker.** All
+  gated by the existing administrator role — no new permission flags,
+  no role changes, the exact account Marcel uses now and hands to Dr.
+  Ivo later. Scope confirmed for all three before any code, per explicit
+  instruction — including two things asked directly rather than
+  guessed: whether the director's note surfaces to pathologists
+  (confirmed: yes, as guidance) and the account-status data model
+  (confirmed: a real `status` enum, not overloading the existing
+  `isActive` boolean).
+  **1. Admin-editable content.** Templates are static TypeScript files
+  in this codebase (`src/lib/templates/data/*.ts`), not DB rows —
+  despite `PROJECT_HEADER.md §5` describing templates as "versioned
+  data/configuration," the actual implementation predates that being
+  literally true. Rather than migrate the whole template engine to a
+  DB-backed source of truth (a rework on the scale of M3 itself), built
+  a generic `editableContent` table (one current row per `(tenant,
+  contentKey)`, versioned, with a `directorNote` field) that overrides
+  specific pieces on top of the static base — applied fully to the
+  Reflex Testing preview (§17.1–17.9 + core requirement, 10 keys) and to
+  each template's title/blurb/section titles (not the full nested
+  field/option tree — a deliberate, stated scope line: the mechanism
+  generalizes cleanly to field-level editing later, just not this
+  session). Saving is the director-approval step (Header G3) — no
+  separate approval workflow; the audit log (`content_edited`, written
+  on every save) is the version history, so no separate history table
+  was needed. Reflex-preview sections render an admin edit as plain
+  paragraphs (loses the original's inline bold sub-labels — a real,
+  acceptable simplification for a plain-text editor, not a rich-text
+  one) while the unedited default keeps its original formatting;
+  template title/blurb/section-title overrides are already plain
+  strings, so no such tradeoff there.
+  **2. Super-admin accounts.** New `status` enum (active/suspended/
+  blocked/deactivated) exactly as confirmed — `isActive` is untouched
+  and derived from it, so `authorize()` (the login-critical check) has
+  zero code changes. Full profile edit (name/unit=`department`/phone/
+  email/role) and all four status actions, each its own audit action
+  (not one generic "account_changed"). Block/deactivate get a confirm
+  step (native `window.confirm()` via a small reusable
+  `ConfirmSubmitButton` — no new modal dependency for one "are you
+  sure"). Reactivate is a hard boundary: the action throws if the
+  target is `deactivated`, never silently treating a soft-delete as
+  reversible from this same button. One safety addition beyond the
+  literal spec, reasoned through and stated, not silently invented: an
+  admin can't block or deactivate their own account — this project
+  already puts real weight on the admin account staying permanently
+  reachable (DL-048), and self-lockout with only one admin account in
+  a single-tenant deployment would be a genuinely bad failure mode.
+  Structurally out of reach, not just permission-checked: this route's
+  files never import `privateWorkspaceItems` or `clinicalRecords` at
+  all (Header G2).
+  **3. Announcements.** Single-role broadcast, `news`/`operational`/
+  `emergency` categories, EN/FR authored directly by the admin (not
+  translated — original content, unlike template/reflex text which
+  stays English-only per DL-035/R-029). Emergency sorts first
+  regardless of publish time (JS sort after fetch, not a DB `ORDER BY`
+  — the tenant's active-announcement set is always small). Duration
+  presets (1 day/week/month/custom/indefinite) compute `expiresAt` at
+  save time. Same hide-on-`/dashboard/dictate`-and-`/dashboard/review/*`
+  carve-out as the Dictate CTA bar and floating avatar (DL-051/DL-053).
+  Per-user dismiss via `localStorage`, same pattern as the onboarding
+  checklist — built, since it was genuinely straightforward with an
+  existing pattern, not new infrastructure. Ticker renders in both the
+  main shell and inside the user-menu sheet (same announcement list,
+  fetched once in `layout.tsx`, passed to both).
+  **Real gap found and fixed during live verification, not assumed
+  correct**: the director's note rendered on the Reflex preview but
+  nowhere on the template title/section-title overrides — a real
+  miss against the confirmed answer that these notes must surface to
+  pathologists. Fixed by rendering it under the title (if the title
+  override carries one) and above each section (if that section's
+  override carries one), in `templates/[templateId]/page.tsx`,
+  live-verified after the fix.
+  **Live-verified end to end on `www.xpath.report`** with the existing
+  administrator session: full account list renders correctly for every
+  seeded account; ran a real suspend → reactivate round trip on a
+  low-stakes seeded account (`technician4@xpath.report`) and confirmed
+  both the UI state and the audit log's before/after `detail` payload;
+  created and published a real emergency-category announcement and
+  confirmed the ticker appears immediately in both the main shell and
+  the user-menu sheet with correct red styling, confirmed the detail
+  page renders the correct-locale body; edited a template's title
+  through the content admin UI and confirmed the change propagated to
+  both the Templates list and the template detail page, confirmed the
+  content registry (10 reflex-preview keys + all 6 templates' title/
+  blurb/section-title keys) renders completely and correctly with
+  accurate "default (unedited)" badges. All test data (the test
+  announcement, the test content override) deleted afterward via a
+  direct DB script (no delete/revert UI exists yet for either — a real,
+  stated gap worth a follow-up, not built this session). `npx tsc
+  --noEmit` and `npm run build` both passed before every push (three
+  commits: the three-feature build, the director's-note fix, and this
+  documentation).

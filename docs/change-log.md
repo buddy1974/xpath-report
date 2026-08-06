@@ -2,6 +2,39 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-06 — Three super-admin features: content editing, account management, announcements (DL-054)
+- Scope confirmed for all three before any code — including two
+  questions asked directly rather than guessed: director's-note
+  visibility (confirmed: visible to pathologists as guidance) and the
+  account-status data model (confirmed: a real `status` enum, not
+  overloading `isActive`).
+- **Admin-editable content**: generic versioned `editableContent`
+  table (director's-note field included), applied to the Reflex
+  Testing preview (10 sections) and each template's title/blurb/
+  section titles. Saving is the director-approval step (Header G3).
+  Deliberately not the full nested field/option tree — templates are
+  static TS files, not DB rows, and that's a bigger rework than this
+  session's scope; the mechanism generalizes cleanly later.
+- **Super-admin accounts**: new `status` enum (active/suspended/
+  blocked/deactivated); `isActive`/`authorize()` untouched. Full
+  profile edit + all 4 status actions, each own audit action,
+  block/deactivate confirm-stepped. Admin can't block/deactivate their
+  own account (a stated safety addition, not silently invented).
+  Structurally never touches `privateWorkspaceItems`/`clinicalRecords`.
+- **Announcements**: single-role broadcast, EN/FR authored directly,
+  emergency always sorts first, duration presets, per-user dismiss via
+  localStorage, same hide-on-dictate/review carve-out as the Dictate
+  CTA bar/avatar (DL-051/DL-053).
+- Real gap found and fixed during live verification: director's note
+  rendered on the Reflex preview but not on template overrides — fixed,
+  re-verified.
+- Live-verified end to end: a real suspend→reactivate round trip with
+  audit-log confirmation, a real published emergency announcement
+  showing correctly in both the shell and the user menu, a real
+  template-title edit propagating to both Templates pages with its
+  director's note now rendering correctly. Test data cleaned up
+  afterward. `npx tsc --noEmit`/`npm run build` pass.
+
 ## 2026-08-04 — Mobile IA/visual redesign: top nav removed, floating avatar + full-screen user menu (DL-053)
 - Removed the persistent header/top-nav entirely (layout change, not a
   rebrand — existing tokens throughout), replaced by a floating avatar
