@@ -107,8 +107,9 @@ export function UserMenu({
             { href: "/dashboard/announcements", label: t(STRINGS.announcementsNavTitle, locale) },
             { href: "/dashboard/accounts", label: t(STRINGS.accountsNavTitle, locale) },
             { href: "/dashboard/content", label: t(STRINGS.contentAdminNavTitle, locale) },
-            // DL-055 — TAT dashboard.
+            // DL-055 — TAT dashboard + reagent/equipment tracking.
             { href: "/dashboard/tat", label: t(STRINGS.tatNavTitle, locale) },
+            { href: "/dashboard/reagents", label: t(STRINGS.reagentsNavTitle, locale) },
           ]
         : [{ href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) }];
 

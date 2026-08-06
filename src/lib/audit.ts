@@ -26,7 +26,9 @@ type AuditAction =
   | "account_deactivated"
   | "announcement_edited"
   | "announcement_published"
-  | "announcement_unpublished";
+  | "announcement_unpublished"
+  | "reagent_item_added"
+  | "reagent_item_updated";
 
 export async function writeAudit(params: {
   tenantId: string;

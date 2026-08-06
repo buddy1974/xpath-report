@@ -60,6 +60,13 @@ export const announcementStatusEnum = pgEnum("announcement_status", [
   "published",
 ]);
 
+// DL-055 — reagent/equipment tracking. "antibody" covers the register
+// plus any admin-added reagent; "equipment" tracks calibration only.
+export const reagentItemTypeEnum = pgEnum("reagent_item_type", [
+  "antibody",
+  "equipment",
+]);
+
 // Clinical records move through a lifecycle. Only "released" is the
 // legal system-of-record state; everything before it is a working draft
 // that still lives in the pathologist's private space (see below).
@@ -93,6 +100,9 @@ export const auditActionEnum = pgEnum("audit_action", [
   "announcement_edited",
   "announcement_published",
   "announcement_unpublished",
+  // DL-055 — reagent/equipment tracking.
+  "reagent_item_added",
+  "reagent_item_updated",
 ]);
 
 /* ------------------------------------------------------------------ */
@@ -406,6 +416,56 @@ export const announcements = pgTable(
   (t) => ({
     tenantIdx: index("announcements_tenant_idx").on(t.tenantId),
     statusIdx: index("announcements_status_idx").on(t.status),
+  }),
+);
+
+/* ------------------------------------------------------------------ */
+/* DL-055 — Reagent / equipment tracking                              */
+/* ------------------------------------------------------------------ */
+/**
+ * Seeded once per tenant from src/lib/reagents/register.ts (X.PATH's
+ * real 38-antibody register + BenchMark ULTRA) on first visit to
+ * /dashboard/reagents — `registerKey` is that seed's stable slug so a
+ * reseed never duplicates a row. Admin-added items (anything not on
+ * the register) carry `registerKey: null`. Stock tracking applies to
+ * "antibody" rows, calibration tracking to "equipment" rows — a single
+ * table rather than two, since both are "the same admin screen's
+ * editable rows with an alert threshold," and every field beyond
+ * name/type is nullable so neither kind forces the other's columns.
+ */
+export const reagentItems = pgTable(
+  "reagent_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    registerKey: text("register_key"),
+    type: reagentItemTypeEnum("type").notNull(),
+    name: text("name").notNull(),
+    clone: text("clone"),
+    catalogueRef: text("catalogue_ref"),
+    vendor: text("vendor"),
+    // "antibody" fields — null for equipment rows.
+    currentStock: integer("current_stock"),
+    lowStockThreshold: integer("low_stock_threshold").default(5),
+    lastRestockedAt: timestamp("last_restocked_at", { withTimezone: true }),
+    // "equipment" fields — null for antibody rows.
+    lastCalibratedAt: timestamp("last_calibrated_at", { withTimezone: true }),
+    calibrationIntervalDays: integer("calibration_interval_days"),
+    updatedBy: uuid("updated_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    tenantIdx: index("reagent_items_tenant_idx").on(t.tenantId),
+    keyIdx: uniqueIndex("reagent_items_key_idx").on(t.tenantId, t.registerKey),
   }),
 );
 
