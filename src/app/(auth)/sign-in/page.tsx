@@ -69,7 +69,7 @@ export default async function SignInPage({
           >
             {t(STRINGS.continueButton, locale)}
           </button>
-          <p className="text-center text-xs text-neutral-500">{t(STRINGS.twoFactorNote, locale)}</p>
+          <p className="text-center text-xs text-neutral-600">{t(STRINGS.twoFactorNote, locale)}</p>
         </form>
         {turnstileSiteKey && (
           <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
