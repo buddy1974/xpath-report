@@ -2,6 +2,47 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-06 — Correction: never rotate dev-administrator/test-pathologist passwords (DL-057)
+- Marcel's direct correction: these two accounts are his own permanent,
+  stable-password accounts (DL-048/049), not verification fixtures.
+  Rotating them after live-verification steps (as DL-055/056 did)
+  repeatedly locked him out of his own accounts. No code changed —
+  process only. Live-login verification going forward uses a
+  disposable account instead. Saved as a standing memory so this isn't
+  asked about again.
+
+## 2026-08-06 — Installable PWA + mobile-hardening sweep (DL-058, in place of the deferred Capacitor migration)
+- Web app manifest (name/short_name/theme_color petrol/background
+  light-neutral/standalone display) + a placeholder petrol/white "X"
+  monogram icon set (192/512/512-maskable/180-apple-touch), generated
+  via `sharp`.
+- App-shell service worker: cache-first for `/_next/static/*` +
+  icons/manifest only, everything else passes straight to network —
+  kept structurally separate from DL-055's IndexedDB offline queue.
+  Live-verified the cache holds only the 11 intended static assets,
+  nothing from `/api/` or `/dashboard/`.
+- iOS meta tags via Next's typed Metadata API. Real gap caught live:
+  Next only emits the modern `mobile-web-app-capable` tag, not the
+  legacy `apple-mobile-web-app-capable` one iOS Safari still requires —
+  added it directly, confirmed both present after redeploy.
+- Install-prompt UI: `usePwaInstall` hook + "Install app" row in the
+  user menu's Settings group (Android/Chrome); a one-time dismissible
+  "Add to Home Screen" hint for iOS (no equivalent event fires there).
+- Mobile-hardening sweep across screens not yet touched by DL-053/055:
+  `min-h-[44px]` added to dense action-row links/buttons that had none,
+  `safe-area-inset-bottom` padding added to three fixed-bottom elements
+  that were missing it. No fixed-pixel-width elements found.
+- Lighthouse's "PWA" category has been removed from the tool entirely
+  (confirmed empirically) — ran accessibility + best-practices instead
+  against the live site: first run 95/100 accessibility (one real
+  color-contrast finding on the sign-in page), fixed and redeployed,
+  re-ran: **100/100 both.** Installability verified directly via Chrome
+  DevTools instead (manifest valid, icons resolve, service worker
+  active, all meta tags present) since that's the modern replacement
+  for the old Lighthouse PWA audits.
+- Desktop-parity pass explicitly deferred as a stated follow-up, not
+  built this round (mobile-first work throughout DL-051/053/055/058).
+
 ## 2026-08-06 — Structure-page back link + live-verified QC-flag/Workspace-triage (DL-056, R-039 resolved)
 - Added a "← Workspace" link to all three render states of
   `/dashboard/structure/[dictationId]` (not-yet-transcribed,

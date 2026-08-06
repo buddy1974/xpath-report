@@ -1544,3 +1544,84 @@ Format: DL-nnn · decision · rationale.
   `dev-administrator@xpath.report`/`test-pathologist@xpath.report` are
   not to be rotated again without a fresh, explicit instruction from
   Marcel.
+- **DL-058 — Installable PWA, in place of the native Capacitor migration
+  Marcel decided to hold off on (real multi-week scope, not worth the
+  timeline risk this close to the Dr. Ivo demo).** No architecture
+  change, no auth/server-action changes — purely additive, builds on
+  what already existed (DL-055's offline IndexedDB queue, DL-053's
+  mobile redesign).
+  **Manifest + icons.** `public/manifest.webmanifest` — name/short_name
+  "X-PATH", `theme_color` petrol (`#0E4B54`), `background_color` a
+  light neutral matching the app's actual body background (avoids a
+  dark-flash-then-light-swap on launch), `display: standalone`. Icon
+  set (192/512/512-maskable/180 apple-touch) generated as placeholder
+  petrol-background/white-"X"-monogram PNGs via `sharp` (already a
+  dependency, unused until now) — same placeholder-visuals rule as
+  everything else visual (Header G3), real branding later.
+  **Service worker.** `public/sw.js`, cache-first for `/_next/static/*`
+  + icons/manifest only; every other request (navigation, Server
+  Actions, `/api/*`) passes straight to network, untouched — kept
+  structurally separate from DL-055's offline queue, which drives its
+  own `fetch()` calls directly. Live-verified the cache actually holds
+  only the 11 intended static assets and nothing from `/api/` or
+  `/dashboard/`.
+  **iOS tags.** `apple-touch-icon`, `apple-mobile-web-app-title`,
+  `apple-mobile-web-app-status-bar-style: black-translucent` (pairs
+  with the safe-area-inset padding already built for the floating
+  avatar/Dictate CTA bar, DL-053) via Next's typed Metadata API. One
+  real gap caught live, not assumed correct: Next's
+  `appleWebApp.capable` field only emits the modern standardized
+  `mobile-web-app-capable` tag, not the legacy `apple-mobile-web-app-
+  capable` one iOS Safari still requires for real standalone-mode
+  launch — added that tag directly, confirmed both present afterward.
+  **Install prompt.** `usePwaInstall` hook captures Android/Chrome's
+  `beforeinstallprompt`; an "Install app" row appears in the user
+  menu's Settings group only when installable and not yet installed.
+  iOS fires no equivalent event, so it gets a one-time dismissible
+  "Add to Home Screen" explainer instead (`localStorage`-persisted,
+  same per-device-dismiss pattern as the announcement ticker,
+  DL-054) — inline, not fixed-positioned, so it can never collide with
+  the pathologist's bottom-fixed Dictate CTA bar.
+  **Mobile-hardening sweep**, across screens not yet touched by
+  DL-053/055: added `min-h-[44px]` tap targets to dense action-row
+  text links/buttons that had none (accounts, announcements, content
+  admin, reagents, archive, profile, the user-menu language/text-size
+  toggles), and `safe-area-inset-bottom` padding to three fixed-bottom
+  elements that were missing it (the review-form sticky action bar,
+  and both form bottom-sheet pickers' footer buttons). Grep sweep for
+  fixed-pixel-width layout elements found none.
+  **Lighthouse audit — real finding, not assumed clean**: Lighthouse's
+  "PWA" category has been removed entirely from the tool as of the
+  version this session pulled (confirmed empirically: zero
+  installability-related audits exist anywhere in
+  `lighthouse/core/config/default-config.js` — Google now points
+  people at Chrome DevTools' own Application panel for this, not
+  Lighthouse). Ran accessibility + best-practices instead (still valid
+  categories) against the live `sign-in` page — first run: accessibility
+  95/100 (one real finding, `text-neutral-500` on the 2FA note scored
+  4.34:1 against the WCAG AA 4.5:1 threshold), best-practices 100/100.
+  Fixed the contrast (bumped to `text-neutral-600`, ~7.5:1), redeployed,
+  re-ran: **accessibility 100/100, best-practices 100/100.**
+  Installability itself was verified directly instead, the modern
+  replacement for the old Lighthouse PWA audits: live-checked via
+  Chrome DevTools that the manifest fetches and validates (all fields,
+  all three icon entries resolve 200/`image/png`), the service worker
+  registers and reaches `activated` state, and both the legacy and
+  modern iOS/Android capable meta tags are present.
+  **Local Lighthouse CLI environment note**: the CLI crashes on this
+  Windows sandbox with an `EPERM` deleting Chrome's temp profile dir
+  during cleanup (reproduced identically via git-bash, PowerShell, and
+  with the sandbox disabled — an environment-level file-lock issue, not
+  a project one). Worked around by calling Lighthouse's Node API
+  directly from an isolated scratch install (outside this repo, never
+  committed) and catching the cleanup error after already capturing the
+  result — the actual audits run and complete fine; only the CLI's own
+  teardown path is broken here.
+  **Deferred, not built this pass, per explicit instruction**: a
+  desktop-parity pass (wider layouts, better use of screen space, hover
+  states) — the redesign work has been mobile-first throughout
+  (DL-051/053/055); flagged as a stated follow-up for a future session,
+  not silently skipped.
+  `npx tsc --noEmit` and `npm run build` passed clean before every push
+  across three commits: the PWA/mobile-hardening build itself, the
+  color-contrast fix, and the apple-mobile-web-app-capable fix.

@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); offline-first upload + TAT dashboard + QC-flag capture + reagent/equipment tracking + audit-log export + a frontend UX pass all built and live-verified (DL-055); Structure-page back link built + QC-flag/Workspace-triage live-verified for real (DL-056); only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); offline-first upload + TAT dashboard + QC-flag capture + reagent/equipment tracking + audit-log export + a frontend UX pass all built and live-verified (DL-055); Structure-page back link built + QC-flag/Workspace-triage live-verified for real (DL-056); installable PWA (manifest/service worker/iOS tags/install prompt) + a mobile-hardening sweep built, Lighthouse-audited (100/100 accessibility + best-practices), and live-verified in place of the deferred native-app migration (DL-058); only the live Dr. Ivo demo and a deferred desktop-parity pass remain)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -31,25 +31,23 @@ before it happens, not after. Everything else in M5/M6/M7 builds
 straight through.
 
 WAITING ON MARCEL:
-🔔 Run `scripts/set-admin-password.ts` yourself to set your own permanent
-   password for `dev-administrator@xpath.report` (DL-048) — the account's
-   current password is an unknown random value nobody has, set only to
-   prove the mechanism works end-to-end. `npx tsx --env-file=.env.local
-   scripts/set-admin-password.ts`, then sign in for real to confirm.
-   (Reset a second time to verify DL-052's admin-only preview, then
-   rotated back to a fresh unknown value again — if you'd already set
-   your own password between DL-048 and now, run the script once more.)
-🔔 Same for the pathologist lens: run `npx tsx --env-file=.env.local
-   scripts/set-pathologist-password.ts` to set your own permanent
-   password for `test-pathologist@xpath.report` (DL-049) — same
-   unknown-random-value-until-you-set-it state.
-🔔 DL-053 (mobile IA redesign) needs one real check this session's tools
-   couldn't do: an actual phone/narrow-viewport look at the new floating
-   avatar + full-screen menu, and the Dictate CTA bar's safe-area
-   padding on a real notched device. Everything was verified by direct
-   DOM/CSS/state inspection instead (documented in full in DL-053) —
-   confident it's correct, but a 30-second real-device glance would
-   close the loop properly.
+🔔 **DL-057 correction, standing rule now**: `dev-administrator@xpath.report`
+   and `test-pathologist@xpath.report` are your own permanent accounts —
+   their passwords are never reset or rotated as part of routine
+   verification anymore (that was the DL-055/056 bug DL-057 corrected).
+   If you haven't already set your own password on either account since
+   the last time it was touched, run `npx tsx --env-file=.env.local
+   scripts/set-admin-password.ts` / `scripts/set-pathologist-password.ts`
+   yourself once, for a value only you know — otherwise there is nothing
+   to do here, and this item will not be re-raised.
+🔔 Now genuinely testable, unlike when first raised: install X-PATH as a
+   PWA on a real phone (Settings → Install app on Android/Chrome, or
+   Share → Add to Home Screen on iOS — DL-058) and give the floating
+   avatar/full-screen menu, Dictate CTA bar, and general safe-area
+   spacing (DL-053) a real 30-second glance. Everything was verified by
+   direct DOM/CSS/state inspection plus a live Lighthouse audit
+   (100/100 accessibility + best-practices) instead of an actual device
+   — confident it's correct, but this closes the loop for real.
 🔔 DL-054's content-editing UI has no revert/delete action yet — once an
    admin overrides a template title/blurb/section-title or a Reflex
    preview section, going back to the original default requires
@@ -64,21 +62,45 @@ WAITING ON MARCEL:
    error is a 400 billing error, not a 401 auth error), but hasn't been
    verified end to end with a real response. Not blocking — OpenAI (the
    default) is fully verified.
-🔔 DL-056 resolved both DL-055 R-039 follow-ups (Structure-page back
-   link + live-verified QC-flag/Workspace-triage) — see below. As part
-   of that, `test-pathologist@xpath.report`'s password was reset and
-   read back exactly once (a deliberate, user-approved, one-time
-   exception to the usual R-038 hygiene, needed because no way exists
-   to get a real browser session without either the login form or a
-   new auth-bypass endpoint on the live app — the latter was correctly
-   not built without separate authorization) to sign in and click
-   through both features for real, then rotated to a fresh unknown
-   value again immediately after. Run `npx tsx --env-file=.env.local
-   scripts/set-pathologist-password.ts` yourself whenever you want to
-   set your own permanent password for that account — same open item
-   as after DL-049, unchanged by this round.
+🔔 **Deferred, not forgotten**: a desktop-parity pass (wider layouts,
+   better use of screen space, hover states) — the redesign work has
+   been mobile-first throughout (DL-051/053/055/058). Flagged per your
+   explicit instruction to note it for later rather than build it
+   alongside the PWA work.
 
 LAST UPDATE: 2026-08-06 —
+
+**DL-058 — Installable PWA + mobile-hardening sweep, in place of the
+native Capacitor migration you decided to hold off on** (real
+multi-week scope, not worth the timeline risk this close to the Dr.
+Ivo demo). No architecture change, no auth/server-action changes.
+Manifest + placeholder petrol/white icon set, an app-shell service
+worker (cache-first for static assets only, structurally separate from
+DL-055's offline queue — verified live it caches only the 11 intended
+static files, nothing from `/api/` or `/dashboard/`), iOS meta tags
+(one real gap caught live: Next's typed metadata only emits the modern
+`mobile-web-app-capable` tag, not the legacy one iOS Safari still
+needs — added directly), an Android/Chrome install button in the user
+menu plus a one-time iOS "Add to Home Screen" hint, and a mobile-
+hardening sweep (44px tap targets + safe-area padding) across screens
+DL-053/055 hadn't touched. Lighthouse's "PWA" category has been
+removed from the tool entirely as of the version this session pulled —
+confirmed empirically, not assumed — so ran accessibility +
+best-practices instead against the live site (first run: 95/100
+accessibility on one real color-contrast finding, fixed and redeployed)
+and verified installability directly via Chrome DevTools (the modern
+replacement for the old Lighthouse PWA audits). **Final live scores:
+100/100 accessibility, 100/100 best-practices.** Desktop-parity
+explicitly deferred as a stated follow-up (above), not built. Full
+detail in `docs/decision-log.md` DL-058.
+
+**DL-057 — Correction: never rotate `dev-administrator@xpath.report`/
+`test-pathologist@xpath.report`'s passwords.** These are your own
+permanent, stable-password accounts (DL-048/049), not verification
+fixtures — the DL-055/056 rotate-after-verification pattern was wrong
+and repeatedly locked you out. No code changed, process only. Saved as
+a standing memory so this isn't raised again. Full detail in
+`docs/decision-log.md` DL-057.
 
 **DL-056 — Structure-page back link + live-verified QC-flag/Workspace-
 triage (both DL-055 R-039 follow-ups, now closed).** Added a real
