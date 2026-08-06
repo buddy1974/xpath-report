@@ -46,6 +46,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Next's typed `appleWebApp.capable` metadata only emits the
+            newer standardized "mobile-web-app-capable" tag — iOS
+            Safari still only recognizes the legacy Apple-prefixed one
+            (confirmed live: Chrome DevTools showed the standardized
+            tag present but this one absent). Both needed for real
+            standalone-mode support across iOS + Android/Chrome. */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         <AccessibilityInitScript />
       </head>
       <body>
