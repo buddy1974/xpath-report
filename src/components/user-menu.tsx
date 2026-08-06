@@ -107,9 +107,10 @@ export function UserMenu({
             { href: "/dashboard/announcements", label: t(STRINGS.announcementsNavTitle, locale) },
             { href: "/dashboard/accounts", label: t(STRINGS.accountsNavTitle, locale) },
             { href: "/dashboard/content", label: t(STRINGS.contentAdminNavTitle, locale) },
-            // DL-055 — TAT dashboard + reagent/equipment tracking.
+            // DL-055 — TAT dashboard, reagent/equipment tracking, audit export.
             { href: "/dashboard/tat", label: t(STRINGS.tatNavTitle, locale) },
             { href: "/dashboard/reagents", label: t(STRINGS.reagentsNavTitle, locale) },
+            { href: "/dashboard/audit", label: t(STRINGS.auditExportNavTitle, locale) },
           ]
         : [{ href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) }];
 
