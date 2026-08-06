@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); offline-first upload + TAT dashboard + QC-flag capture + reagent/equipment tracking + audit-log export + a frontend UX pass all built and live-verified (DL-055); only the live Dr. Ivo demo remains)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -64,8 +64,47 @@ WAITING ON MARCEL:
    error is a 400 billing error, not a 401 auth error), but hasn't been
    verified end to end with a real response. Not blocking — OpenAI (the
    default) is fully verified.
+🔔 DL-055: `test-pathologist@xpath.report`'s password was reset again
+   (same `openssl rand | npx tsx --env-file=.env.local
+   scripts/set-pathologist-password.ts` script, R-038 hygiene — this
+   session never observed the plaintext) for an attempted live check of
+   the QC-flag/pending-signature-triage UI, then abandoned once it was
+   clear that would mean signing in with a value only Marcel should
+   know. Run `npx tsx --env-file=.env.local
+   scripts/set-pathologist-password.ts` yourself to set your own
+   permanent password again, same as after DL-049.
+🔔 DL-055: two small, real, stated gaps, neither blocking. (1) QC-flag
+   capture and the Workspace pending-signature triage badge were
+   verified by code review + a clean typecheck/build only, not a live
+   browser click-through (see above — no pathologist credentials were
+   held this session); both reuse patterns already live-verified
+   elsewhere (the urgent flag; the TAT dashboard's triage badge) so
+   confidence is high, but a real click-through would close the loop.
+   (2) `/dashboard/structure` was deliberately NOT added to the hide-
+   chrome-during-focused-work carve-out — that screen's template-choice
+   state has no other way to navigate away yet, so hiding the avatar
+   there would strand the pathologist; needs a real back link first.
 
 LAST UPDATE: 2026-08-06 —
+
+**Offline-first upload + five admin/UX items, DL-055.** Built in the
+instructed order: offline-first upload first (IndexedDB queue, optimistic
+UI, exponential backoff + retry cap, plain-language status only — a
+real R2 presigned-URL-expiry design issue caught and fixed before it
+shipped broken, and a real transcript-review regression caught and
+fixed by relocating that step to a new Structure-page editor), then TAT
+dashboard (aggregate-only, Header G1/G2-documented) + QC-flag capture
+at review, then reagent/equipment tracking (seeded from the real
+38-antibody register, prioritized for Cameroon's slower resupply
+logistics) + audit-log CSV/PDF export (a read layer, not a new logging
+mechanism), then a frontend UX pass (wait-time triage colors,
+`<details>` on the reagents list, text-size/high-contrast settings).
+Live-verified on `www.xpath.report`: TAT dashboard, reagent stock
+edit/alert round-trip, both audit exports, both new display settings.
+QC-flag and Workspace triage verified by code review only (stated
+above, not silently skipped). `npx tsc --noEmit` and `npm run build`
+passed clean before all five pushes. Full detail in
+`docs/decision-log.md` DL-055.
 
 **Three super-admin features, DL-054: admin-editable content, full
 account management, announcements/news ticker.** All gated by the

@@ -2,6 +2,49 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-06 — Offline-first upload + admin/UX items: TAT dashboard, QC-flag capture, reagent tracking, audit export, UX pass (DL-055)
+- **Offline-first, queue-and-retry upload (top priority, must-have)**:
+  IndexedDB local queue, Recorder/OCR-scan now always save locally
+  first and show success immediately (one optimistic-UI code path, not
+  an online/offline branch); exponential backoff + jitter, permanent-
+  vs-transient error classification, 10-attempt/24h retry cap →
+  one-tap-retry FAILED state, plain-language status only. Caught and
+  fixed before shipping broken: R2 presigned upload URLs expire in 5
+  minutes, so retries now re-presign per attempt instead of reusing a
+  stored URL. Caught and fixed as a real regression: decoupling
+  Recorder from the network removed the transcript-review step before
+  structuring — relocated (not dropped) into a new `TranscriptEditor`
+  on the Structure page.
+- **TAT dashboard** (admin): aggregate-only dictation→signature
+  duration by template, never per-case/per-pathologist (Header G1);
+  reads only `id`/`createdAt` from `privateWorkspaceItems`, never
+  content (Header G2).
+- **QC-flag capture** at review: lightweight non-concordant-diagnosis/
+  stain-failure flag, stored on the draft and the signed record,
+  folded into the existing `sign_out_report` audit detail — capture
+  only, no analytics layer yet (Header G4).
+- **Reagent/equipment tracking + alerts**: seeded from the real,
+  verified 38-antibody register (`XPATH_handover.md` §12) + BenchMark
+  ULTRA; low-stock and calibration-due alerts; prioritized ahead of
+  other admin items because Cameroon's resupply/service logistics are
+  slower.
+- **Audit-log CSV/PDF export**: a read/format layer over the existing
+  audit_log, not a new logging mechanism; admin-only, date-range
+  filterable.
+- **Frontend UX pass** (presentation only): color-coded wait-time
+  triage (icon+text always alongside color) on TAT + Workspace's
+  pending-signature list; `<details>` progressive disclosure on the
+  reagents page's 38-row list; text-size and high-contrast settings in
+  the user menu, `localStorage`-persisted with a pre-paint init script.
+- Live-verified on `www.xpath.report`: TAT dashboard, a real reagent
+  stock edit/alert/reset round-trip, both audit exports (via
+  authenticated `fetch`), both new display settings. QC-flag capture
+  and the Workspace triage badge verified by code review + clean
+  build/typecheck only — stated directly, not silently skipped, since
+  live-checking them would have required signing in as
+  `test-pathologist@xpath.report` with a password this session
+  deliberately never observed (R-038 hygiene).
+
 ## 2026-08-06 — Three super-admin features: content editing, account management, announcements (DL-054)
 - Scope confirmed for all three before any code — including two
   questions asked directly rather than guessed: director's-note

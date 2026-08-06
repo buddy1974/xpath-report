@@ -412,3 +412,22 @@ Format: R-nnn · risk · current mitigation / status.
   be fully avoided while still doing real browser verification (the
   project's own R-036/DL-047 history is exactly why server-side-only
   verification isn't an acceptable substitute).
+- **R-039 — LOW, two DL-055 follow-ups, neither blocking. (1)** QC-flag
+  capture at review and the Workspace pending-signature triage badge
+  were verified by code review + a clean `tsc`/`build` only, not a live
+  browser click-through — both reuse a wiring pattern already
+  live-verified elsewhere (the existing urgent flag; the TAT
+  dashboard's own triage badge), so confidence is high, but this is a
+  real, stated gap rather than a claimed live verification. Root cause:
+  closing the loop would have meant signing in as
+  `test-pathologist@xpath.report`, and this session (consistent with
+  R-038's lesson) never observed that account's plaintext password —
+  it was reset again via the generate-and-pipe script for the attempt,
+  then abandoned once that tradeoff was clear. **(2)** `/dashboard/
+  structure` was deliberately not added to the "hide chrome during
+  focused work" carve-out (Dictate/Review/etc.) even though DL-055
+  named that pattern a standing rule for future screens — that
+  screen's template-choice state currently has no back link or other
+  way to navigate away, so hiding the floating avatar there would
+  strand the pathologist. Needs a real back link (or equivalent exit)
+  added first; only then should the carve-out be extended there.

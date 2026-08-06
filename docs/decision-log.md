@@ -1353,3 +1353,119 @@ Format: DL-nnn · decision · rationale.
   --noEmit` and `npm run build` both passed before every push (three
   commits: the three-feature build, the director's-note fix, and this
   documentation).
+- **DL-055 — Offline-first upload (the must-have) + five admin/UX
+  items, researched against real LIS vendor behavior and Cameroon's
+  actual connectivity conditions.** Built in the instructed order:
+  offline-first upload first, then admin items, then the frontend pass.
+  Six items total.
+  **1. Offline-first, queue-and-retry upload.** IndexedDB-backed local
+  queue (`idb@8.0.3`, single `captures` store), a resumable state
+  machine per dictation (`create → upload → transcribe`) and a
+  single-step one for notes. Recorder and OCR-scan save now ALWAYS
+  write to the local queue first and show "saved" immediately —
+  optimistic UI as one uniform code path, not an online/offline branch.
+  Error classification (`transient | permanent | auth`) drives
+  exponential backoff with jitter (5s base, 5min cap, ±20%), a 10-
+  attempt/24h retry cap before a FAILED state with one-tap retry, and
+  plain-language status text only (never raw HTTP/network errors) —
+  `pending-captures.tsx`'s `StatusBadge` pairs an icon with every status
+  word from the start, not retrofitted later. A real architectural
+  finding caught **before** writing broken code: R2 presigned upload
+  URLs expire in 5 minutes (`lib/r2.ts`), so a queue retrying hours
+  later can never reuse a stored URL — fixed by adding
+  `getUploadUrl(itemId, contentType)`, idempotent and re-callable on
+  every attempt. Two honest technical caveats stated directly rather
+  than absorbed into an overclaim: Web Background Sync isn't supported
+  on Safari/iOS at all (the real guarantee is a persistent queue that
+  resumes on reopen, not true background-while-closed sync); the
+  Battery Status API is gone from most browsers, so "battery-aware"
+  means backoff + syncing only while the tab is open, not literal
+  battery-level detection. Decoupling Recorder from the network also
+  silently removed the only place to correct a Whisper transcript
+  before structuring — caught as a real Header G1/G8 regression before
+  calling this done, fixed by relocating (not dropping) that step into
+  a new `TranscriptEditor` on `/dashboard/structure/[dictationId]`,
+  reusing the existing `saveTranscriptEdit` action.
+  **2. TAT dashboard (admin).** Aggregated dictation-saved → report-
+  signed duration, grouped by template only — never per-case, never
+  per-pathologist (Header G1: this measures system speed, not a
+  person's judgment). A deliberate, extensively-documented G2 call: the
+  query reads `privateWorkspaceItems.createdAt` for the dictation a
+  signed record references, selecting **only** `id`/`createdAt` —
+  never `body`/`data`/`title` — so no workspace content is ever read.
+  **3. QC-flag capture at review.** Lightweight non-concordant-
+  diagnosis/stain-failure checkbox on the review form, stored on the
+  draft and carried into the signed record's `content`, added to the
+  existing `sign_out_report` audit detail rather than a new audit
+  action — capture-and-store only, no analytics layer yet (Header G4:
+  caseload still ramping). `hema`/purple accent, deliberately distinct
+  from the existing urgent-flag's red, so the two concerns don't blur
+  visually.
+  **4. Reagent/equipment tracking with alerts.** Explicitly prioritized
+  ahead of the other remaining admin items because Cameroon's resupply
+  and equipment-service logistics are slower than a well-supplied lab's
+  — a shortage or an overdue calibration matters more here, sooner.
+  Seeded from X.PATH's real, verified 38-antibody register
+  (`src/lib/reagents/register.ts`, transcribed from
+  `XPATH_handover.md` §12 — real Roche order-confirmation data, not
+  invented) plus the Ventana BenchMark ULTRA, lazily on a tenant's
+  first visit to `/dashboard/reagents`. A handful of register entries
+  carry the source document's own unresolved "(confirm...)" clone
+  markers (TTF-1, BCL-6, SMA, Myogenin) — kept verbatim rather than
+  guessed at (Header G8). Register-seeded rows keep name/clone/
+  catalogue/vendor fixed; only stock, threshold, and calibration are
+  editable there, plus a freeform add-item path for anything off-
+  register. Every add/update is audit-logged.
+  **5. Audit-log CSV/PDF export.** A read/format layer over the
+  existing append-only `audit_log` — no new writes, not a new logging
+  mechanism. Admin-only, tenant-scoped, optional date-range filter. PDF
+  reuses the same self-hosted `@react-pdf/renderer` approach as the
+  signed-report PDF (DL-033) rather than a third-party rendering
+  service.
+  **6. Frontend UX pass (presentation only).** Color-coded wait-time
+  triage (on-track/watch/slow, 24h/72h default bands — a starting
+  point, not a clinically-derived threshold, adjustable once real
+  volume tells us what "slow" means for this lab) on the TAT dashboard
+  and the Workspace pending-signature list, icon+text always alongside
+  the color per item 6's own non-color-dependent-status requirement.
+  Reinforced the established `<details>` progressive-disclosure pattern
+  on the reagents page's 38-row antibody list — the densest list built
+  this session. Text-size (Normal/Large/Extra large) and high-contrast
+  toggles added to the user menu's Settings group, applied via `<html>`
+  data attributes and persisted to `localStorage`, with a pre-paint
+  init script so a returning user's choice never flashes unstyled.
+  **Deliberately did not** extend the hide-chrome-during-focused-work
+  carve-out to `/dashboard/structure`: unlike Dictate/Review, that
+  screen's template-choice state has no other way to navigate away, so
+  hiding the avatar there would strand the pathologist — flagged as a
+  follow-up (add a real back link first) rather than silently worked
+  around.
+  **Explicitly out of scope, not built, per the instruction:** no
+  autonomous/proactive AI actions, no gamification, no ambient/
+  automatic note generation, no admin "impersonation" tool.
+  **Live-verified end to end on `www.xpath.report`** with the existing
+  administrator session: TAT dashboard renders real aggregated data and
+  the correct triage badge, nav-linked from the user menu; reagents
+  page seeded all 38 antibodies + BenchMark ULTRA correctly on first
+  load, a real stock edit round-trip (set Ki-67 to 3, confirmed the
+  "Needs attention" alert and row badge appeared, reset back to
+  unrecorded) worked end to end; audit CSV export confirmed via an
+  authenticated in-page `fetch` (correct headers, well-formed rows
+  including the reagent-edit entries just made, proper quote-escaping
+  in the Detail column) and PDF export confirmed similarly (200,
+  `application/pdf`, real byte size); text-size and high-contrast
+  settings both applied and reset live, confirmed visually. **Two
+  items verified by code review + build/typecheck only, not a live
+  browser click-through**, stated plainly rather than silently skipped:
+  QC-flag capture (identical wiring pattern to the already-live-
+  verified urgent flag, same file) and the Workspace pending-signature
+  triage badge — both require a pathologist session, and this session
+  deliberately never observed a plaintext password for any account
+  (R-038 hygiene: `test-pathologist@xpath.report`'s password was reset
+  again via the established piped-openssl script for an earlier,
+  abandoned verification attempt, but never read back — that account's
+  password is once again an unknown value only Marcel can set, per the
+  DL-048/049 pattern). `npx tsc --noEmit` and `npm run build` both
+  passed clean before every push across five commits: offline-first
+  upload, TAT dashboard + QC-flag capture, reagent tracking + migration
+  `0006_nifty_tusk.sql`, audit export, and the frontend UX pass.
