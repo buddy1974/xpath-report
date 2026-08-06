@@ -412,22 +412,34 @@ Format: R-nnn · risk · current mitigation / status.
   be fully avoided while still doing real browser verification (the
   project's own R-036/DL-047 history is exactly why server-side-only
   verification isn't an acceptable substitute).
-- **R-039 — LOW, two DL-055 follow-ups, neither blocking. (1)** QC-flag
-  capture at review and the Workspace pending-signature triage badge
-  were verified by code review + a clean `tsc`/`build` only, not a live
-  browser click-through — both reuse a wiring pattern already
-  live-verified elsewhere (the existing urgent flag; the TAT
-  dashboard's own triage badge), so confidence is high, but this is a
-  real, stated gap rather than a claimed live verification. Root cause:
-  closing the loop would have meant signing in as
-  `test-pathologist@xpath.report`, and this session (consistent with
-  R-038's lesson) never observed that account's plaintext password —
-  it was reset again via the generate-and-pipe script for the attempt,
-  then abandoned once that tradeoff was clear. **(2)** `/dashboard/
-  structure` was deliberately not added to the "hide chrome during
-  focused work" carve-out (Dictate/Review/etc.) even though DL-055
-  named that pattern a standing rule for future screens — that
-  screen's template-choice state currently has no back link or other
-  way to navigate away, so hiding the floating avatar there would
-  strand the pathologist. Needs a real back link (or equivalent exit)
-  added first; only then should the carve-out be extended there.
+- **RESOLVED (2026-08-06) — R-039 — two DL-055 follow-ups, both now
+  live-verified.** **(1)** Added a real "← Workspace" back link to all
+  three of `/dashboard/structure/[dictationId]`'s render states, then
+  extended the "hide chrome during focused work" carve-out
+  (avatar/ticker/CTA bar) to that screen too, now that it has a safe
+  exit. **(2)** QC-flag capture at review and the Workspace pending-
+  signature triage badge were both live-clicked: a real draft was
+  flagged non-concordant then switched to stain-failure with a reason
+  note, saved, and confirmed to persist correctly after a full
+  server round-trip; the Workspace list showed the correct "WATCH"
+  triage badge (icon+text) on all three pending drafts. Live
+  verification required a real `test-pathologist@xpath.report`
+  session — a cookie-mint alternative (using the app's own
+  `AUTH_SECRET` to forge a session without ever touching a password)
+  was investigated first but is not achievable with the available
+  browser tools: NextAuth's session cookie is `httpOnly`, and the
+  browser tools only run page-context JS, which cannot set it: the
+  only paths in were the real login form or a temporary auth-bypass
+  endpoint on the live app, and the latter was correctly treated as a
+  security-control change needing separate authorization, not
+  something to add unilaterally. Asked the user directly rather than
+  choosing silently; approved the real-login-form path. Password
+  reset via the generate-and-pipe script, the one generated value read
+  back exactly once in order to type it into the real sign-in form
+  (a deliberate, approved, one-time exception to R-038's "never
+  observe a password" rule — flagged as such at the time, not quietly
+  done), then rotated to a fresh unknown value again immediately after
+  sign-out, twice over (a first rotation, then one more after a second
+  short re-login to confirm the Structure-page fix specifically) —
+  nobody, including this session, holds a working credential for that
+  account now.

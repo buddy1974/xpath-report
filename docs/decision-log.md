@@ -1469,3 +1469,57 @@ Format: DL-nnn · decision · rationale.
   passed clean before every push across five commits: offline-first
   upload, TAT dashboard + QC-flag capture, reagent tracking + migration
   `0006_nifty_tusk.sql`, audit export, and the frontend UX pass.
+- **DL-056 — Both R-039 follow-ups closed: Structure-page back link +
+  live-verified QC-flag/Workspace-triage.** **1. Back link.**
+  `/dashboard/structure/[dictationId]` had no way to navigate away
+  except browser back — the reason DL-055 deliberately excluded it
+  from the "hide chrome during focused work" carve-out. Added a
+  "← Workspace" link to all three of that page's render states
+  (not-yet-transcribed, choose-template, confirmed-template), then
+  extended the carve-out (avatar/ticker/CTA bar) to that screen now
+  that it has a safe exit. Live-verified: navigated directly to the
+  confirmed-template state, confirmed the link renders, confirmed the
+  avatar is correctly absent, clicked the link and confirmed it lands
+  on `/dashboard/workspace`.
+  **2. Live-verify QC-flag/Workspace-triage.** Before touching this,
+  investigated a way to verify without ever handling a password at
+  all: mint a valid Auth.js session directly using the app's own
+  `AUTH_SECRET` (already available via `.env.local`), then inject it
+  into the browser tab as a cookie — no login form, no password
+  generated or typed for the auth step at all. Concluded this isn't
+  achievable with the available tooling: NextAuth's session cookie is
+  `httpOnly` by default (confirmed: neither `auth.ts` nor
+  `auth.config.ts` overrides the `cookies` option), and the browser
+  automation tools only execute page-context JavaScript, which cannot
+  read or write `httpOnly` cookies. The only two ways to get a valid
+  cookie into the browser are the real login form, or a new server
+  endpoint that mints one — the latter would mean deploying an
+  authentication-bypass endpoint to the live app, even briefly, which
+  is a genuine security-control change, not something to make
+  unilaterally under a routine live-verification task. Surfaced this
+  tradeoff to the user directly with the concrete alternatives rather
+  than silently picking one; the user approved the real-login-form
+  path, accepting the one-time R-038 exception it requires. Executed
+  narrowly: generated a fresh password via the piped-openssl script,
+  read that one generated value back exactly once (unlike every other
+  password-handling step this whole engagement) in order to type it
+  into the real `/sign-in` form, signed in as
+  `test-pathologist@xpath.report`, then immediately verified both
+  items for real — flagged a genuine pending draft non-concordant,
+  switched the type to stain-failure, added a reason, saved, and
+  confirmed via a full page reload (server round-trip, not just local
+  state) that the checkbox/type/reason all persisted correctly on
+  `review/[draftId]/page.tsx`'s `initialQcFlag` prop; separately
+  confirmed the Workspace pending-signature list showed the correct
+  "WATCH" triage badge, complete with icon+text, on all three pending
+  drafts. Cleaned up the test QC-flag edit (unchecked, saved) before
+  signing out. Password rotated to a fresh unknown value immediately
+  after sign-out; a short second re-login (same pattern, one more
+  generated-and-read password) was needed to specifically confirm the
+  Structure-page back-link fix once its deploy had landed, followed by
+  one more immediate rotation — nobody holds a working credential for
+  that account now, matching the DL-048/049 standing pattern.
+  `npx tsc --noEmit` and `npm run build` both passed clean before the
+  push (one commit: the Structure back-link + carve-out extension —
+  the QC-flag/triage verification touched no code, only confirmed
+  what DL-055 already shipped).

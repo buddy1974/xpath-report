@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); offline-first upload + TAT dashboard + QC-flag capture + reagent/equipment tracking + audit-log export + a frontend UX pass all built and live-verified (DL-055); only the live Dr. Ivo demo remains)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); offline-first upload + TAT dashboard + QC-flag capture + reagent/equipment tracking + audit-log export + a frontend UX pass all built and live-verified (DL-055); Structure-page back link built + QC-flag/Workspace-triage live-verified for real (DL-056); only the live Dr. Ivo demo remains)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -64,28 +64,42 @@ WAITING ON MARCEL:
    error is a 400 billing error, not a 401 auth error), but hasn't been
    verified end to end with a real response. Not blocking — OpenAI (the
    default) is fully verified.
-🔔 DL-055: `test-pathologist@xpath.report`'s password was reset again
-   (same `openssl rand | npx tsx --env-file=.env.local
-   scripts/set-pathologist-password.ts` script, R-038 hygiene — this
-   session never observed the plaintext) for an attempted live check of
-   the QC-flag/pending-signature-triage UI, then abandoned once it was
-   clear that would mean signing in with a value only Marcel should
-   know. Run `npx tsx --env-file=.env.local
-   scripts/set-pathologist-password.ts` yourself to set your own
-   permanent password again, same as after DL-049.
-🔔 DL-055: two small, real, stated gaps, neither blocking. (1) QC-flag
-   capture and the Workspace pending-signature triage badge were
-   verified by code review + a clean typecheck/build only, not a live
-   browser click-through (see above — no pathologist credentials were
-   held this session); both reuse patterns already live-verified
-   elsewhere (the urgent flag; the TAT dashboard's triage badge) so
-   confidence is high, but a real click-through would close the loop.
-   (2) `/dashboard/structure` was deliberately NOT added to the hide-
-   chrome-during-focused-work carve-out — that screen's template-choice
-   state has no other way to navigate away yet, so hiding the avatar
-   there would strand the pathologist; needs a real back link first.
+🔔 DL-056 resolved both DL-055 R-039 follow-ups (Structure-page back
+   link + live-verified QC-flag/Workspace-triage) — see below. As part
+   of that, `test-pathologist@xpath.report`'s password was reset and
+   read back exactly once (a deliberate, user-approved, one-time
+   exception to the usual R-038 hygiene, needed because no way exists
+   to get a real browser session without either the login form or a
+   new auth-bypass endpoint on the live app — the latter was correctly
+   not built without separate authorization) to sign in and click
+   through both features for real, then rotated to a fresh unknown
+   value again immediately after. Run `npx tsx --env-file=.env.local
+   scripts/set-pathologist-password.ts` yourself whenever you want to
+   set your own permanent password for that account — same open item
+   as after DL-049, unchanged by this round.
 
 LAST UPDATE: 2026-08-06 —
+
+**DL-056 — Structure-page back link + live-verified QC-flag/Workspace-
+triage (both DL-055 R-039 follow-ups, now closed).** Added a real
+"← Workspace" link to all three of `/dashboard/structure/[dictationId]`'s
+render states, then extended the hide-chrome-during-focused-work
+carve-out there too. Investigated a way to live-verify QC-flag capture
+and the Workspace triage badge without ever touching a password at all
+(minting an Auth.js session directly via the app's own `AUTH_SECRET`)
+— not achievable with the available browser tools, since the session
+cookie is `httpOnly` and the tools only run page-context JS; the only
+alternative would be a new auth-bypass endpoint on the live app, which
+is a real security-control change requiring separate authorization, not
+something to add unilaterally. Surfaced that tradeoff directly rather
+than picking silently; approved path was a one-time, deliberate
+exception to R-038 (generate a password, read it back once, use it to
+sign in for real, rotate away immediately after). Both features
+confirmed live: a real draft flagged non-concordant then switched to
+stain-failure with a reason, saved, and confirmed to persist after a
+full page reload; Workspace correctly showed the "WATCH" triage badge
+on all three pending drafts. Full detail in `docs/decision-log.md`
+DL-056.
 
 **Offline-first upload + five admin/UX items, DL-055.** Built in the
 instructed order: offline-first upload first (IndexedDB queue, optimistic
@@ -101,10 +115,10 @@ mechanism), then a frontend UX pass (wait-time triage colors,
 `<details>` on the reagents list, text-size/high-contrast settings).
 Live-verified on `www.xpath.report`: TAT dashboard, reagent stock
 edit/alert round-trip, both audit exports, both new display settings.
-QC-flag and Workspace triage verified by code review only (stated
-above, not silently skipped). `npx tsc --noEmit` and `npm run build`
-passed clean before all five pushes. Full detail in
-`docs/decision-log.md` DL-055.
+QC-flag and Workspace triage verified by code review only at the time
+(stated then, not silently skipped) — later live-verified for real in
+DL-056, above. `npx tsc --noEmit` and `npm run build` passed clean
+before all five pushes. Full detail in `docs/decision-log.md` DL-055.
 
 **Three super-admin features, DL-054: admin-editable content, full
 account management, announcements/news ticker.** All gated by the

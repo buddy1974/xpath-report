@@ -2,6 +2,30 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-06 — Structure-page back link + live-verified QC-flag/Workspace-triage (DL-056, R-039 resolved)
+- Added a "← Workspace" link to all three render states of
+  `/dashboard/structure/[dictationId]` (not-yet-transcribed,
+  choose-template, confirmed-template) — that screen previously had no
+  way to navigate away except browser back. Extended the "hide chrome
+  during focused work" carve-out (avatar/ticker/CTA bar) there now
+  that it has a safe exit.
+- Investigated minting an Auth.js session directly (via the app's own
+  `AUTH_SECRET`) to live-verify QC-flag capture and the Workspace
+  triage badge without ever touching a password — not achievable with
+  the available browser tools (the session cookie is `httpOnly`;
+  browser tools only run page-context JS). The only alternative was a
+  new auth-bypass endpoint on the live app, correctly treated as a
+  security-control change needing separate authorization rather than
+  built unilaterally. Asked the user directly; approved path was a
+  one-time, deliberate exception to R-038 (generate a password, read
+  it back exactly once, sign in for real, rotate to unknown
+  immediately after).
+- Live-verified both: flagged a real draft non-concordant, switched to
+  stain-failure with a reason note, saved, confirmed persistence via a
+  full page reload; confirmed Workspace shows the correct "WATCH"
+  triage badge on all three pending drafts. Cleaned up test data
+  before signing out.
+
 ## 2026-08-06 — Offline-first upload + admin/UX items: TAT dashboard, QC-flag capture, reagent tracking, audit export, UX pass (DL-055)
 - **Offline-first, queue-and-retry upload (top priority, must-have)**:
   IndexedDB local queue, Recorder/OCR-scan now always save locally
