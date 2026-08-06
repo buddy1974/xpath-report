@@ -107,6 +107,8 @@ export function UserMenu({
             { href: "/dashboard/announcements", label: t(STRINGS.announcementsNavTitle, locale) },
             { href: "/dashboard/accounts", label: t(STRINGS.accountsNavTitle, locale) },
             { href: "/dashboard/content", label: t(STRINGS.contentAdminNavTitle, locale) },
+            // DL-055 — TAT dashboard.
+            { href: "/dashboard/tat", label: t(STRINGS.tatNavTitle, locale) },
           ]
         : [{ href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) }];
 

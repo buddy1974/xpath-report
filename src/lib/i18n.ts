@@ -565,6 +565,71 @@ export const STRINGS = {
   syncPendingSectionHeading: { en: "Not yet synced", fr: "Pas encore synchronisé" },
   syncKindDictation: { en: "Dictation (recording)", fr: "Dictée (enregistrement)" },
   syncKindNote: { en: "Scanned note", fr: "Note numérisée" },
+
+  // DL-055 — TAT dashboard. System speed, not pathologist scoring
+  // (Header G1) — aggregate-only, never per-case/per-pathologist.
+  tatNavTitle: { en: "Turnaround time", fr: "Délai de traitement" },
+  tatHeading: { en: "Turnaround time", fr: "Délai de traitement" },
+  tatBody: {
+    en: "Time from dictation saved to report signed, by template — aggregated only. This measures the system's speed, never a pathologist's judgment (Header G1); no per-case or per-pathologist breakdown exists here or anywhere in the app.",
+    fr: "Délai entre la dictée enregistrée et le compte rendu signé, par modèle — agrégé uniquement. Ceci mesure la rapidité du système, jamais le jugement d'un pathologiste (Header G1) ; aucune ventilation par cas ou par pathologiste n'existe ici ni ailleurs dans l'application.",
+  },
+  tatEmpty: { en: "No signed reports with a traceable dictation yet.", fr: "Aucun compte rendu signé avec une dictée traçable pour l'instant." },
+  tatAvgLabel: { en: "average", fr: "moyenne" },
+  tatMedianLabel: { en: "median", fr: "médiane" },
+  tatCountSuffix: { en: "case(s)", fr: "cas" },
+  tatHoursSuffix: { en: "h", fr: "h" },
+
+  // DL-055 — QC-flag capture at review (lightweight, capture-only).
+  qcFlagHeading: { en: "Quality flag", fr: "Signalement qualité" },
+  qcFlagCheckboxLabel: { en: "Flag this case for quality review", fr: "Signaler ce cas pour révision qualité" },
+  qcFlagTypeLabel: { en: "Type", fr: "Type" },
+  qcFlagTypeNonConcordant: { en: "Non-concordant diagnosis", fr: "Diagnostic non concordant" },
+  qcFlagTypeStainFailure: { en: "Stain failure", fr: "Échec de coloration" },
+  qcFlagReasonLabel: { en: "Reason", fr: "Raison" },
+  qcFlagReasonPlaceholder: { en: "Short note for quality review", fr: "Note brève pour la révision qualité" },
+
+  // DL-055 — reagent/equipment tracking.
+  reagentsNavTitle: { en: "Reagents & equipment", fr: "Réactifs et équipement" },
+  reagentsHeading: { en: "Reagents & equipment", fr: "Réactifs et équipement" },
+  reagentsBody: {
+    en: "Stock levels and calibration schedules for the antibody register and BenchMark ULTRA equipment — genuinely more valuable here than in a well-supplied lab, since resupply logistics are slower.",
+    fr: "Niveaux de stock et calendriers d'étalonnage pour le registre d'anticorps et l'équipement BenchMark ULTRA — particulièrement utile ici, car la logistique de réapprovisionnement est plus lente.",
+  },
+  reagentNewButton: { en: "Add item", fr: "Ajouter un élément" },
+  reagentNameLabel: { en: "Name", fr: "Nom" },
+  reagentTypeLabel: { en: "Type", fr: "Type" },
+  reagentTypeAntibody: { en: "Antibody / reagent", fr: "Anticorps / réactif" },
+  reagentTypeEquipment: { en: "Equipment", fr: "Équipement" },
+  reagentStockLabel: { en: "Stock level", fr: "Niveau de stock" },
+  reagentLowStockThresholdLabel: { en: "Low-stock threshold", fr: "Seuil de stock bas" },
+  reagentCalibrationDueLabel: { en: "Calibration due", fr: "Étalonnage dû" },
+  reagentSaveButton: { en: "Save", fr: "Enregistrer" },
+  reagentEditLink: { en: "Edit", fr: "Modifier" },
+  reagentLowStockBadge: { en: "Low stock", fr: "Stock bas" },
+  reagentCalibrationDueBadge: { en: "Calibration due", fr: "Étalonnage dû" },
+  reagentOkBadge: { en: "OK", fr: "OK" },
+  reagentsEmpty: { en: "No reagents or equipment tracked yet.", fr: "Aucun réactif ni équipement suivi pour l'instant." },
+
+  // DL-055 — audit-log export.
+  auditExportNavTitle: { en: "Audit log export", fr: "Export du journal d'audit" },
+  auditExportHeading: { en: "Audit log export", fr: "Export du journal d'audit" },
+  auditExportBody: {
+    en: "Human-readable export of the existing append-only audit log, for compliance and inspection review. The log itself is unchanged — this only formats it for reading.",
+    fr: "Export lisible du journal d'audit existant, à des fins de conformité et d'inspection. Le journal lui-même est inchangé — ceci ne fait que le formater pour la lecture.",
+  },
+  auditExportCsvButton: { en: "Download CSV", fr: "Télécharger le CSV" },
+  auditExportPdfButton: { en: "Download PDF", fr: "Télécharger le PDF" },
+  auditExportDateFromLabel: { en: "From", fr: "Du" },
+  auditExportDateToLabel: { en: "To", fr: "Au" },
+
+  // DL-055 — accessibility settings.
+  settingsAccessibilityHeading: { en: "Display", fr: "Affichage" },
+  settingsFontSizeLabel: { en: "Text size", fr: "Taille du texte" },
+  settingsFontSizeNormal: { en: "Normal", fr: "Normal" },
+  settingsFontSizeLarge: { en: "Large", fr: "Grand" },
+  settingsFontSizeXLarge: { en: "Extra large", fr: "Très grand" },
+  settingsHighContrastLabel: { en: "High contrast", fr: "Contraste élevé" },
 } satisfies Record<string, Dict>;
 
 export const ROLE_LABELS: Record<string, Dict> = {

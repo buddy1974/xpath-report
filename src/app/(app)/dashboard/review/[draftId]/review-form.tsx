@@ -247,6 +247,7 @@ export function ReviewForm({
   quotes,
   reflexSuggestions,
   initialUrgentFlag,
+  initialQcFlag,
   saveAction,
   signAction,
   locale,
@@ -260,6 +261,7 @@ export function ReviewForm({
   quotes: Record<string, string>;
   reflexSuggestions: { title: string; detail: string }[];
   initialUrgentFlag?: { urgent: boolean; severity: "attention" | "critical"; note: string } | null;
+  initialQcFlag?: { flagged: boolean; type: "non_concordant" | "stain_failure"; reason: string } | null;
   saveAction: (formData: FormData) => void;
   signAction: (formData: FormData) => void;
   locale: Locale;
@@ -271,6 +273,13 @@ export function ReviewForm({
   const [urgentFlagged, setUrgentFlagged] = useState(initialUrgentFlag?.urgent ?? false);
   const [urgentSeverity, setUrgentSeverity] = useState<"attention" | "critical">(initialUrgentFlag?.severity ?? "attention");
   const [urgentNote, setUrgentNote] = useState(initialUrgentFlag?.note ?? "");
+  // DL-055 — lightweight QC-flag capture at review. Capture+store only,
+  // deliberately no analytics layer yet (Header G4 — caseload is still
+  // ramping; build heavy QC reporting once there's real data to report
+  // on).
+  const [qcFlagged, setQcFlagged] = useState(initialQcFlag?.flagged ?? false);
+  const [qcType, setQcType] = useState<"non_concordant" | "stain_failure">(initialQcFlag?.type ?? "non_concordant");
+  const [qcReason, setQcReason] = useState(initialQcFlag?.reason ?? "");
   const signRef = useRef<HTMLDivElement>(null);
   const aiPaths = useMemo(() => new Set(aiFieldPaths), [aiFieldPaths]);
 
@@ -413,6 +422,58 @@ export function ReviewForm({
                 />
               </label>
               <p className="text-xs text-neutral-400">{t(STRINGS.urgentFlagAdvisoryNote, locale)}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <label className="flex items-center gap-2.5 min-h-[44px]">
+            <input
+              type="checkbox"
+              name="qcFlag"
+              checked={qcFlagged}
+              onChange={(e) => setQcFlagged(e.target.checked)}
+              className="w-4 h-4 accent-hema"
+            />
+            <span className="font-semibold text-sm">{t(STRINGS.qcFlagCheckboxLabel, locale)}</span>
+          </label>
+          {qcFlagged && (
+            <div className="mt-3 space-y-3 pl-6">
+              <div>
+                <p className="text-xs font-semibold text-neutral-500 mb-1.5">{t(STRINGS.qcFlagTypeLabel, locale)}</p>
+                <div className="inline-flex rounded-lg border border-neutral-300 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setQcType("non_concordant")}
+                    className={`px-3.5 py-2 text-sm font-medium min-h-[40px] transition-colors ${
+                      qcType === "non_concordant" ? "bg-hema text-white" : "bg-white text-neutral-600 hover:bg-neutral-50"
+                    }`}
+                  >
+                    {t(STRINGS.qcFlagTypeNonConcordant, locale)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQcType("stain_failure")}
+                    className={`px-3.5 py-2 text-sm font-medium min-h-[40px] transition-colors ${
+                      qcType === "stain_failure" ? "bg-hema text-white" : "bg-white text-neutral-600 hover:bg-neutral-50"
+                    }`}
+                  >
+                    {t(STRINGS.qcFlagTypeStainFailure, locale)}
+                  </button>
+                </div>
+                <input type="hidden" name="qcType" value={qcType} />
+              </div>
+              <label className="block">
+                <span className="text-xs font-semibold text-neutral-500 mb-1.5 block">{t(STRINGS.qcFlagReasonLabel, locale)}</span>
+                <input
+                  type="text"
+                  name="qcReason"
+                  value={qcReason}
+                  onChange={(e) => setQcReason(e.target.value)}
+                  placeholder={t(STRINGS.qcFlagReasonPlaceholder, locale)}
+                  className="w-full max-w-md rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-petrol focus:ring-1 focus:ring-petrol/30 outline-none"
+                />
+              </label>
             </div>
           )}
         </div>

@@ -54,6 +54,23 @@ function parseUrgentFlag(formData: FormData): UrgentFlag | null {
   return { urgent: true, severity, note };
 }
 
+// DL-055 — lightweight QC-flag capture (Header G4: capture+store only,
+// no analytics layer yet — caseload is still ramping).
+export interface QcFlag {
+  flagged: boolean;
+  type: "non_concordant" | "stain_failure";
+  reason: string;
+}
+
+function parseQcFlag(formData: FormData): QcFlag | null {
+  const flagged = formData.get("qcFlag") === "on";
+  if (!flagged) return null;
+  const typeRaw = String(formData.get("qcType") ?? "non_concordant");
+  const type = typeRaw === "stain_failure" ? "stain_failure" : "non_concordant";
+  const reason = String(formData.get("qcReason") ?? "").trim();
+  return { flagged: true, type, reason };
+}
+
 function parseFieldValues(formData: FormData, fields: FlatField[]): Record<string, string | string[]> {
   const values: Record<string, string | string[]> = {};
   for (const f of fields) {
@@ -88,6 +105,7 @@ export async function saveReview(draftId: string, formData: FormData) {
   const { draft, fields } = await loadDraftAndFields(draftId, actor);
   const fieldValues = parseFieldValues(formData, fields);
   const urgentFlag = parseUrgentFlag(formData);
+  const qcFlag = parseQcFlag(formData);
 
   await db
     .update(privateWorkspaceItems)
@@ -95,7 +113,7 @@ export async function saveReview(draftId: string, formData: FormData) {
       // A save from the full review form means the pathologist looked at
       // the whole draft, not just one field — every value is now
       // human-reviewed, not still "AI-suggested, unverified" (Header G1).
-      data: { ...(draft.data as object), fieldValues, aiFieldPaths: [], urgentFlag },
+      data: { ...(draft.data as object), fieldValues, aiFieldPaths: [], urgentFlag, qcFlag },
       updatedAt: new Date(),
     })
     .where(eq(privateWorkspaceItems.id, draftId));
@@ -109,6 +127,7 @@ export async function signAndAssign(draftId: string, formData: FormData) {
   const { draft, template, fields } = await loadDraftAndFields(draftId, actor);
   const fieldValues = parseFieldValues(formData, fields);
   const urgentFlag = parseUrgentFlag(formData);
+  const qcFlag = parseQcFlag(formData);
 
   const accession = String(formData.get("accession") ?? "").trim();
   if (!accession) {
@@ -160,6 +179,7 @@ export async function signAndAssign(draftId: string, formData: FormData) {
         quotes: draftData.quotes ?? {},
         reflexSuggestionsAtSignOut: draftData.reflexSuggestions ?? [],
         urgentFlag,
+        qcFlag,
         dictationId: draftData.dictationId ?? null,
       },
     })
@@ -169,7 +189,14 @@ export async function signAndAssign(draftId: string, formData: FormData) {
     tenantId: actor.tenantId,
     actorId: actor.id,
     action: "sign_out_report",
-    detail: { clinicalRecordId: record.id, caseId, accession, templateId: template.templateId },
+    detail: {
+      clinicalRecordId: record.id,
+      caseId,
+      accession,
+      templateId: template.templateId,
+      qcFlagged: qcFlag?.flagged ?? false,
+      qcFlagType: qcFlag?.type ?? null,
+    },
   });
 
   // The draft's content now lives in the clinical record — this row's job

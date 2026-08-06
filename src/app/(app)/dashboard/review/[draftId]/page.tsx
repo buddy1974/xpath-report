@@ -49,6 +49,7 @@ export default async function ReviewPage({
     quotes?: Record<string, string>;
     reflexSuggestions: { title: string; detail: string }[];
     urgentFlag?: { urgent: boolean; severity: "attention" | "critical"; note: string } | null;
+    qcFlag?: { flagged: boolean; type: "non_concordant" | "stain_failure"; reason: string } | null;
   };
   const template = getTemplate(data.templateId);
   if (!template) notFound();
@@ -74,6 +75,7 @@ export default async function ReviewPage({
       quotes={data.quotes ?? {}}
       reflexSuggestions={data.reflexSuggestions ?? []}
       initialUrgentFlag={data.urgentFlag}
+      initialQcFlag={data.qcFlag}
       saveAction={saveAction}
       signAction={signAction}
       locale={locale}
