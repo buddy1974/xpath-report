@@ -41,7 +41,11 @@ export function AnnouncementTicker({ items, locale }: { items: TickerAnnouncemen
     }
   }, []);
 
-  const hidden = pathname.startsWith("/dashboard/dictate") || pathname.startsWith("/dashboard/review");
+  // R-039 follow-up: Structure now has its own back link.
+  const hidden =
+    pathname.startsWith("/dashboard/dictate") ||
+    pathname.startsWith("/dashboard/review") ||
+    pathname.startsWith("/dashboard/structure");
   if (hidden || !mounted) return null;
 
   const visible = items.filter((a) => !dismissed.includes(a.id));

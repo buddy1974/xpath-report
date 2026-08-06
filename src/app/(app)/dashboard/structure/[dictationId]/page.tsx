@@ -28,9 +28,14 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
 
   if (!dictation.body) {
     return (
-      <div className="max-w-2xl rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold">{t(STRINGS.notTranscribedHeading, locale)}</h1>
-        <p className="text-neutral-600 mt-1">{t(STRINGS.notTranscribedBody, locale)}</p>
+      <div className="max-w-2xl">
+        <Link href="/dashboard/workspace" className="inline-block text-sm font-semibold text-petrol mb-3">
+          {t(STRINGS.structureBackToWorkspaceLink, locale)}
+        </Link>
+        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <h1 className="text-2xl font-semibold">{t(STRINGS.notTranscribedHeading, locale)}</h1>
+          <p className="text-neutral-600 mt-1">{t(STRINGS.notTranscribedBody, locale)}</p>
+        </div>
       </div>
     );
   }
@@ -41,6 +46,9 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
     const suggestions = suggestTemplates(dictation.body);
     return (
       <div className="max-w-2xl">
+        <Link href="/dashboard/workspace" className="inline-block text-sm font-semibold text-petrol mb-3">
+          {t(STRINGS.structureBackToWorkspaceLink, locale)}
+        </Link>
         <h1 className="text-2xl font-semibold">{t(STRINGS.chooseTemplateHeading, locale)}</h1>
         <p className="text-neutral-600 mt-1">{t(STRINGS.chooseTemplateBody, locale)}</p>
         <div className="mt-3">
@@ -88,6 +96,9 @@ export default async function StructurePage({ params }: { params: Promise<{ dict
 
   return (
     <div className="max-w-3xl">
+      <Link href="/dashboard/workspace" className="inline-block text-sm font-semibold text-petrol mb-3">
+        {t(STRINGS.structureBackToWorkspaceLink, locale)}
+      </Link>
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold">{template.title}</h1>
         <p className="text-sm text-neutral-500 mt-1">

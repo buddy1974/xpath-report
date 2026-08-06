@@ -12,7 +12,11 @@ import { forceSyncAll } from "@/lib/offline-queue";
 export function SyncStatusBanner({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const items = useSyncQueue();
-  const hidden = pathname.startsWith("/dashboard/dictate") || pathname.startsWith("/dashboard/review");
+  // R-039 follow-up: Structure now has its own back link.
+  const hidden =
+    pathname.startsWith("/dashboard/dictate") ||
+    pathname.startsWith("/dashboard/review") ||
+    pathname.startsWith("/dashboard/structure");
 
   if (hidden || items.length === 0) return null;
 

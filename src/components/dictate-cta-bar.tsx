@@ -15,7 +15,11 @@ import { STRINGS, t, type Locale } from "@/lib/i18n";
 
 export function DictateCtaBar({ locale }: { locale: Locale }) {
   const pathname = usePathname();
-  const hidden = pathname.startsWith("/dashboard/dictate") || pathname.startsWith("/dashboard/review");
+  // R-039 follow-up: Structure now has its own back link.
+  const hidden =
+    pathname.startsWith("/dashboard/dictate") ||
+    pathname.startsWith("/dashboard/review") ||
+    pathname.startsWith("/dashboard/structure");
   if (hidden) return null;
 
   return (

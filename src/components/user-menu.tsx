@@ -72,7 +72,13 @@ export function UserMenu({
   const [fontSize, setFontSize] = useState<FontSize>("normal");
   const [highContrast, setHighContrast] = useState(false);
 
-  const hiddenAvatar = pathname.startsWith("/dashboard/dictate") || pathname.startsWith("/dashboard/review");
+  // R-039 follow-up: Structure now has its own back link
+  // (structure/page.tsx), so it's safe to extend the standing
+  // hide-chrome-during-focused-work rule (DL-055 item 6) here too.
+  const hiddenAvatar =
+    pathname.startsWith("/dashboard/dictate") ||
+    pathname.startsWith("/dashboard/review") ||
+    pathname.startsWith("/dashboard/structure");
 
   useEffect(() => {
     setFontSize(getStoredFontSize());

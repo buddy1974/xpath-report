@@ -115,6 +115,11 @@ export const STRINGS = {
   somethingWentWrong: { en: "Something went wrong.", fr: "Une erreur est survenue." },
 
   // Structure page
+  // R-039 follow-up (DL-055) — this screen previously had no way to
+  // navigate away except browser back, which is why it was excluded
+  // from the hide-chrome-during-focused-work carve-out. This link is
+  // that exit, so the carve-out can now apply here too.
+  structureBackToWorkspaceLink: { en: "← Workspace", fr: "← Espace de travail" },
   notTranscribedHeading: { en: "Not transcribed yet", fr: "Pas encore transcrit" },
   notTranscribedBody: {
     en: "This dictation has no transcript yet — finish it on the Dictate page first.",
