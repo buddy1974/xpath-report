@@ -19,6 +19,7 @@ import { setLocaleAction } from "@/lib/i18n-actions";
 import { signOutAction } from "@/app/(app)/dashboard/actions";
 import { Avatar } from "./avatar";
 import { ONBOARDING_STORAGE_KEY } from "./onboarding-checklist";
+import { AnnouncementTicker, type TickerAnnouncement } from "./announcement-ticker";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -49,12 +50,14 @@ export function UserMenu({
   name,
   email,
   roleLabel,
+  announcements = [],
 }: {
   role: Role;
   locale: Locale;
   name: string;
   email: string;
   roleLabel: string;
+  announcements?: TickerAnnouncement[];
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -96,7 +99,16 @@ export function UserMenu({
           { href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) },
           { href: "/dashboard/archive", label: t(STRINGS.navArchiveTitle, locale) },
         ]
-      : [{ href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) }];
+      : role === "administrator"
+        ? [
+            { href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) },
+            // DL-054 — the three new admin-only surfaces. Same list, same
+            // card group as everything else; no separate "admin nav".
+            { href: "/dashboard/announcements", label: t(STRINGS.announcementsNavTitle, locale) },
+            { href: "/dashboard/accounts", label: t(STRINGS.accountsNavTitle, locale) },
+            { href: "/dashboard/content", label: t(STRINGS.contentAdminNavTitle, locale) },
+          ]
+        : [{ href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) }];
 
   return (
     <>
@@ -147,6 +159,8 @@ export function UserMenu({
             </div>
 
             <div className="px-4 pb-10 space-y-8 max-w-md mx-auto w-full">
+              {announcements.length > 0 && <AnnouncementTicker items={announcements} locale={locale} />}
+
               <div>
                 <CardGroup>
                   <MenuRow href="/dashboard/profile" label={t(STRINGS.userMenuViewProfile, locale)} onNavigate={close} />

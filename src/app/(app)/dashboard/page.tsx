@@ -293,7 +293,9 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {role === "administrator" && <ReflexTestingPreview locale={locale} />}
+      {role === "administrator" && (
+        <ReflexTestingPreview locale={locale} tenantId={(session as any).tenantId as string} />
+      )}
     </div>
   );
 }

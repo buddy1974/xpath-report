@@ -35,6 +35,31 @@ export const roleEnum = pgEnum("role", [
   "administrator",
 ]);
 
+// DL-054 — super-admin account management. Separate from `isActive`
+// (unchanged, still the single thing the login check reads) so that
+// "reactivate" can structurally distinguish a merely suspended/blocked
+// account from a deactivated (soft-deleted) one — a boolean alone
+// can't tell those apart. suspended/blocked/deactivated all imply
+// isActive=false; only "active" implies isActive=true. Kept in sync by
+// the account-status server action, not by a DB trigger.
+export const accountStatusEnum = pgEnum("account_status", [
+  "active",
+  "suspended",
+  "blocked",
+  "deactivated",
+]);
+
+// DL-054 — announcements/news ticker.
+export const announcementCategoryEnum = pgEnum("announcement_category", [
+  "news",
+  "operational",
+  "emergency",
+]);
+export const announcementStatusEnum = pgEnum("announcement_status", [
+  "draft",
+  "published",
+]);
+
 // Clinical records move through a lifecycle. Only "released" is the
 // legal system-of-record state; everything before it is a working draft
 // that still lives in the pathologist's private space (see below).
@@ -54,6 +79,20 @@ export const auditActionEnum = pgEnum("audit_action", [
   "totp_failed", // wrong 2FA code (rate-limiting trail — security-checklist.md)
   "totp_locked", // 2FA lockout triggered after MAX_FAILED_TOTP_ATTEMPTS
   "account_claimed", // first-login claim wizard completed (profile + TOTP enrollment)
+  // DL-054 — admin-editable default content (Header G3: saving an edit
+  // from the administrator account IS the director-approval step).
+  "content_edited",
+  // DL-054 — super-admin account management. Distinct actions, not one
+  // generic "account_changed", so the audit trail reads unambiguously.
+  "account_edited",
+  "account_suspended",
+  "account_blocked",
+  "account_reactivated",
+  "account_deactivated",
+  // DL-054 — announcements/news ticker.
+  "announcement_edited",
+  "announcement_published",
+  "announcement_unpublished",
 ]);
 
 /* ------------------------------------------------------------------ */
@@ -109,6 +148,10 @@ export const users = pgTable(
     // access stays behind the normal session check.
     avatarKey: text("avatar_key"),
     isActive: boolean("is_active").default(true).notNull(),
+    // DL-054 — see accountStatusEnum's comment above. `isActive` remains
+    // the sole thing `authorize()` checks at login; this column is the
+    // richer, admin-facing state.
+    status: accountStatusEnum("status").default("active").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -268,6 +311,101 @@ export const auditLog = pgTable(
   (t) => ({
     tenantIdx: index("audit_tenant_idx").on(t.tenantId),
     atIdx: index("audit_at_idx").on(t.at),
+  }),
+);
+
+/* ------------------------------------------------------------------ */
+/* DL-054 — Admin-editable default content (Header G3/G4)             */
+/* ------------------------------------------------------------------ */
+/**
+ * Generic, versioned override layer for admin-editable "default content"
+ * — template titles/blurbs/section titles, the Reflex Testing preview
+ * text, and similar structural/reference content. NEVER pathologist
+ * personal content (drafts/notes/profiles stay exactly as owner-only as
+ * `privateWorkspaceItems` already enforces — this table has no owner
+ * concept at all, only tenant + content key).
+ *
+ * One current row per (tenant, contentKey) — editing overwrites `value`
+ * and bumps `version`; the audit log (action "content_edited", written
+ * on every save) is the version *history*, so this table doesn't need
+ * its own separate history table. Per Header G3, saving an edit from
+ * the administrator account IS the director-approval step — no
+ * separate approval workflow. Already-signed `clinicalRecords` are
+ * immutable JSONB snapshots and are never affected by a content edit;
+ * only *new* structuring/report work sees the updated value.
+ */
+export const editableContent = pgTable(
+  "editable_content",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    // e.g. "reflex_preview.17_4_tier1", "template.breast-invasive-resection.blurb".
+    contentKey: text("content_key").notNull(),
+    value: text("value").notNull(),
+    // Free-text, template/section-level (never per-patient). Surfaced to
+    // pathologists as guidance/context alongside the content it annotates
+    // (Marcel's explicit call) — advisory only, never auto-applied to any
+    // field (Header G1).
+    directorNote: text("director_note"),
+    version: integer("version").notNull().default(1),
+    updatedBy: uuid("updated_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    tenantIdx: index("editable_content_tenant_idx").on(t.tenantId),
+    keyIdx: uniqueIndex("editable_content_key_idx").on(t.tenantId, t.contentKey),
+  }),
+);
+
+/* ------------------------------------------------------------------ */
+/* DL-054 — Announcements / news ticker                                */
+/* ------------------------------------------------------------------ */
+/**
+ * Single-role broadcast (administrator only — no editor/moderator sub-
+ * roles). Informational only, never a channel for clinical guidance
+ * (that stays in templates/protocol-library/reflex-testing). EN/FR text
+ * is authored directly by the admin, not translated — this is original
+ * admin-authored content, not spec-derived, so direct dual authorship
+ * is correct (unlike template/reflex content, which stays English-only
+ * per DL-035/R-029).
+ */
+export const announcements = pgTable(
+  "announcements",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    title: text("title").notNull(),
+    tickerTextEn: text("ticker_text_en").notNull(),
+    tickerTextFr: text("ticker_text_fr").notNull(),
+    bodyEn: text("body_en").notNull(),
+    bodyFr: text("body_fr").notNull(),
+    category: announcementCategoryEnum("category").notNull().default("news"),
+    link: text("link"),
+    status: announcementStatusEnum("status").notNull().default("draft"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    // null = indefinite, until manually unpublished.
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    tenantIdx: index("announcements_tenant_idx").on(t.tenantId),
+    statusIdx: index("announcements_status_idx").on(t.status),
   }),
 );
 

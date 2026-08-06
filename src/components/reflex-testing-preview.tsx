@@ -1,20 +1,19 @@
 // X-PATH — Reflex Testing & Special Stains agent: capability preview
-// (DL-052, admin/developer section only).
+// (DL-052, admin/developer section only; DL-054 adds admin-editable
+// content on top).
 // ------------------------------------------------------------------
-// STATIC CONTENT ONLY. No data dependencies, no DB reads, no AI calls,
-// no wiring into any real case/report/dictation. This exists purely to
-// show Dr. Ivo and Marcel what this future agent (Phase 2, per
-// XPATH_handover.md's own phasing) will look like — the same deliberate
-// G4 "vision-signaling" exception already established for the "Coming
-// soon" teasers (DL-042), just richer content instead of a disabled
-// button label.
+// No AI calls, no wiring into any real case/report/dictation — still
+// true after DL-054. The only new data dependency is a read-only fetch
+// of admin-authored overrides for this same tenant (Header G2: this
+// reads `editableContent`, never `privateWorkspaceItems`).
 //
-// Content below is Dr. Ivo's own spec (§17.1–17.9 + the module work-
+// Default content is Dr. Ivo's own spec (§17.1–17.9 + the module work-
 // order paragraph), reproduced as supplied — not paraphrased, not
-// filled in (Header G8). Do not add stains, categories, or examples
-// beyond what was given; do not translate the clinical text (same
-// reasoning as DL-035/R-029 for template content — unreviewed French
-// medical terminology is a fabrication risk, not a translation task).
+// filled in (Header G8). An admin edit replaces a section's default
+// text with plain paragraphs (no inline bold/list formatting — this is
+// a text editor, not a rich-text one); the unedited default keeps its
+// original formatting. Saving an edit IS the director-approval step
+// (Header G3) — see this tenant's content admin route.
 //
 // Two separate, deliberate signals that this is preview-only, not just
 // enforced by routing: (1) a "PREVIEW — not live" badge next to the
@@ -22,19 +21,64 @@
 // non-dismissible banner that renders every time the content is shown
 // — there is no way to see the clinical content without it.
 import { STRINGS, t, type Locale } from "@/lib/i18n";
+import { getContentOverrides, type ContentOverride } from "@/lib/editable-content";
 
-function Sub({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+function PlainText({ value }: { value: string }) {
+  return (
+    <>
+      {value.split(/\n\s*\n/).map((para, i) => (
+        <p key={i}>{para}</p>
+      ))}
+    </>
+  );
+}
+
+function Sub({
+  n,
+  title,
+  override,
+  locale,
+  children,
+}: {
+  n: string;
+  title: string;
+  override?: ContentOverride;
+  locale: Locale;
+  children: React.ReactNode;
+}) {
   return (
     <div className="mt-5">
       <h4 className="font-semibold text-petrol text-sm">
         {n} {title}
       </h4>
-      <div className="text-sm text-neutral-700 mt-1.5 leading-relaxed space-y-2">{children}</div>
+      <div className="text-sm text-neutral-700 mt-1.5 leading-relaxed space-y-2">
+        {override ? <PlainText value={override.value} /> : children}
+      </div>
+      {override?.directorNote && (
+        <p className="text-xs text-hema mt-2 italic">
+          {t(STRINGS.directorNotePrefix, locale)} {override.directorNote}
+        </p>
+      )}
     </div>
   );
 }
 
-export function ReflexTestingPreview({ locale }: { locale: Locale }) {
+const KEYS = [
+  "reflex_preview.17_1",
+  "reflex_preview.17_2",
+  "reflex_preview.17_3",
+  "reflex_preview.17_4",
+  "reflex_preview.17_5",
+  "reflex_preview.17_6",
+  "reflex_preview.17_7",
+  "reflex_preview.17_8",
+  "reflex_preview.17_9",
+  "reflex_preview.core_requirement",
+];
+
+export async function ReflexTestingPreview({ locale, tenantId }: { locale: Locale; tenantId: string }) {
+  const overrides = await getContentOverrides(tenantId, KEYS);
+
   return (
     <details open className="mt-10 group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
       <summary className="cursor-pointer list-none px-6 py-4 flex items-center gap-3 hover:bg-petrol/5 transition-colors">
@@ -59,7 +103,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             Reflex Testing, Special Stains &amp; Ancillary Diagnostics Agent
           </h3>
 
-          <Sub n="17.1" title="Purpose">
+          <Sub locale={locale} n="17.1" title="Purpose" override={overrides["reflex_preview.17_1"]}>
             <p>
               Supports pathologists/histotechnologists by suggesting: additional tissue levels; histochemical special
               stains; IHC panels; in-situ hybridization; molecular tests; microbiological correlation; external
@@ -77,7 +121,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="17.2" title="Reflex-testing logic (evaluation inputs)">
+          <Sub locale={locale} n="17.2" title="Reflex-testing logic (evaluation inputs)" override={overrides["reflex_preview.17_2"]}>
             <p>
               Clinical info · anatomical site · specimen type/adequacy · H&amp;E morphology · initial differential ·
               prior lab/imaging findings · regional epidemiological risk · available stains/antibodies · effect on
@@ -92,7 +136,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="17.3" title="Reflex-test categories">
+          <Sub locale={locale} n="17.3" title="Reflex-test categories" override={overrides["reflex_preview.17_3"]}>
             <ul className="list-disc pl-5 space-y-1.5">
               <li>
                 <span className="font-medium">A. Mandatory (protocol/standard-required):</span> ER/PR/HER2/Ki-67 in
@@ -119,7 +163,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </ul>
           </Sub>
 
-          <Sub n="17.4" title="Special-stain menu">
+          <Sub locale={locale} n="17.4" title="Special-stain menu" override={overrides["reflex_preview.17_4"]}>
             <p>
               <span className="font-medium">Tier 1 — essential in-house:</span> PAS-D and GMS (fungi/Pneumocystis),
               Ziehl-Neelsen/AFB (mycobacteria), Perls&apos; Prussian blue (iron), Congo red + polarized light (amyloid),
@@ -138,7 +182,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="17.5" title="Morphology-to-stain rules (worked examples)">
+          <Sub locale={locale} n="17.5" title="Morphology-to-stain rules (worked examples)" override={overrides["reflex_preview.17_5"]}>
             <p>
               Granulomatous inflammation → AFB+PAS+GMS+deeper levels+microbiology/PCR correlation; report must state
               negative stains don&apos;t exclude infection (paucibacillary disease). Fungal suspicion → PAS/GMS/
@@ -152,7 +196,10 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="17.6" title="Reflex IHC (small, sequential, hypothesis-driven panels — never broad indiscriminate)">
+          <Sub locale={locale}             n="17.6"
+            title="Reflex IHC (small, sequential, hypothesis-driven panels — never broad indiscriminate)"
+            override={overrides["reflex_preview.17_6"]}
+          >
             <p>
               Per proposed antibody, show: diagnostic question, antibody+clone, Roche/Ventana reference number,
               BenchMark ULTRA protocol, expected localization, internal/external controls, interpretation criteria,
@@ -163,7 +210,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="17.7" title="Reflex Testing Report Section">
+          <Sub locale={locale} n="17.7" title="Reflex Testing Report Section" override={overrides["reflex_preview.17_7"]}>
             <p>
               Concise, 3–5 prioritized items max — matches the already-locked report structure item 5
               (&quot;Recommended ancillary/reflex testing, 3–5 prioritised items, advisory&quot;). Example language
@@ -171,7 +218,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="17.8" title="Protocol library (governance)">
+          <Sub locale={locale} n="17.8" title="Protocol library (governance)" override={overrides["reflex_preview.17_8"]}>
             <p>
               Per protocol: principle, clinical indication, specimen types, fixation, section thickness,
               reagents/concentrations, method, timing/temp, positive control tissue, expected result, acceptance
@@ -182,7 +229,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="17.9" title="Knowledge updating">
+          <Sub locale={locale} n="17.9" title="Knowledge updating" override={overrides["reflex_preview.17_9"]}>
             <p>
               Periodic review of Ventana assay docs, Leica histology resources, WHO classifications, CAP/organ
               reporting standards, CDC DPDx, ID literature, X.PATH&apos;s own validation/QC records. Updates never go
@@ -191,7 +238,7 @@ export function ReflexTestingPreview({ locale }: { locale: Locale }) {
             </p>
           </Sub>
 
-          <Sub n="" title="Core requirement (module work order)">
+          <Sub locale={locale} n="" title="Core requirement (module work order)" override={overrides["reflex_preview.core_requirement"]}>
             <p className="italic">
               The X.PATH Expert AI Platform shall include a Reflex Testing, Special Stains and Ancillary Diagnostics
               Agent. Based on clinical information, anatomical site, morphology, regional epidemiology and available

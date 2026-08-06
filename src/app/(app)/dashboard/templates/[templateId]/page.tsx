@@ -4,6 +4,7 @@ import { getTemplate } from "@/lib/templates";
 import { SectionView } from "@/components/template-view";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, APPROVAL_STATUS_LABELS, t } from "@/lib/i18n";
+import { getContentOverrides } from "@/lib/editable-content";
 
 // Static structural render for M3 (Header §5: "renders as a structured
 // form; version recorded; approval gate present"). No value binding
@@ -14,6 +15,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
   const session = await auth();
   if (!session?.user) redirect("/sign-in");
   if ((session as any).totpVerified !== true) redirect("/verify");
+  const tenantId = (session as any).tenantId as string;
   const locale = await getLocale();
 
   const { templateId } = await params;
@@ -22,11 +24,26 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
 
   const statusLabel = t(APPROVAL_STATUS_LABELS[template.approval.status] ?? APPROVAL_STATUS_LABELS.draft, locale);
 
+  // DL-054 — admin-editable title/section-title overrides. Constructing
+  // "effective" section objects here (rather than modifying SectionView
+  // itself) keeps that component — also used by the auto-filled
+  // structuring view — untouched.
+  const overrideKeys = [
+    `template.${template.templateId}.title`,
+    ...template.sections.map((s) => `template.${template.templateId}.section.${s.key}.title`),
+  ];
+  const overrides = await getContentOverrides(tenantId, overrideKeys);
+  const effectiveTitle = overrides[`template.${template.templateId}.title`]?.value ?? template.title;
+  const effectiveSections = template.sections.map((s) => ({
+    ...s,
+    title: overrides[`template.${template.templateId}.section.${s.key}.title`]?.value ?? s.title,
+  }));
+
   return (
     <div className="max-w-3xl">
       <p className="text-xs font-bold tracking-widest uppercase text-petrol">{template.category}</p>
       <header className="mt-1 mb-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold tracking-tight">{template.title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{effectiveTitle}</h1>
         <p className="text-sm text-neutral-500 mt-1">
           {t(STRINGS.templateSourcePrefix, locale)} {template.sourceProtocolName} · v{template.sourceVersion} ·{" "}
           {t(STRINGS.templatePosted, locale)} {template.sourcePostingDate}
@@ -45,7 +62,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
         </p>
       </header>
       <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        {template.sections.map((s) => (
+        {effectiveSections.map((s) => (
           <SectionView key={s.key} section={s} locale={locale} />
         ))}
       </div>

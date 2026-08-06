@@ -5,6 +5,7 @@ import { templates } from "@/lib/templates";
 import { accentForCategory } from "@/lib/templates/category-colors";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, APPROVAL_STATUS_LABELS, t } from "@/lib/i18n";
+import { getContentOverrides } from "@/lib/editable-content";
 
 // Fixed per-category color (DL-051) — cosmetic only, not a clinical
 // color code. Full literal class strings so Tailwind's scanner picks
@@ -22,7 +23,16 @@ export default async function TemplatesIndexPage() {
   const session = await auth();
   if (!session?.user) redirect("/sign-in");
   if ((session as any).totpVerified !== true) redirect("/verify");
+  const tenantId = (session as any).tenantId as string;
   const locale = await getLocale();
+
+  // DL-054 — admin-editable title/blurb overrides. Applied here (the
+  // browsing surface) and on the template detail page; NOT threaded
+  // into the deeper structuring/review pipeline yet (SectionView there
+  // reads the static template directly) — a natural extension of this
+  // same mechanism, out of this session's scope.
+  const overrideKeys = templates.flatMap((tpl) => [`template.${tpl.templateId}.title`, `template.${tpl.templateId}.blurb`]);
+  const overrides = await getContentOverrides(tenantId, overrideKeys);
 
   // Group by category (DL-043) — scales cleanly as templates are added:
   // grouping comes from each template's own `category` field, not a
@@ -69,17 +79,19 @@ export default async function TemplatesIndexPage() {
               <ul className="border-t border-neutral-100 divide-y divide-neutral-100">
                 {categoryTemplates.map((template) => {
                   const statusLabel = t(APPROVAL_STATUS_LABELS[template.approval.status] ?? APPROVAL_STATUS_LABELS.draft, locale);
+                  const title = overrides[`template.${template.templateId}.title`]?.value ?? template.title;
+                  const blurb = overrides[`template.${template.templateId}.blurb`]?.value ?? template.blurb;
                   return (
                     <li key={template.templateId}>
                       <Link
                         href={`/dashboard/templates/${template.templateId}`}
                         className="block px-5 py-4 hover:bg-petrol/5 transition-colors"
                       >
-                        <span className="font-medium text-petrol">{template.title}</span>
+                        <span className="font-medium text-petrol">{title}</span>
                         <p className="text-sm text-neutral-500 mt-0.5">
                           v{template.sourceVersion} · {statusLabel} · {template.sections.length} {t(STRINGS.sectionsWord, locale)}
                         </p>
-                        <p className="text-sm text-neutral-600 mt-1">{template.blurb}</p>
+                        <p className="text-sm text-neutral-600 mt-1">{blurb}</p>
                         {template.panelPreview && (
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             {template.panelPreview.map((marker) => (

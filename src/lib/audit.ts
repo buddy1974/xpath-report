@@ -17,7 +17,16 @@ type AuditAction =
   | "system"
   | "totp_failed"
   | "totp_locked"
-  | "account_claimed";
+  | "account_claimed"
+  | "content_edited"
+  | "account_edited"
+  | "account_suspended"
+  | "account_blocked"
+  | "account_reactivated"
+  | "account_deactivated"
+  | "announcement_edited"
+  | "announcement_published"
+  | "announcement_unpublished";
 
 export async function writeAudit(params: {
   tenantId: string;
