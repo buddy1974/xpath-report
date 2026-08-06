@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AccessibilityInitScript } from "@/components/accessibility-init-script";
 
 export const metadata: Metadata = {
   title: "X-PATH",
@@ -23,6 +24,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <AccessibilityInitScript />
+      </head>
       <body>{children}</body>
     </html>
   );

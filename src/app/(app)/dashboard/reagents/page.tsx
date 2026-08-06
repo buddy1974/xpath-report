@@ -238,11 +238,21 @@ export default async function ReagentsPage({ searchParams }: { searchParams?: Pr
         </div>
       )}
 
-      <div className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500 px-1 mb-2">
-          {t(STRINGS.reagentAntibodiesGroupHeading, locale)}
-        </h2>
-        <ul className="rounded-xl border border-neutral-200 bg-white divide-y divide-neutral-100 overflow-hidden shadow-sm">
+      {/* Progressive disclosure for a genuinely dense list (38 register
+          rows) — closed by default per the same reasoning as Home's
+          lower-priority sections (DL-053): the alerts banner above
+          already surfaces anything that needs attention, so this list
+          doesn't need to be open just to be scanned. */}
+      <details className="mt-8 group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+        <summary className="cursor-pointer list-none px-4 min-h-[44px] py-3 flex items-center justify-between hover:bg-petrol/5 active:bg-petrol/10 transition-colors">
+          <span className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+            {t(STRINGS.reagentAntibodiesGroupHeading, locale)} ({antibodies.length})
+          </span>
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180 shrink-0">
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+          </svg>
+        </summary>
+        <ul className="divide-y divide-neutral-100 border-t border-neutral-100">
           {antibodies.map((a) => {
             const low = a.currentStock !== null && a.lowStockThreshold !== null && a.currentStock <= a.lowStockThreshold;
             return (
@@ -278,7 +288,7 @@ export default async function ReagentsPage({ searchParams }: { searchParams?: Pr
             );
           })}
         </ul>
-      </div>
+      </details>
 
       <div className="mt-8">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500 px-1 mb-2">

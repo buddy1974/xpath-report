@@ -2,5 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; }
+:root { color-scheme: light; --font-scale: 1; }
+html { font-size: calc(100% * var(--font-scale)); }
 body { @apply bg-neutral-100 text-neutral-900 antialiased; }
+
+/* DL-055 — text-size setting (Settings > Text size). rem-based Tailwind
+   utilities (text-sm, text-xs, etc.) scale automatically since they're
+   relative to the html root font-size set above. */
+html[data-font-size="large"] { --font-scale: 1.15; }
+html[data-font-size="xlarge"] { --font-scale: 1.3; }
+
+/* DL-055 — high-contrast setting (Settings > High contrast). A
+   lightweight pass, not a full theme system: strengthens the muted
+   grays used throughout for secondary text/borders, which are the
+   actual low-contrast spots in this app's existing palette. */
+html[data-contrast="high"] body { @apply bg-white text-black; }
+html[data-contrast="high"] .text-neutral-400,
+html[data-contrast="high"] .text-neutral-500,
+html[data-contrast="high"] .text-neutral-600 {
+  color: #000 !important;
+}
+html[data-contrast="high"] .border-neutral-100,
+html[data-contrast="high"] .border-neutral-200,
+html[data-contrast="high"] .border-neutral-300 {
+  border-color: #000 !important;
+}

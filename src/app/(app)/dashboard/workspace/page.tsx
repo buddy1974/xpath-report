@@ -14,6 +14,7 @@ import { getTemplate } from "@/lib/templates";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
 import { PendingCaptures } from "@/components/pending-captures";
+import { TriageBadge, triageForHours } from "@/components/triage-badge";
 
 const KIND_STYLE: Record<string, { badge: string; labelKey: keyof typeof STRINGS; icon: string }> = {
   dictation: { badge: "bg-petrol/10 text-petrol", labelKey: "workspaceKindDictation", icon: "M10 2a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3ZM5.5 9.5a.75.75 0 0 1 .75.75v.5a3.75 3.75 0 1 0 7.5 0v-.5a.75.75 0 0 1 1.5 0v.5a5.25 5.25 0 0 1-4.5 5.197V17.5h2a.75.75 0 0 1 0 1.5h-5.5a.75.75 0 0 1 0-1.5h2v-1.553A5.25 5.25 0 0 1 4.75 10.75v-.5a.75.75 0 0 1 .75-.75Z" },
@@ -108,8 +109,14 @@ export default async function WorkspacePage() {
                     </svg>
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400 flex items-center gap-1.5">
                       {t(STRINGS[style.labelKey], locale)}
+                      {item.kind === "report_draft" && (
+                        <TriageBadge
+                          level={triageForHours((Date.now() - item.createdAt.getTime()) / (1000 * 60 * 60))}
+                          locale={locale}
+                        />
+                      )}
                     </p>
                     <p className="text-sm text-neutral-700 truncate">{snippet}</p>
                   </div>

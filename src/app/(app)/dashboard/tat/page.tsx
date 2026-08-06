@@ -22,6 +22,7 @@ import { db } from "@/db";
 import { clinicalRecords, privateWorkspaceItems } from "@/db/schema";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
+import { TriageBadge, triageForHours } from "@/components/triage-badge";
 
 export default async function TatDashboardPage() {
   const session = await auth();
@@ -86,9 +87,12 @@ export default async function TatDashboardPage() {
             <li key={s.templateTitle} className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-medium text-neutral-800">{s.templateTitle}</span>
-                <span className="text-xs text-neutral-400 shrink-0">
-                  {s.count} {t(STRINGS.tatCountSuffix, locale)}
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <TriageBadge level={triageForHours(s.avg)} locale={locale} />
+                  <span className="text-xs text-neutral-400">
+                    {s.count} {t(STRINGS.tatCountSuffix, locale)}
+                  </span>
+                </div>
               </div>
               <div className="mt-3 flex items-end gap-6">
                 <div>

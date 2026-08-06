@@ -579,6 +579,13 @@ export const STRINGS = {
   tatMedianLabel: { en: "median", fr: "médiane" },
   tatCountSuffix: { en: "case(s)", fr: "cas" },
   tatHoursSuffix: { en: "h", fr: "h" },
+  // Triage labels — icon+text always alongside the color (non-color-
+  // dependent status, DL-055 item 6). Default 24h/72h bands are a
+  // starting point, adjustable once real volume tells us what "slow"
+  // means for this lab specifically.
+  triageOnTrack: { en: "On track", fr: "Dans les délais" },
+  triageWatch: { en: "Watch", fr: "À surveiller" },
+  triageSlow: { en: "Slow", fr: "Lent" },
 
   // DL-055 — QC-flag capture at review (lightweight, capture-only).
   qcFlagHeading: { en: "Quality flag", fr: "Signalement qualité" },

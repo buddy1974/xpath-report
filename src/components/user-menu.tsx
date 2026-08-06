@@ -20,6 +20,13 @@ import { signOutAction } from "@/app/(app)/dashboard/actions";
 import { Avatar } from "./avatar";
 import { ONBOARDING_STORAGE_KEY } from "./onboarding-checklist";
 import { AnnouncementTicker, type TickerAnnouncement } from "./announcement-ticker";
+import {
+  type FontSize,
+  getStoredFontSize,
+  getStoredHighContrast,
+  applyFontSize,
+  applyHighContrast,
+} from "@/lib/accessibility";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -62,8 +69,15 @@ export function UserMenu({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [fontSize, setFontSize] = useState<FontSize>("normal");
+  const [highContrast, setHighContrast] = useState(false);
 
   const hiddenAvatar = pathname.startsWith("/dashboard/dictate") || pathname.startsWith("/dashboard/review");
+
+  useEffect(() => {
+    setFontSize(getStoredFontSize());
+    setHighContrast(getStoredHighContrast());
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -205,6 +219,50 @@ export function UserMenu({
                         </button>
                       </form>
                     </div>
+                  </div>
+                  <div className="flex items-center justify-between px-4 min-h-[44px] py-3">
+                    <span className="text-[15px] text-neutral-800">{t(STRINGS.settingsFontSizeLabel, locale)}</span>
+                    <div className="flex items-center gap-1">
+                      {(["normal", "large", "xlarge"] as const).map((size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => {
+                            setFontSize(size);
+                            applyFontSize(size);
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors active:scale-95 ${
+                            fontSize === size ? "bg-petrol text-white" : "text-neutral-500"
+                          }`}
+                        >
+                          {size === "normal"
+                            ? t(STRINGS.settingsFontSizeNormal, locale)
+                            : size === "large"
+                              ? t(STRINGS.settingsFontSizeLarge, locale)
+                              : t(STRINGS.settingsFontSizeXLarge, locale)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between px-4 min-h-[44px] py-3">
+                    <span className="text-[15px] text-neutral-800">{t(STRINGS.settingsHighContrastLabel, locale)}</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={highContrast}
+                      onClick={() => {
+                        const next = !highContrast;
+                        setHighContrast(next);
+                        applyHighContrast(next);
+                      }}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${highContrast ? "bg-petrol" : "bg-neutral-300"}`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                          highContrast ? "translate-x-5" : ""
+                        }`}
+                      />
+                    </button>
                   </div>
                   {role === "pathologist" && (
                     <button
