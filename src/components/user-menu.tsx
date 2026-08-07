@@ -28,6 +28,7 @@ import {
   applyHighContrast,
 } from "@/lib/accessibility";
 import { usePwaInstall } from "@/lib/use-pwa-install";
+import { getNavFeatures } from "@/lib/nav-features";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -112,29 +113,7 @@ export function UserMenu({
 
   const close = () => setOpen(false);
 
-  const FEATURES =
-    role === "pathologist"
-      ? [
-          { href: "/dashboard", label: t(STRINGS.navHomeTitle, locale) },
-          { href: "/dashboard/dictate", label: t(STRINGS.navDictateTitle, locale) },
-          { href: "/dashboard/workspace", label: t(STRINGS.navWorkspaceTitle, locale) },
-          { href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) },
-          { href: "/dashboard/archive", label: t(STRINGS.navArchiveTitle, locale) },
-        ]
-      : role === "administrator"
-        ? [
-            { href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) },
-            // DL-054 — the three new admin-only surfaces. Same list, same
-            // card group as everything else; no separate "admin nav".
-            { href: "/dashboard/announcements", label: t(STRINGS.announcementsNavTitle, locale) },
-            { href: "/dashboard/accounts", label: t(STRINGS.accountsNavTitle, locale) },
-            { href: "/dashboard/content", label: t(STRINGS.contentAdminNavTitle, locale) },
-            // DL-055 — TAT dashboard, reagent/equipment tracking, audit export.
-            { href: "/dashboard/tat", label: t(STRINGS.tatNavTitle, locale) },
-            { href: "/dashboard/reagents", label: t(STRINGS.reagentsNavTitle, locale) },
-            { href: "/dashboard/audit", label: t(STRINGS.auditExportNavTitle, locale) },
-          ]
-        : [{ href: "/dashboard/templates", label: t(STRINGS.navTemplatesTitle, locale) }];
+  const FEATURES = getNavFeatures(role, locale);
 
   return (
     <>
@@ -143,12 +122,31 @@ export function UserMenu({
           type="button"
           onClick={() => setOpen(true)}
           aria-label={t(STRINGS.userMenuOpenLabel, locale)}
-          className="fixed right-4 z-30 active:scale-95 transition-transform"
+          className="lg:hidden fixed right-4 z-30 active:scale-95 transition-transform"
           style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
         >
           <Avatar label={name} size={44} />
         </button>
       )}
+
+      {/* DL-060 — desktop-parity: the mobile floating avatar becomes a
+          docked user row at the bottom of the sidebar on lg+ screens.
+          Fixed-positioned (not nested in DesktopSidebar's DOM) so this
+          stays the single source of truth for the settings sheet's
+          open state, same component either way — just a different
+          trigger shape per device. */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={t(STRINGS.userMenuOpenLabel, locale)}
+        className="hidden lg:flex fixed left-0 bottom-0 w-64 items-center gap-3 border-t border-neutral-200 bg-white px-6 py-4 hover:bg-neutral-50 transition-colors z-10 text-left"
+      >
+        <Avatar label={name} size={36} />
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold text-neutral-800 truncate">{name}</span>
+          <span className="block text-xs text-neutral-500 truncate">{roleLabel}</span>
+        </span>
+      </button>
 
       {open && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={t(STRINGS.userMenuOpenLabel, locale)}>

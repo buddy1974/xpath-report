@@ -55,7 +55,7 @@ export default async function WorkspacePage() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl lg:max-w-none">
       <h1 className="text-3xl font-bold tracking-tight">{t(STRINGS.workspaceHeading, locale)}</h1>
       <p className="text-neutral-600 mt-1.5">{t(STRINGS.workspaceBody, locale)}</p>
 
@@ -67,7 +67,12 @@ export default async function WorkspacePage() {
         <p className="mt-8 text-sm text-neutral-500">{t(STRINGS.workspaceEmpty, locale)}</p>
       ) : (
         <>
-          <ul className="mt-6 space-y-2">
+          {/* DL-060 desktop-parity: a multi-column grid at lg+ instead
+              of a single stacked list — earns the extra screen width
+              a desktop viewport actually has. Mobile keeps the exact
+              DL-051 stacked-list layout (no lg: classes apply below
+              that breakpoint). */}
+          <ul className="mt-6 space-y-2 lg:space-y-0 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-3 lg:items-start">
             {items.map((item) => {
               const style = KIND_STYLE[item.kind] ?? KIND_STYLE.dictation;
               const existingDraftId = draftBySourceId.get(item.id);

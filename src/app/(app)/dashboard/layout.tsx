@@ -17,6 +17,7 @@ import { announcements } from "@/db/schema";
 import { getLocale } from "@/lib/i18n-server";
 import { ROLE_LABELS, t } from "@/lib/i18n";
 import { UserMenu } from "@/components/user-menu";
+import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { DictateCtaBar } from "@/components/dictate-cta-bar";
 import { AnnouncementTicker } from "@/components/announcement-ticker";
 import { SyncStatusBanner } from "@/components/sync-status-banner";
@@ -56,14 +57,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen bg-neutral-50">
+      <DesktopSidebar role={role} locale={locale} />
+
       <main
-        className="max-w-6xl mx-auto px-4 sm:px-6 pb-28 sm:pb-8"
+        className="max-w-6xl lg:max-w-none lg:pl-64 mx-auto px-4 sm:px-6 pb-28 sm:pb-8"
         style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.5rem)" }}
       >
-        <AnnouncementTicker items={activeAnnouncements} locale={locale} />
-        <IosInstallHint locale={locale} />
-        {role === "pathologist" && <SyncStatusBanner locale={locale} />}
-        {children}
+        <div className="lg:max-w-7xl lg:mx-auto">
+          <AnnouncementTicker items={activeAnnouncements} locale={locale} />
+          <IosInstallHint locale={locale} />
+          {role === "pathologist" && <SyncStatusBanner locale={locale} />}
+          {children}
+        </div>
       </main>
 
       <UserMenu

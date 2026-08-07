@@ -13,6 +13,7 @@ import { getTemplate } from "@/lib/templates";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, VIEW_TITLES, VIEW_BLURBS, t } from "@/lib/i18n";
 import { ReflexTestingPreview } from "@/components/reflex-testing-preview";
+import { ResponsiveDetails } from "@/components/responsive-details";
 
 type Role = "pathologist" | "technician" | "manager" | "administrator";
 
@@ -181,9 +182,17 @@ export default async function DashboardPage() {
           </div>
         </details>
 
-        {/* Trends — default-closed: a nice-to-have stat, not actionable
-            at a glance, collapsed to keep the page compact (DL-053). */}
-        <details className="mt-4 group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+        {/* DL-060 desktop-parity: side-by-side at lg+ instead of two
+            more stacked collapsed sections — there's room for both to
+            just be visible. Still real, user-toggleable <details> on
+            every breakpoint (ResponsiveDetails only changes the
+            initial open state); mobile keeps the exact DL-053
+            collapsed-by-default stacking. */}
+        <div className="mt-4 space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4 lg:items-start">
+        {/* Trends — default-closed on mobile: a nice-to-have stat, not
+            actionable at a glance, collapsed to keep the page compact
+            (DL-053); open by default on lg+ (DL-060). */}
+        <ResponsiveDetails className="group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
           <summary className="cursor-pointer list-none px-6 min-h-[44px] py-4 flex items-center justify-between hover:bg-petrol/5 active:bg-petrol/10 transition-colors">
             <span className="text-lg font-semibold text-petrol">{t(STRINGS.homeTrendsHeading, locale)}</span>
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180 shrink-0">
@@ -211,18 +220,18 @@ export default async function DashboardPage() {
               </div>
             )}
           </div>
-        </details>
+        </ResponsiveDetails>
 
-        {/* Learning — default-closed: educational content, lowest
-            urgency (DL-053). */}
-        <details className="mt-4 group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
+        {/* Learning — default-closed on mobile: educational content,
+            lowest urgency (DL-053); open by default on lg+ (DL-060). */}
+        <ResponsiveDetails className="group rounded-2xl border border-neutral-200 bg-white shadow-sm overflow-hidden">
           <summary className="cursor-pointer list-none px-6 min-h-[44px] py-4 flex items-center justify-between hover:bg-petrol/5 active:bg-petrol/10 transition-colors">
             <span className="text-lg font-semibold text-petrol">{t(STRINGS.homeLearningHeading, locale)}</span>
             <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180 shrink-0">
               <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
             </svg>
           </summary>
-          <div className="border-t border-neutral-100 px-6 py-5 grid sm:grid-cols-2 gap-4">
+          <div className="border-t border-neutral-100 px-6 py-5 grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
             {LEARNING_CARDS.map((card, i) => (
               <div key={i} className="rounded-xl border border-neutral-200 bg-white p-5">
                 <p className="font-semibold text-hema text-sm">{t(card.titleKey, locale)}</p>
@@ -230,7 +239,8 @@ export default async function DashboardPage() {
               </div>
             ))}
           </div>
-        </details>
+        </ResponsiveDetails>
+        </div>
       </div>
     );
   }
