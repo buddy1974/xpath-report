@@ -89,6 +89,9 @@ export const auditActionEnum = pgEnum("audit_action", [
   // DL-054 — admin-editable default content (Header G3: saving an edit
   // from the administrator account IS the director-approval step).
   "content_edited",
+  // DL-059 — real version history for admin content overrides.
+  "content_restored",
+  "content_version_deleted",
   // DL-054 — super-admin account management. Distinct actions, not one
   // generic "account_changed", so the audit trail reads unambiguously.
   "account_edited",
@@ -335,15 +338,41 @@ export const auditLog = pgTable(
  * `privateWorkspaceItems` already enforces — this table has no owner
  * concept at all, only tenant + content key).
  *
- * One current row per (tenant, contentKey) — editing overwrites `value`
- * and bumps `version`; the audit log (action "content_edited", written
- * on every save) is the version *history*, so this table doesn't need
- * its own separate history table. Per Header G3, saving an edit from
- * the administrator account IS the director-approval step — no
- * separate approval workflow. Already-signed `clinicalRecords` are
- * immutable JSONB snapshots and are never affected by a content edit;
- * only *new* structuring/report work sees the updated value.
+ * DL-059 — real, restorable version history (a DL-054 follow-up: the
+ * admin/owner account gets full freedom to edit/revert/delete, not
+ * just "current vs default"). `editableContentVersions` is the
+ * append-only history — every save/restore inserts a new row, nothing
+ * is ever rewritten. `editableContent` stays a fast-read "current
+ * pointer" cache (one row per tenant+contentKey, `currentVersionId`
+ * pointing at the live version) so `getContentOverrides`/
+ * `getAllContentOverrides` — called from Templates/Reflex-preview
+ * pages — never need to join against history or do N+1 lookups.
+ * "Version zero" (the original system default, before any override
+ * ever existed) has no row in either table — restoring to it just
+ * deletes the `editableContent` row.
  */
+export const editableContentVersions = pgTable(
+  "editable_content_versions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "restrict" }),
+    contentKey: text("content_key").notNull(),
+    value: text("value").notNull(),
+    directorNote: text("director_note"),
+    editedBy: uuid("edited_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => ({
+    keyIdx: index("ecv_tenant_key_created_idx").on(t.tenantId, t.contentKey, t.createdAt),
+  }),
+);
+
 export const editableContent = pgTable(
   "editable_content",
   {
@@ -360,6 +389,12 @@ export const editableContent = pgTable(
     // field (Header G1).
     directorNote: text("director_note"),
     version: integer("version").notNull().default(1),
+    // DL-059 — nullable only because rows written before this column
+    // existed are backfilled by the migration itself; every row
+    // written from now on always sets it.
+    currentVersionId: uuid("current_version_id").references(() => editableContentVersions.id, {
+      onDelete: "set null",
+    }),
     updatedBy: uuid("updated_by")
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),

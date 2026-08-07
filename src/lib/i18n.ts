@@ -557,6 +557,19 @@ export const STRINGS = {
   contentDefaultBadge: { en: "default (unedited)", fr: "par défaut (non modifié)" },
   directorNotePrefix: { en: "Director's note:", fr: "Note de la direction :" },
 
+  // DL-059 — full version history for admin content overrides.
+  contentHistoryToggle: { en: "History", fr: "Historique" },
+  contentHistoryEmpty: { en: "No edits yet.", fr: "Aucune modification pour l'instant." },
+  contentHistoryCurrentBadge: { en: "current", fr: "actuel" },
+  contentHistoryDefaultLabel: { en: "System default (original, unedited)", fr: "Défaut du système (original, non modifié)" },
+  contentHistoryEditedByPrefix: { en: "by", fr: "par" },
+  contentHistoryRestoreButton: { en: "Restore", fr: "Restaurer" },
+  contentHistoryDeleteButton: { en: "Delete", fr: "Supprimer" },
+  contentHistoryConfirmDelete: {
+    en: "Delete this historical version? This can't be undone — the current live content is not affected unless this is the active version.",
+    fr: "Supprimer cette version de l'historique ? Cette action est irréversible — le contenu actuellement en ligne n'est pas affecté sauf s'il s'agit de la version active.",
+  },
+
   // DL-055 — offline-first capture queue. Plain-language only, never
   // raw HTTP/network errors (Header: pathologist-facing, not developer-
   // facing status text).

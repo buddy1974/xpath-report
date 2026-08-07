@@ -5,12 +5,16 @@
 // (Header G2). Saving is the director-approval step (Header G3).
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
+import { db } from "@/db";
+import { users } from "@/db/schema";
 import { templates } from "@/lib/templates";
-import { getAllContentOverrides } from "@/lib/editable-content";
+import { getAllContentOverrides, getContentVersions } from "@/lib/editable-content";
 import { getLocale } from "@/lib/i18n-server";
 import { STRINGS, t } from "@/lib/i18n";
-import { saveContentOverride } from "./actions";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
+import { saveContentOverride, restoreContentVersion, deleteContentVersion } from "./actions";
 
 const REFLEX_KEYS: { key: string; label: string }[] = [
   { key: "reflex_preview.17_1", label: "Reflex preview — §17.1 Purpose" },
@@ -75,6 +79,10 @@ export default async function ContentAdminPage({ searchParams }: { searchParams?
   const editing = editKey ? registry.find((r) => r.key === editKey) : undefined;
   const editingOverride = editing ? overrides[editing.key] : undefined;
 
+  const versions = editing ? await getContentVersions(tenantId, editing.key) : [];
+  const editorRows = versions.length > 0 ? await db.select().from(users).where(eq(users.tenantId, tenantId)) : [];
+  const editorName = new Map(editorRows.map((u) => [u.id, u.displayName]));
+
   const groups = new Map<string, typeof registry>();
   for (const entry of registry) {
     if (!groups.has(entry.group)) groups.set(entry.group, []);
@@ -130,6 +138,85 @@ export default async function ContentAdminPage({ searchParams }: { searchParams?
               </Link>
             </div>
           </form>
+
+          {/* DL-059 — full version history: restore any prior save
+              (including all the way back to the untouched system
+              default) or permanently delete a specific historical
+              entry. The admin/owner account gets full freedom here —
+              Marcel's explicit call. */}
+          <details className="mt-6 group rounded-xl border border-neutral-200 overflow-hidden">
+            <summary className="cursor-pointer list-none px-4 min-h-[44px] py-2.5 flex items-center justify-between hover:bg-petrol/5 transition-colors">
+              <span className="text-sm font-semibold text-petrol">
+                {t(STRINGS.contentHistoryToggle, locale)} ({versions.length})
+              </span>
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180 shrink-0">
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+              </svg>
+            </summary>
+            <ul className="divide-y divide-neutral-100 border-t border-neutral-100">
+              <li className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm text-neutral-700">{t(STRINGS.contentHistoryDefaultLabel, locale)}</p>
+                  {editing.defaultValue && <p className="text-xs text-neutral-400 truncate mt-0.5">{editing.defaultValue}</p>}
+                </div>
+                {!editingOverride ? (
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-mint shrink-0">
+                    {t(STRINGS.contentHistoryCurrentBadge, locale)}
+                  </span>
+                ) : (
+                  <form action={restoreContentVersion} className="shrink-0">
+                    <input type="hidden" name="contentKey" value={editing.key} />
+                    <input type="hidden" name="versionId" value="default" />
+                    <button type="submit" className="text-sm font-semibold text-petrol inline-flex items-center min-h-[44px]">
+                      {t(STRINGS.contentHistoryRestoreButton, locale)}
+                    </button>
+                  </form>
+                )}
+              </li>
+              {versions.length === 0 && (
+                <li className="px-4 py-3 text-sm text-neutral-400">{t(STRINGS.contentHistoryEmpty, locale)}</li>
+              )}
+              {versions.map((v) => {
+                const isCurrent = editingOverride?.currentVersionId === v.id;
+                return (
+                  <li key={v.id} className="flex items-center justify-between gap-3 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="text-sm text-neutral-700 truncate">{v.value}</p>
+                      <p className="text-xs text-neutral-400 mt-0.5">
+                        {v.createdAt.toLocaleString?.() ?? String(v.createdAt)} · {t(STRINGS.contentHistoryEditedByPrefix, locale)}{" "}
+                        {editorName.get(v.editedBy) ?? "—"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {isCurrent ? (
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-mint">
+                          {t(STRINGS.contentHistoryCurrentBadge, locale)}
+                        </span>
+                      ) : (
+                        <form action={restoreContentVersion}>
+                          <input type="hidden" name="contentKey" value={editing.key} />
+                          <input type="hidden" name="versionId" value={v.id} />
+                          <button type="submit" className="text-sm font-semibold text-petrol inline-flex items-center min-h-[44px]">
+                            {t(STRINGS.contentHistoryRestoreButton, locale)}
+                          </button>
+                        </form>
+                      )}
+                      <form action={deleteContentVersion}>
+                        <input type="hidden" name="contentKey" value={editing.key} />
+                        <input type="hidden" name="versionId" value={v.id} />
+                        <ConfirmSubmitButton
+                          confirmMessage={t(STRINGS.contentHistoryConfirmDelete, locale)}
+                          className="text-sm font-semibold text-neutral-500 hover:text-red-600 inline-flex items-center min-h-[44px]"
+                        >
+                          {t(STRINGS.contentHistoryDeleteButton, locale)}
+                        </ConfirmSubmitButton>
+                      </form>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
         </div>
       )}
 
