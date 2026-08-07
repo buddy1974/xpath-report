@@ -175,15 +175,23 @@ export async function deleteContentVersion(formData: FormData) {
     .limit(1);
   if (!versionRows[0]) throw new Error("Version not found.");
 
-  await db.delete(editableContentVersions).where(eq(editableContentVersions.id, versionId));
-
+  // Capture "is this the active version" BEFORE deleting — the FK's
+  // ON DELETE SET NULL fires the instant the row is gone, so reading
+  // `existing` afterward would always see currentVersionId already
+  // nulled out and silently skip the fallback below (a real bug this
+  // session's own live-verification caught: deleting the last
+  // remaining version left editableContent's value/version columns
+  // orphaned, still live, pointing at nothing).
   const existing = await db
     .select()
     .from(editableContent)
     .where(and(eq(editableContent.tenantId, tenantId), eq(editableContent.contentKey, contentKey)))
     .limit(1);
+  const wasActive = existing[0]?.currentVersionId === versionId;
 
-  if (existing[0]?.currentVersionId === versionId) {
+  await db.delete(editableContentVersions).where(eq(editableContentVersions.id, versionId));
+
+  if (wasActive) {
     const remaining = await db
       .select()
       .from(editableContentVersions)
