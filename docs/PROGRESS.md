@@ -1,5 +1,5 @@
 # X-PATH — PROGRESS
-Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); offline-first upload + TAT dashboard + QC-flag capture + reagent/equipment tracking + audit-log export + a frontend UX pass all built and live-verified (DL-055); Structure-page back link built + QC-flag/Workspace-triage live-verified for real (DL-056); installable PWA (manifest/service worker/iOS tags/install prompt) + a mobile-hardening sweep built, Lighthouse-audited (100/100 accessibility + best-practices), and live-verified in place of the deferred native-app migration (DL-058); only the live Dr. Ivo demo and a deferred desktop-parity pass remain)
+Overall: ▓▓▓▓▓▓▓▓▓▓ ~97% (you are here → M7 done: DNS live, redeployed, re-verified on xpath.report; R-036 resolved with a real mobile end-to-end test; Dictate CTA bar/Workspace/OCR-save/per-category colors built and live-verified (DL-051); Reflex Testing & Special Stains admin-only capability preview built and live-verified (DL-052); mobile IA redesign — top nav removed, floating avatar + full-screen user menu — built and live-verified with two stated tool-limitation caveats (DL-053); three super-admin features — content editing, account management, announcements — built and live-verified (DL-054); offline-first upload + TAT dashboard + QC-flag capture + reagent/equipment tracking + audit-log export + a frontend UX pass all built and live-verified (DL-055); Structure-page back link built + QC-flag/Workspace-triage live-verified for real (DL-056); installable PWA (manifest/service worker/iOS tags/install prompt) + a mobile-hardening sweep built, Lighthouse-audited (100/100 accessibility + best-practices), and live-verified in place of the deferred native-app migration (DL-058); full restorable version history for admin content overrides built and live-verified, a real bug caught and fixed by that same verification (DL-059); desktop-parity pass — persistent sidebar nav, wider Workspace/Home layouts — built and live-verified (DL-060); only the live Dr. Ivo demo remains)
 
 ✅ **R-036 RESOLVED (DL-050) — Marcel fixed the R2 CORS policy and ran a
 real end-to-end mobile test (`test-pathologist` account): dictation
@@ -48,12 +48,16 @@ WAITING ON MARCEL:
    direct DOM/CSS/state inspection plus a live Lighthouse audit
    (100/100 accessibility + best-practices) instead of an actual device
    — confident it's correct, but this closes the loop for real.
-🔔 DL-054's content-editing UI has no revert/delete action yet — once an
-   admin overrides a template title/blurb/section-title or a Reflex
-   preview section, going back to the original default requires
-   knowing (or re-typing) the exact original text. A real, stated gap,
-   not built this session; worth a small follow-up (a "Revert to
-   default" button that just deletes the `editableContent` row).
+🔔 On a real desktop browser (≥1024px wide), glance at the new sidebar
+   (DL-060) as a pathologist — it was live-verified with an
+   administrator account (7-item nav, active-link highlighting, docked
+   settings trigger, an unwidened page rendering correctly alongside
+   it), but the pathologist-only Workspace grid and Home's side-by-side
+   Trends/Learning weren't independently click-verified this round
+   (would have needed a second disposable account for an empty demo —
+   stated as a real gap, not silently skipped). Same underlying
+   `lg:grid`/breakpoint mechanism already confirmed working, so
+   confidence is high, but a real glance would close the loop.
 🔔 Cloudflare Turnstile keys (`CLOUDFLARE_TURNSTILE_SITE_KEY` +
    `CLOUDFLARE_TURNSTILE_SECRET_KEY`) — code is wired and ready, inactive
    until these are set.
@@ -62,13 +66,44 @@ WAITING ON MARCEL:
    error is a 400 billing error, not a 401 auth error), but hasn't been
    verified end to end with a real response. Not blocking — OpenAI (the
    default) is fully verified.
-🔔 **Deferred, not forgotten**: a desktop-parity pass (wider layouts,
-   better use of screen space, hover states) — the redesign work has
-   been mobile-first throughout (DL-051/053/055/058). Flagged per your
-   explicit instruction to note it for later rather than build it
-   alongside the PWA work.
 
-LAST UPDATE: 2026-08-06 —
+LAST UPDATE: 2026-08-07 —
+
+**DL-060 — Desktop-parity pass: persistent sidebar nav + wider
+layouts, breakpoint-gated at `lg:` (1024px).** Presentation-only, no
+data/auth changes. Persistent left sidebar (role-based nav, one source
+of truth shared with the mobile sheet via `lib/nav-features.ts`) with
+active-link highlighting and hover states, replacing the mobile
+floating-avatar pattern on desktop only — the docked user row opens
+the *same* settings sheet, not a rebuilt one. Workspace becomes a
+multi-column grid at `lg:`/`xl:`; Home's Trends + Learning sit
+side-by-side and open by default at `lg:` (still real, user-toggleable
+`<details>` — a small `ResponsiveDetails` wrapper only changes the
+initial state per breakpoint; mobile keeps DL-053's collapsed default
+exactly as before). Scoped deliberately to sidebar + Workspace + Home
+this pass, not a speculative widen-everything sweep. Live-verified with
+a disposable admin account: sidebar, active-link highlighting, the
+settings trigger, and an unwidened page all confirmed correct. The
+pathologist-only Workspace/Home grid wasn't independently click-tested
+this round (stated above, not silently skipped). Full detail in
+`docs/decision-log.md` DL-060.
+
+**DL-059 — Full, real version history for admin content overrides (a
+DL-054 follow-up, resolving the "no revert/delete yet" gap noted after
+that session).** Marcel's explicit call: full freedom to edit, revert
+to any prior state including the untouched system default, or delete a
+specific historical entry. New append-only `editableContentVersions`
+table; `editableContent` stays a fast-read pointer so the real hot
+paths (Templates, Reflex preview) need no join. **A real bug this
+session's own live-verification caught, not assumed correct**:
+deleting the currently-active version checked the FK pointer *after*
+the delete, but `ON DELETE SET NULL` had already cleared it by then, so
+the fallback-to-default logic silently never ran, leaving a stale
+override live pointing at a deleted version. Fixed, redeployed,
+re-verified the exact scenario end to end. Full create → restore →
+delete → fallback-to-default cycle live-verified with a disposable
+admin account, cleaned up after. Full detail in `docs/decision-log.md`
+DL-059.
 
 **DL-058 — Installable PWA + mobile-hardening sweep, in place of the
 native Capacitor migration you decided to hold off on** (real

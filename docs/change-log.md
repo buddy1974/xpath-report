@@ -2,6 +2,50 @@
 
 Format: date · session · what changed · why.
 
+## 2026-08-07 — Desktop-parity pass: sidebar nav + wider layouts (DL-060)
+- Persistent left sidebar at `lg:` (1024px) with the same role-based
+  nav list the mobile sheet uses (extracted to `lib/nav-features.ts`,
+  one source of truth) — active-link highlighting, hover states, a
+  docked user row (opens the same settings sheet) instead of the
+  floating avatar, which stays mobile-only.
+- Workspace: multi-column grid at `lg:`/`xl:` instead of a stacked list.
+- Home: Trends + Learning sit side-by-side and open by default at
+  `lg:` via a small `ResponsiveDetails` wrapper — still real,
+  user-toggleable `<details>` either way; mobile keeps the DL-053
+  collapsed-by-default stacking exactly as before.
+- Presentation-only, no data/auth changes. Scoped to sidebar +
+  Workspace + Home this pass — other admin list pages left in their
+  existing layout, a stated follow-up rather than a speculative
+  widen-everything pass.
+- Live-verified with a disposable admin account: sidebar nav,
+  active-link highlighting, the docked settings trigger, and an
+  unwidened page (Templates) all confirmed correct alongside the new
+  sidebar. Workspace/Home grid not independently click-verified this
+  round (pathologist-only, would have needed a second disposable
+  account for an empty demo) — stated as a real gap, not silently
+  skipped.
+
+## 2026-08-07 — Full version history for admin content overrides (DL-059)
+- New `editableContentVersions` table, append-only — every save/
+  restore inserts a new row, nothing is ever rewritten (restoring is
+  git-revert-style: creates a new version, doesn't reuse the old row).
+  `editableContent` stays a fast-read current-pointer cache so
+  Templates/Reflex-preview reads need no join or N+1 lookup.
+- Content admin page gets a History panel per item: timestamp, editor,
+  a content preview, Restore and Delete per version, plus a "restore to
+  system default" option (version zero has no row in either table).
+- Real bug caught by live-verification, not assumed correct: deleting
+  the currently-active version checked `currentVersionId` *after* the
+  delete, but the FK's `ON DELETE SET NULL` had already nulled it by
+  then, so the fallback-to-next-version (or to default) logic silently
+  never ran — left a stale override live on production pointing at a
+  deleted version. Fixed by capturing the active-version flag before
+  the delete; redeployed and re-verified the exact scenario end to end.
+- Still administrator-only, still never touches `privateWorkspaceItems`
+  or `clinicalRecords` (Header G2). Live-verified full create → restore
+  → delete → fallback-to-default cycle on `www.xpath.report` with a
+  disposable admin account, cleaned up afterward.
+
 ## 2026-08-06 — Correction: never rotate dev-administrator/test-pathologist passwords (DL-057)
 - Marcel's direct correction: these two accounts are his own permanent,
   stable-password accounts (DL-048/049), not verification fixtures.

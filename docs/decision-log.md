@@ -1625,3 +1625,117 @@ Format: DL-nnn · decision · rationale.
   `npx tsc --noEmit` and `npm run build` passed clean before every push
   across three commits: the PWA/mobile-hardening build itself, the
   color-contrast fix, and the apple-mobile-web-app-capable fix.
+- **DL-059 — Full, real version history for admin content overrides (a
+  DL-054 follow-up).** Marcel's explicit call: the admin/owner account
+  (`dev-administrator@xpath.report`, later handed to Dr. Ivo) gets full
+  freedom here — edit, save, revert to any prior state including the
+  untouched system default, or permanently delete a specific historical
+  entry, no artificial limits. New `editableContentVersions` table,
+  append-only — every save/restore inserts a new row, nothing is ever
+  rewritten (a restore is git-revert-style: it creates a new version
+  carrying the restored content, rather than reusing the old row).
+  `editableContent` stays a fast-read "current pointer" cache (a new
+  `currentVersionId` FK) so `getContentOverrides`/`getAllContentOverrides`
+  — called from Templates and the Reflex preview, real hot paths — need
+  no join or N+1 lookup; only the content admin page's History panel
+  queries the versions table, and only for one key at a time. "Version
+  zero" (the original, never-overridden system default) has no row in
+  either table — restoring to it just deletes the `editableContent` row.
+  **A real bug caught by this session's own live-verification, not
+  assumed correct**: `deleteContentVersion` checked whether the deleted
+  version was the currently-active one by reading `editableContent
+  .currentVersionId` *after* the delete — but the FK's `ON DELETE SET
+  NULL` fires the instant the version row is gone, so that check always
+  saw a value already nulled and silently skipped the fallback,
+  orphaning `editableContent`'s value/version columns still-live,
+  pointing at nothing. Caught live: deleting a test override's only
+  remaining version left the Templates-facing content stuck showing
+  stale text instead of reverting to default. Fixed by capturing the
+  active-version flag *before* the delete, redeployed, re-verified the
+  exact same scenario end to end — now correctly falls back to default.
+  Still strictly `role === "administrator"` gated (no new permission
+  flag), still only ever touches `editableContent`/its version table —
+  never `privateWorkspaceItems` or `clinicalRecords` (Header G2).
+  **Live-verified on `www.xpath.report`** using a genuinely disposable
+  administrator account (created for this session, TOTP-enrolled with a
+  locally-known secret, deleted at the end) per Marcel's own standing
+  instruction to never touch `dev-administrator@xpath.report`/
+  `test-pathologist@xpath.report`'s credentials (DL-057) — full detail
+  on that account's lifecycle and the TOTP-timing lesson learned
+  (otplib's default `window: 0` means zero tolerance; codes must be
+  generated and submitted within the same 30-second step, which ruled
+  out slow UI-driven typing and pushed verification toward direct
+  `fetch()` calls from the page context instead) is in DL-060 below,
+  since the same account and lesson carried into that pass too. Real
+  end-to-end sequence confirmed: saved two versions, restored to the
+  first (creating a third, newest version — history never rewrites),
+  deleted two non-active historical versions (current value untouched),
+  deleted the last remaining version (now correctly falls back to
+  default, post-fix), all reflected correctly in the History panel
+  (timestamps, editor name, current-badge placement) after a real page
+  reload each time. All test data cleaned up before deleting the
+  account. `npx tsc --noEmit` and `npm run build` passed clean before
+  both pushes (the feature build, then the fix).
+- **DL-060 — Desktop-parity pass: persistent sidebar nav + wider
+  layouts, breakpoint-gated at `lg:` (1024px, Tailwind's default —
+  this app had no prior `lg:`/`xl:` usage to match, so this sets the
+  convention going forward).** Presentation-only: no data-fetching,
+  server-action, or auth change anywhere in this pass. Everything since
+  DL-051 was built mobile-first (primary audience is Cameroon mobile)
+  and correctly so, but desktop was left as a stretched phone layout —
+  narrow single column, no hover feedback, no persistent nav, the
+  mobile floating-avatar/full-screen-menu pattern doing a job desktop's
+  screen space doesn't need it to do. Marcel's direction: desktop as
+  its own tailored shell over the same logic/data, the way a native
+  app's phone and desktop clients are recognizably the same product but
+  each fitted to its device — not a scaled-up phone layout.
+  Extracted the role-based nav list out of `user-menu.tsx` into
+  `lib/nav-features.ts` — one source of truth the mobile sheet and the
+  new desktop sidebar both read, so they structurally cannot diverge.
+  New `DesktopSidebar` (`hidden lg:flex`, fixed left column, active-
+  link highlighting, hover states) renders the same list as a
+  persistent nav instead of behind a tap. The mobile floating avatar
+  (`lg:hidden` now) is replaced at `lg:` by a docked user row at the
+  sidebar's foot that opens the *same* `UserMenu` sheet component (not
+  a rebuilt settings UI) — same profile/settings/sign-out, just a
+  different trigger shape per device, so there is exactly one
+  implementation of that sheet to keep correct. Workspace becomes a
+  `lg:grid lg:grid-cols-2 xl:grid-cols-3` layout instead of a stacked
+  list. Home's Trends + Learning sections sit side-by-side and open by
+  default at `lg:` via a small `ResponsiveDetails` client wrapper
+  (native `<details>` has no CSS-only way to vary its default open
+  state by breakpoint) — still real, user-toggleable disclosure on
+  every breakpoint, mobile keeps DL-053's collapsed-by-default stacking
+  exactly as before, since `ResponsiveDetails` only sets the *initial*
+  state and does so client-side after the existing markup renders.
+  **Explicitly scoped down, not silently expanded**: only the sidebar,
+  Workspace, and Home got the desktop treatment this pass — the other
+  admin list pages (Accounts, Announcements, Content, Reagents, Audit
+  export, TAT) still render in their existing narrower single-column
+  layout at `lg:`, a stated scope line rather than a speculative
+  widen-everything pass.
+  **Live-verified on `www.xpath.report`** with a fresh disposable
+  administrator account (same lifecycle/cleanup as DL-059's, and the
+  same account, reused across both since they landed in the same
+  session): confirmed the sidebar renders all 7 admin nav items with
+  correct active-link highlighting on click-through (Templates →
+  Turnaround time), confirmed the docked user row opens the real
+  settings sheet, confirmed an unwidened page (Templates) still renders
+  correctly alongside the new sidebar with no layout breakage, and
+  confirmed via direct class-list inspection that the `hidden lg:flex`
+  / `lg:hidden` pairs are compiled exactly as authored (the standard,
+  already-proven-throughout-this-app Tailwind responsive-visibility
+  pattern DL-053 relied on extensively — `hidden` applies
+  unconditionally except where a `lg:` override matches, so mobile
+  correctness follows from the same CSS cascade rules already verified
+  live multiple times this engagement, not re-proven from scratch via
+  an actual narrow viewport, which this tooling still cannot produce —
+  R-032's standing caveat). **Not independently live-clicked this
+  round, stated plainly rather than assumed**: the Workspace grid and
+  Home's side-by-side Trends/Learning are pathologist-only surfaces:
+  verifying them would have meant creating a second disposable account
+  (pathologist role) purely to view an empty demo grid with no real
+  workspace content to populate it meaningfully. Confidence is high —
+  same `lg:grid`/breakpoint mechanism just confirmed working on the
+  admin side — but this is a real, stated gap, not a silent skip.
+  `npx tsc --noEmit` and `npm run build` passed clean before the push.
